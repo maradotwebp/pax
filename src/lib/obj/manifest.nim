@@ -1,4 +1,4 @@
-import json
+import sequtils, json
 
 type
   ManifestFile* = object
@@ -17,6 +17,14 @@ type
     mcModloaderId*: string
     files*: seq[ManifestFile]
 
+proc toJson*(file: ManifestFile): JsonNode =
+  ## creates the json for a manifest from a file
+  result = %* {
+    "projectID": file.projectId,
+    "fileID": file.fileId,
+    "required": true
+  }
+
 proc toJson*(project: ManifestProject): JsonNode =
   ## creates the json for a manifest from a project
   result = %* {
@@ -30,5 +38,5 @@ proc toJson*(project: ManifestProject): JsonNode =
     "version": project.version,
     "author": project.author,
     "name": project.name,
-    "files": project.files
+    "files": project.files.map(toJson)
   }
