@@ -1,6 +1,38 @@
-# This is just an example to get you started. A typical binary package
-# uses this file as the main entry point of the application.
+import cligen, strformat
+import lib/cmd/flow, lib/cmd/init
+import lib/io/files, lib/io/term
+
+const
+  ## Doc string for the main command.
+  multiDoc = "A modpack development manager for minecraft."
+
+  ## Usage string for the main command.
+  multiUsage = fmt"""
+:: $doc
+{"USAGE".yellow}:
+  $command <SUBCOMMAND>
+{"SUBCOMMANDS".yellow}:
+$subCmds"""
+
+  ## Usage string for a subcommand.
+  cmdUsage = fmt"""$doc{"USAGE".yellow}:
+  $command $args
+{"OPTIONS".yellow}:
+$options"""
+
+proc init(force = false): void =
+  ## initialize a new modpack in the current directory
+  if not force:
+    rejectPaxProject
+  returnIfNot readYesNo("Are you sure you want to create a pax project in the current folder?", default='y')
+  createCacheFolder()
+  let project = initProject()
+  createPackFolder(project)
 
 when isMainModule:
-  import cligen
-  echo("Hello, World!")
+  dispatchMulti(
+    ["multi", doc=multiDoc, usage=multiUsage],
+    [init, usage=cmdUsage, help={
+      "force": "will override files if necessary"
+    }]
+  )
