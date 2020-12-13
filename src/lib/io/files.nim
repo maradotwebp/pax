@@ -47,8 +47,10 @@ proc getForgeVersion*(mcVersion: string): string =
   let latest = json{"by_mcversion", mcVersion, "latest"}.getStr()
   result = if recommended != "":
     recommended.toForgeVer
-  else:
+  elif latest != "":
     latest.toForgeVer
+  else:
+    ""
 
 proc isPaxProject*: bool =
   ## returns true if the current folder is a pax project folder
