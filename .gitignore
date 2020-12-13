@@ -2,4 +2,9 @@
 nimcache/
 nimblecache/
 htmldocs/
+
+### Nim Testing ###
 pax
+pax.exe
+.pax/
+modpack/
