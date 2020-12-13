@@ -19,7 +19,7 @@ proc downloadDBs*: void =
   ## download the necessary db files
   echoInfo "Updating databases.."
   writeFile(forgeVersionFile, downloadForgeVersions())
-  echoDebug "Forge versions updated."
+  echoDebug "Available Forge versions updated."
   discard
 
 proc createCacheFolder*: void =

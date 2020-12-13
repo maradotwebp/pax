@@ -16,7 +16,7 @@ $subCmds"""
 
   ## Usage string for a subcommand.
   cmdUsage = fmt"""$doc{"USAGE".yellow}:
-  $command $args
+  pax $command $args
 {"OPTIONS".yellow}:
 $options"""
 
@@ -29,10 +29,16 @@ proc init(force = false): void =
   let project = initProject()
   createPackFolder(project)
 
+proc db(): void =
+  ## update local databases of available forge versions
+  requirePaxProject
+  downloadDBs()
+
 when isMainModule:
   dispatchMulti(
-    ["multi", doc=multiDoc, usage=multiUsage],
-    [init, usage=cmdUsage, help={
+    ["multi", noHdr=true, doc=multiDoc, usage=multiUsage],
+    [init, noHdr=true, usage=cmdUsage, help={
       "force": "will override files if necessary"
-    }]
+    }],
+    [db, noHdr=true, usage=cmdUsage]
   )
