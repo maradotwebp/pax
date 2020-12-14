@@ -38,8 +38,12 @@ proc getFileFreshness*(file: McModFile, version: string, mcMod: McMod): Freshnes
     ## freshness of a file with the modpack
     let versionFiles = mcMod.gameVersionLatestFiles
     if versionFiles.hasKey(version) and versionFiles[version] == file.fileId: return Freshness.newest
-    for version in versionFiles.values:
-        if file.fileId == version: return Freshness.newestForAVersion
+    for ver in versionFiles.values:
+        if file.fileId == ver:
+            if versionFiles.hasKey(version):
+                return Freshness.newestForAVersion
+            else:
+                return Freshness.newest
     return Freshness.old
 
 proc isLatestFileForVersion*(file: McModFile, version: string, gameVersionLatestFiles: Table[string, int]): bool =
