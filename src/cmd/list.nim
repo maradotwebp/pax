@@ -23,6 +23,7 @@ proc cmdList*(): void =
     for index, content in contents:
         let mcMod = content.mcMod
         let mcModFile = content.mcModFile
+        let fileUrl = mcMod.websiteUrl & "/files/" & $mcModFile.fileId
         let fileCompabilityIcon: string = case mcModFile.getFileCompability(project.mcVersion)
             of Compability.full: "•".clrGreen
             of Compability.major: "•".clrYellow
@@ -31,4 +32,4 @@ proc cmdList*(): void =
             of Freshness.newest: "↑".clrGreen
             of Freshness.newestForAVersion: "↑".clrYellow
             of Freshness.old: "↑".clrRed
-        echo " └─ ", fileCompabilityIcon, fileFreshnessIcon, " ", mcMod.name
+        echo " └─ ", fileCompabilityIcon, fileFreshnessIcon, " ", mcMod.name, " ", fileUrl.clrGray

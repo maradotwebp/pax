@@ -13,6 +13,7 @@ type
     projectId*: int
     name*: string
     description*: string
+    websiteUrl*: string
     authors*: seq[string]
     downloads*: int
     popularity*: float
@@ -35,6 +36,7 @@ proc modFromJson*(json: JsonNode, fileId: int): McMod =
   result.projectId = json["id"].getInt()
   result.name = json["name"].getStr()
   result.description = json["summary"].getStr()
+  result.websiteUrl = json["websiteUrl"].getStr()
   result.authors = json["authors"].getElems().map(proc(x: JsonNode): string = x["name"].getStr())
   result.downloads = json["downloadCount"].getInt()
   result.popularity = json["popularityScore"].getFloat()
