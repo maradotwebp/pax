@@ -7,4 +7,5 @@ htmldocs/
 pax
 pax.exe
 .pax/
+.out/
 modpack/
