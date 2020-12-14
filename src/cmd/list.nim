@@ -1,6 +1,6 @@
 import asyncdispatch, asyncfutures, sequtils, json
 import ../lib/io/files, ../lib/io/http, ../lib/io/term
-import ../lib/obj/manifest, ../lib/obj/mods
+import ../lib/obj/manifest, ../lib/obj/mods, ../lib/obj/modutils
 
 proc cmdList*(): void =
     ## list installed mods & their current versions
@@ -23,8 +23,8 @@ proc cmdList*(): void =
     for index, content in contents:
         let mcMod = content.mcMod
         let mcModFile = content.mcModFile
-        let version = if project.mcVersion in mcModFile.gameVersions:
-            project.mcVersion.clrGreen
-        else:
-            ($mcModFile.gameVersions).clrYellow
-        echo " └─ ", mcMod.name, " ─ ", version
+        let versionCompabilityIcon: string = case mcModFile.getVersionCompability(project.mcVersion)
+            of Compability.full: "•".clrGreen
+            of Compability.major: "•".clrYellow
+            of Compability.none: "•".clrRed
+        echo " └─ ", mcMod.name, " ", versionCompabilityIcon

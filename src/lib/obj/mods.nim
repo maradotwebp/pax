@@ -1,4 +1,4 @@
-import sequtils, json
+import sequtils, tables, json
 
 type
   McModFile* = object
@@ -17,6 +17,7 @@ type
     downloads*: int
     popularity*: float
     latestFiles*: seq[McModFile]
+    gameVersionLatestFiles*: Table[string, int]
 
 proc modFileFromJson*(json: JsonNode): McModFile =
   ## creates a mcmodfile object from forgesvc json
@@ -38,3 +39,9 @@ proc modFromJson*(json: JsonNode, fileId: int): McMod =
   result.downloads = json["downloadCount"].getInt()
   result.popularity = json["popularityScore"].getFloat()
   result.latestFiles = json["latestFiles"].getElems().map(modFileFromJson)
+  var gameVersionLatestFiles = initTable[string, int]()
+  for file in json["gameVersionLatestFiles"].getElems():
+    let version = file["gameVersion"].getStr()
+    let fileId = file["projectFileId"].getInt()
+    gameVersionLatestFiles[version] = fileId
+  result.gameVersionLatestFiles = gameVersionLatestFiles
