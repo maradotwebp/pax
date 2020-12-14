@@ -23,8 +23,12 @@ proc cmdList*(): void =
     for index, content in contents:
         let mcMod = content.mcMod
         let mcModFile = content.mcModFile
-        let versionCompabilityIcon: string = case mcModFile.getVersionCompability(project.mcVersion)
+        let fileCompabilityIcon: string = case mcModFile.getFileCompability(project.mcVersion)
             of Compability.full: "•".clrGreen
             of Compability.major: "•".clrYellow
             of Compability.none: "•".clrRed
-        echo " └─ ", mcMod.name, " ", versionCompabilityIcon
+        let fileFreshnessIcon: string = case mcModFile.getFileFreshness(project.mcVersion, mcMod)
+            of Freshness.newest: "↑".clrGreen
+            of Freshness.newestForAVersion: "↑".clrYellow
+            of Freshness.old: "↑".clrRed
+        echo " └─ ", fileCompabilityIcon, fileFreshnessIcon, " ", mcMod.name

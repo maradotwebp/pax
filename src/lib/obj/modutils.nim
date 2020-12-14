@@ -9,6 +9,13 @@ type
         ## full = mod version exactly matches modpack version, fully compatible
         none, major, full
 
+    Freshness* = enum
+        ## if an update to the currently installed version is available
+        ## old = file is not the latest version for all gameversions
+        ## newestForAVersion = file is the latest version for a gameversion
+        ## newest = file is the newest version for the current modpack version
+        old, newestForAVersion, newest
+
 proc getMajorVersion(version: string): string =
     ## get the major version of a version. "1.16.4" -> "1.14"
     ## will return the string if it doesn't match semver
@@ -21,11 +28,19 @@ proc getMajorVersion(version: string): string =
         return version
     return parts[0] & "." & parts[1]
 
-proc getVersionCompability*(file: McModFile, version: string): Compability =
+proc getFileCompability*(file: McModFile, version: string): Compability =
     ## compability of a file with the modpack version
     if version in file.gameVersions: return Compability.full
     if getMajorVersion(version) in file.gameVersions.map(getMajorVersion): return Compability.major
     return Compability.none
+
+proc getFileFreshness*(file: McModFile, version: string, mcMod: McMod): Freshness =
+    ## freshness of a file with the modpack
+    let versionFiles = mcMod.gameVersionLatestFiles
+    if versionFiles.hasKey(version) and versionFiles[version] == file.fileId: return Freshness.newest
+    for version in versionFiles.values:
+        if file.fileId == version: return Freshness.newestForAVersion
+    return Freshness.old
 
 proc isLatestFileForVersion*(file: McModFile, version: string, gameVersionLatestFiles: Table[string, int]): bool =
     ## returns true if file is the latest available version for that gameversion
