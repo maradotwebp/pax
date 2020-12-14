@@ -1,5 +1,5 @@
 import cligen, strformat
-import cmd/db, cmd/init
+import cmd/db, cmd/init, cmd/list
 import lib/io/term
 
 const
@@ -26,5 +26,6 @@ when isMainModule:
     [cmdInit, noHdr=true, cmdName="init", usage=cmdUsage, help={
       "force": "will override files if necessary"
     }],
-    [cmdUpdateDb, noHdr=true, cmdName="update-db", usage=cmdUsage]
+    [cmdUpdateDb, noHdr=true, cmdName="update-db", usage=cmdUsage],
+    [cmdList, noHdr=true, cmdName="list", usage=cmdUsage]
   )

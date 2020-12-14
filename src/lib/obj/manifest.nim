@@ -40,3 +40,17 @@ proc toJson*(project: ManifestProject): JsonNode =
     "name": project.name,
     "files": project.files.map(toJson)
   }
+
+proc fileFromJson*(json: JsonNode): ManifestFile =
+  ## creates a file object from manifest json
+  result.projectId = json["projectID"].getInt()
+  result.fileId = json["fileID"].getInt()
+
+proc projectFromJson*(json: JsonNode): ManifestProject =
+  ## creates a project object from manifest json
+  result.name = json["name"].getStr()
+  result.author = json["author"].getStr()
+  result.version = json["version"].getStr()
+  result.mcVersion = json["minecraft"]["version"].getStr()
+  result.mcModloaderId = json["minecraft"]["modLoaders"][0]["id"].getStr()
+  result.files = json["files"].getElems().map(fileFromJson)
