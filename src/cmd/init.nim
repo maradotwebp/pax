@@ -8,22 +8,17 @@ proc cmdInit*(force = false): void =
   if not force:
     rejectPaxProject
 
-  returnIfNot readYesNo("Are you sure you want to create a pax project in the current folder?", default='y')
-
-  echoDebug "Creating cache folder.."
-  createDirIfNotExists(cacheFolder)
-  writeFile(projectFile, "")
+  returnIfNot readYesNo("Are you sure you want to create a pax project in the current folder?", default='y', prefix="")
 
   echoInfo "Updating databases.."
-  writeFile(forgeVersionFile, fetch(forgeVersionUrl))
+  let forgeVersionJson = parseJson(fetch(forgeVersionUrl))
 
-  echoDebug "Creating project.."
+  echoInfo "Creating manifest.."
   var project = ManifestProject()
   project.name = readInput("Modpack name")
   project.author = readInput("Modpack author")
   project.version = readInput("Modpack version", default="1.0.0")
   project.mcVersion = readInput("Minecraft version", default="1.16.4")
-  let forgeVersionJson = parseJson(readFile(forgeVersionFile))
   let recommendedForgeVersion = forgeVersionJson{"by_mcversion", project.mcVersion, "recommended"}.getStr()
   let latestForgeVersion = forgeVersionJson{"by_mcversion", project.mcVersion, "latest"}.getStr()
   let forgeVersion = if recommendedForgeVersion != "": recommendedForgeVersion else: latestForgeVersion

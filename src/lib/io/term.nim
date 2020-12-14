@@ -25,7 +25,7 @@ template echoInfo*(args: varargs[string, `$`]): void = unpackArgsWithPrefix(echo
 template echoWarn*(args: varargs[string, `$`]): void = unpackArgsWithPrefix(echo, warnIcon() & " ", args)
 template echoError*(args: varargs[string, `$`]): void = unpackArgsWithPrefix(echo, errorIcon() & " ", args)
 
-proc readInput*(text: string, prefix = " └ "): string =
+proc readInput*(text: string, prefix = " └─ "): string =
   ## Ask the user for input.
   while true:
     stdout.write prefix, text, ": "
@@ -34,14 +34,14 @@ proc readInput*(text: string, prefix = " └ "): string =
       of "": discard
       else: break
 
-proc readInput*(text: string, default: string, prefix = " └ "): string =
+proc readInput*(text: string, default: string, prefix = " └─ "): string =
   ## Ask the user for input.
   ## Will default to the default parameter if nothing is entered.
   stdout.write prefix, text, " (default: ", default.clrCyan, "): "
   var input: string = readLine(stdin)
   result = if input != "": input else: default
 
-proc readYesNo*(text: string, prefix = " └ "): bool =
+proc readYesNo*(text: string, prefix = " └─ "): bool =
   ## Ask the user a yes/no question.
   while true:
     stdout.write prefix, text, " (", "y/n".clrCyan, "): "
@@ -50,7 +50,7 @@ proc readYesNo*(text: string, prefix = " └ "): bool =
       of "n", "N", "No", "no", "NO": return false
       else: discard
 
-proc readYesNo*(text: string, default: char, prefix = " └ "): bool =
+proc readYesNo*(text: string, default: char, prefix = " └─ "): bool =
   ## Ask the user a yes/no question.
   ## Will default to the default parameter if nothing is entered.
   while true:

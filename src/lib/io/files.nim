@@ -4,9 +4,6 @@ export term
 
 const
   projectFolder* = "./"
-  cacheFolder* = joinPath(projectFolder, ".pax/")
-  projectFile* = joinPath(cacheFolder, ".pax")
-  forgeVersionFile* = joinPath(cacheFolder, "forge-ver.json")
   packFolder* = joinPath(projectFolder, "modpack/")
   overridesFolder* = joinPath(packFolder, "overrides/")
   manifestFile* = joinPath(packFolder, "manifest.json")
@@ -18,16 +15,18 @@ proc createDirIfNotExists*(dir: string): void =
 
 template isPaxProject*(): bool =
   ## returns true if the current folder is a pax project folder
-  existsFile(projectFile)
+  existsFile(manifestFile)
 
 template requirePaxProject*(): void =
   ## will error if the current folder isn't a pax project
   if not isPaxProject():
     echoError "The current folder isn't a pax project."
+    echo " └─ To initialize a pax project, enter ", "pax init".clrRed
     return
 
 template rejectPaxProject*(): void =
   ## will error if the current folder is a pax project
   if isPaxProject():
     echoError "The current folder is already a pax project."
+    echo " └─ If you are sure you want to overwrite existing files, use the ", "--force".clrRed, " option"
     return

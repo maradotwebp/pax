@@ -3,7 +3,7 @@ import ../lib/io/files, ../lib/io/http, ../lib/io/term
 import ../lib/obj/manifest, ../lib/obj/mods
 
 proc cmdList*(): void =
-    ## list installed mods
+    ## list installed mods & their current versions
     requirePaxProject
 
     echoDebug "Loading files from manifest.."

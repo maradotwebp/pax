@@ -1,5 +1,5 @@
 import cligen, strformat
-import cmd/db, cmd/init, cmd/list
+import cmd/init, cmd/list
 import lib/io/term
 
 const
@@ -24,8 +24,7 @@ when isMainModule:
   dispatchMulti(
     ["multi", noHdr=true, doc=multiDoc, usage=multiUsage],
     [cmdInit, noHdr=true, cmdName="init", usage=cmdUsage, help={
-      "force": "will override files if necessary"
+      "force": "will override the manifest.json if it already exists"
     }],
-    [cmdUpdateDb, noHdr=true, cmdName="update-db", usage=cmdUsage],
     [cmdList, noHdr=true, cmdName="list", usage=cmdUsage]
   )
