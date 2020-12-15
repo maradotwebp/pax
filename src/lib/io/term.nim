@@ -1,4 +1,4 @@
-import macros
+import strutils, macros
 
 template clrRed*(text: string): string = "\e[31m" & text & "\e[0m"
 template clrGreen*(text: string): string = "\e[32m" & text & "\e[0m"
@@ -64,3 +64,27 @@ proc readYesNo*(text: string, default: char, prefix = " └─ "): bool =
           of 'n': return false
           else: assert(false)
       else: discard
+
+proc readChoice*(text: string, choices: seq[int], format: string, prefix = " └─ "): int =
+  ## Ask the user to choose between multiple options (multiple ints).
+  while true:
+    stdout.write prefix, text, " (", format.clrCyan, "): "
+    let input = parseInt(readLine(stdin))
+    if input in choices:
+      return input
+
+proc readChoice*(text: string, choices: seq[char], format: string, prefix = " └─ "): char =
+  ## Ask the user to choose between multiple options (multiple ints).
+  while true:
+    stdout.write prefix, text, " (", format.clrCyan, "): "
+    let input = readLine(stdin)[0]
+    if input in choices:
+      return input
+
+proc readChoice*(text: string, choices: seq[char], format: string, default: char, prefix = " └─ "): char =
+  ## Ask the user to choose between multiple options (multiple ints).
+  stdout.write prefix, text, " (", format.clrCyan, "  - default: ", ($default).clrCyan, "): "
+  let input = readLine(stdin)[0]
+  if input in choices:
+    return input
+  return default

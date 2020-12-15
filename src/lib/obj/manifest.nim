@@ -17,6 +17,10 @@ type
     mcModloaderId*: string
     files*: seq[ManifestFile]
 
+proc initManifestFile*(projectId: int, fileId: int): ManifestFile =
+  result.projectId = projectId
+  result.fileId = fileId
+
 proc toJson*(file: ManifestFile): JsonNode =
   ## creates the json for a manifest from a file
   result = %* {

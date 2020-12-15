@@ -13,7 +13,7 @@ proc cmdList*(): void =
     let allModRequests = project.files.map(proc(file: ManifestFile): Future[tuple[mcMod: McMod, mcModFile: McModFile]] {.async.} =
         let modContent = await asyncFetch(getModUrl(file.projectId))
         let modFileContent = await asyncFetch(getModFileUrl(file.projectId, file.fileId))
-        let mcMod = modFromJson(parseJson(modContent), file.fileId)
+        let mcMod = modFromJson(parseJson(modContent))
         let mcModFile = modFileFromJson(parseJson(modFileContent))
         return (mcMod, mcModFile)
     )

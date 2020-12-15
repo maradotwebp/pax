@@ -31,7 +31,7 @@ proc modFilesFromJson*(json: JsonNode): seq[McModFile] =
   ## creates a sequence of mcmodfile objects from forgesvc json
   result = json.getElems().map(modFileFromjson)
 
-proc modFromJson*(json: JsonNode, fileId: int): McMod =
+proc modFromJson*(json: JsonNode): McMod =
   ## creates a mcmod object from forgesvc json
   result.projectId = json["id"].getInt()
   result.name = json["name"].getStr()
@@ -47,3 +47,7 @@ proc modFromJson*(json: JsonNode, fileId: int): McMod =
     let fileId = file["projectFileId"].getInt()
     gameVersionLatestFiles[version] = fileId
   result.gameVersionLatestFiles = gameVersionLatestFiles
+
+proc modsFromJson*(json: JsonNode): seq[McMod] =
+  ## creates a sequence of mcmod objects from forgesvc json
+  result = json.getElems().map(modFromjson)

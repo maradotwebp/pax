@@ -16,7 +16,21 @@ type
         ## newest = file is the newest version for the current modpack version
         old, newestForAVersion, newest
 
-proc getMajorVersion(version: string): string =
+proc laterVersionThan*(v1: string, v2: string): bool =
+    ## returns true if v1 is a later version than v2
+    let parts1 = v1.split('.')
+    let parts2 = v2.split('.')
+    if parts1.len > 1 and parts1[1].contains("-Snapshot"):
+        return false
+    if parts2.len > 1 and parts2[1].contains("-Snapshot"):
+        return true
+    if parts1.len < 3 or parts2.len < 3:
+        return parts1.len > parts2.len
+    if parts1[2].parseInt == parts2[2].parseInt:
+        return parts1[1].parseInt > parts2[1].parseInt
+    return parts1[2].parseInt > parts2[2].parseInt
+
+proc getMajorVersion*(version: string): string =
     ## get the major version of a version. "1.16.4" -> "1.14"
     ## will return the string if it doesn't match semver
     let parts = version.split('.')
@@ -41,7 +55,8 @@ proc getFileFreshness*(file: McModFile, version: string, mcMod: McMod): Freshnes
     for ver in versionFiles.values:
         if file.fileId == ver:
             if versionFiles.hasKey(version):
-                return Freshness.newestForAVersion
+                if any(file.gameVersions, proc(fileVer: string): bool = fileVer.laterVersionThan(version)):
+                    return Freshness.newestForAVersion
             else:
                 return Freshness.newest
     return Freshness.old

@@ -1,8 +1,12 @@
-import asyncdispatch, httpclient
+import asyncdispatch, httpclient, uri
 
 const
   forgeVersionUrl* = "http://raw.githubusercontent.com/MultiMC/meta-upstream/master/forge/derived_index.json"
   modsBaseUrl* = "https://addons-ecs.forgesvc.net/api/v2/"
+
+proc getSearchUrl*(search: string): string =
+  ## return the url for a mod search
+  result = modsBaseUrl & "addon/search?gameId=432&sectionId=6&pageSize=25&searchFilter=" & encodeUrl(search, usePlus=false)
 
 proc getModUrl*(projectId: int): string =
   ## return the mod url for a given project id
