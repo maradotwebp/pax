@@ -1,5 +1,5 @@
 import sequtils, strutils, tables
-import mods
+import mods, ../io/term
 
 type
     Compability* = enum
@@ -48,6 +48,18 @@ proc getFileCompability*(file: McModFile, version: string): Compability =
     if getMajorVersion(version) in file.gameVersions.map(getMajorVersion): return Compability.major
     return Compability.none
 
+proc getIcon*(c: Compability): string =
+    case c:
+        of Compability.full: "•".clrGreen
+        of Compability.major: "•".clrYellow
+        of Compability.none: "•".clrRed
+
+proc getMessage*(c: Compability): string =
+    case c:
+        of Compability.full: "•".clrGreen & " The installed mod is compatible with the modpack's minecraft version."
+        of Compability.major: "•".clrYellow & " The installed mod only matches the major version as the modpack. Issues may arise."
+        of Compability.none: "•".clrRed & " The installed mod is incompatible with the modpack's minecraft version."
+
 proc getFileFreshness*(file: McModFile, version: string, mcMod: McMod): Freshness =
     ## freshness of a file with the modpack
     let versionFiles = mcMod.gameVersionLatestFiles
@@ -60,6 +72,18 @@ proc getFileFreshness*(file: McModFile, version: string, mcMod: McMod): Freshnes
             else:
                 return Freshness.newest
     return Freshness.old
+
+proc getIcon*(f: Freshness): string =
+    case f:
+        of Freshness.newest: "↑".clrGreen
+        of Freshness.newestForAVersion: "↑".clrYellow
+        of Freshness.old: "↑".clrRed
+
+proc getMessage*(f: Freshness): string =
+    case f:
+        of Freshness.newest: "↑".clrGreen & " No mod updates available."
+        of Freshness.newestForAVersion: "↑".clrYellow & " Your installed version is newer than the recommended version. Issues may arise."
+        of Freshness.old: "↑".clrRed & " There is a newer version of this mod available."
 
 proc isLatestFileForVersion*(file: McModFile, version: string, gameVersionLatestFiles: Table[string, int]): bool =
     ## returns true if file is the latest available version for that gameversion

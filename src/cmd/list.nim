@@ -21,17 +21,11 @@ proc cmdList*(): void =
 
     echoInfo "Loading mods.."
     waitFor(mods and modFiles)
-    echoRoot " ALL MODS ".clrMagenta, ("(" & $fileCount & ")").clrGray
+    echoRoot "ALL MODS ".clrMagenta, ("(" & $fileCount & ")").clrGray
     for index, content in zip(mods.read(), modFiles.read()):
         let mcMod = content[0]
         let mcModFile = content[1]
         let fileUrl = mcMod.websiteUrl & "/files/" & $mcModFile.fileId
-        let fileCompabilityIcon: string = case mcModFile.getFileCompability(project.mcVersion)
-            of Compability.full: "•".clrGreen
-            of Compability.major: "•".clrYellow
-            of Compability.none: "•".clrRed
-        let fileFreshnessIcon: string = case mcModFile.getFileFreshness(project.mcVersion, mcMod)
-            of Freshness.newest: "↑".clrGreen
-            of Freshness.newestForAVersion: "↑".clrYellow
-            of Freshness.old: "↑".clrRed
+        let fileCompabilityIcon = mcModFile.getFileCompability(project.mcVersion).getIcon()
+        let fileFreshnessIcon = mcModFile.getFileFreshness(project.mcVersion, mcMod).getIcon()
         echo promptPrefix, fileCompabilityIcon, fileFreshnessIcon, " ", mcMod.name, " ", fileUrl.clrGray

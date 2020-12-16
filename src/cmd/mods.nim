@@ -1,4 +1,4 @@
-import cligen, sequtils, strformat, strutils, tables, json
+import cligen, sequtils, strutils, tables, json
 import ../lib/io/cli, ../lib/io/files, ../lib/io/http, ../lib/io/io, ../lib/io/term
 import ../lib/obj/manifest, ../lib/obj/mods, ../lib/obj/modutils
 
@@ -106,31 +106,21 @@ proc cmdMod*(name: seq[string]): void =
     let selectedIndex = promptChoice("Select a mod", toSeq(1..mcMods.len), "1 - " & $mcMods.len)
     
     let selectedMod = mcMods[selectedIndex - 1]
-    let gameVersion = project.mcVersion
-    let majorGameVersion = getMajorVersion(gameVersion)
     var selectedModFile: McModFile
     if isInstalled(selectedMod.projectId):
         let fileId = projectFileMap[selectedMod.projectId]
         let json = parseJson(fetch(modFileUrl(selectedMod.projectId, fileId)))
         selectedModFile = modFileFromJson(json)
     let installedSuffix = getInstallSuffix(selectedMod.projectId)
-    let compability = selectedModFile.getFileCompability(project.mcVersion)
-    let fileCompabilityMsg: string = case compability
-        of Compability.full: "•".clrGreen & " " & "The installed mod is compatible with the modpack's minecraft version."
-        of Compability.major: "•".clrYellow & " " & fmt"The installed mod has the same major version as the modpack ({majorGameVersion}). Issues may arise."
-        of Compability.none: "•".clrRed & " " & "The installed mod is incompatible with the modpack's minecraft version."
-    let freshness = selectedModFile.getFileFreshness(project.mcVersion, selectedMod)
-    let fileFreshnessMsg: string = case freshness
-        of Freshness.newest: "↑".clrGreen & " " & "No mod updates available."
-        of Freshness.newestForAVersion: "↑".clrYellow & " " & "Your installed version is newer than the recommended version. Issues may arise."
-        of Freshness.old: "↑".clrRed & " " & "There is a newer version of this mod available."
+    let fileCompabilityMessage = selectedModFile.getFileCompability(project.mcVersion).getMessage()
+    let fileFreshnessMessage = selectedModFile.getFileFreshness(project.mcVersion, selectedMod).getMessage()
     
     echo ""
     echoRoot " SELECTED MOD".clrGray
     echo promptPrefix, selectedMod.name, installedSuffix, " ", selectedMod.websiteUrl.clrGray
     if isInstalled(selectedMod.projectId):
-        echo promptPrefix.indent(3), fileCompabilityMsg
-        echo promptPrefix.indent(3), fileFreshnessMsg
+        echo promptPrefix.indent(3), fileCompabilityMessage
+        echo promptPrefix.indent(3), fileFreshnessMessage
         echo "------------------------------".indent(4).clrGray
     echo promptPrefix.indent(3), "Description: ".clrCyan, selectedMod.description
     echo promptPrefix.indent(3), "Downloads: ".clrCyan, ($selectedMod.downloads).insertSep(sep='.')
