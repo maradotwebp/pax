@@ -10,20 +10,21 @@ proc cmdList*(): void =
     let manifestJson = parseJson(readFile(manifestFile))
     let project = projectFromJson(manifestJson)
     let fileCount = project.files.len
-    let allModRequests = project.files.map(proc(file: ManifestFile): Future[tuple[mcMod: McMod, mcModFile: McModFile]] {.async.} =
-        let modContent = await asyncFetch(modUrl(file.projectId))
-        let modFileContent = await asyncFetch(modFileUrl(file.projectId, file.fileId))
-        let mcMod = modFromJson(parseJson(modContent))
-        let mcModFile = modFileFromJson(parseJson(modFileContent))
-        return (mcMod, mcModFile)
+    let allModRequests = project.files.map(proc(file: ManifestFile): Future[McMod] {.async.} =
+        return (await asyncFetch(modUrl(file.projectId))).parseJson.modFromJson
     )
+    let allModFileRequests = project.files.map(proc(file: ManifestFile): Future[McModFile] {.async.} =
+        return (await asyncFetch(modFileUrl(file.projectId, file.fileId))).parseJson.modFileFromJson
+    )
+    let mods = all(allModRequests)
+    let modFiles = all(allModFileRequests)
 
     echoInfo "Loading mods.."
-    let contents = waitFor(all(allModRequests))
+    waitFor(mods and modFiles)
     echoRoot " ALL MODS ".clrMagenta, ("(" & $fileCount & ")").clrGray
-    for index, content in contents:
-        let mcMod = content.mcMod
-        let mcModFile = content.mcModFile
+    for index, content in zip(mods.read(), modFiles.read()):
+        let mcMod = content[0]
+        let mcModFile = content[1]
         let fileUrl = mcMod.websiteUrl & "/files/" & $mcModFile.fileId
         let fileCompabilityIcon: string = case mcModFile.getFileCompability(project.mcVersion)
             of Compability.full: "•".clrGreen
