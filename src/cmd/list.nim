@@ -1,5 +1,5 @@
 import asyncdispatch, asyncfutures, sequtils, json
-import ../lib/io/files, ../lib/io/http, ../lib/io/term
+import ../lib/io/files, ../lib/io/http, ../lib/io/io, ../lib/io/term
 import ../lib/obj/manifest, ../lib/obj/mods, ../lib/obj/modutils
 
 proc cmdList*(): void =
@@ -17,9 +17,10 @@ proc cmdList*(): void =
         let mcModFile = modFileFromJson(parseJson(modFileContent))
         return (mcMod, mcModFile)
     )
+
     echoInfo "Loading mods.."
     let contents = waitFor(all(allModRequests))
-    echo "[" & "Δ".clrMagenta & "]", " ", "ALL MODS ".clrMagenta, ("(" & $fileCount & ")").clrGray
+    echoRoot " ALL MODS ".clrMagenta, ("(" & $fileCount & ")").clrGray
     for index, content in contents:
         let mcMod = content.mcMod
         let mcModFile = content.mcModFile

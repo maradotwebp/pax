@@ -21,6 +21,7 @@ $subCmds"""
 $options"""
 
 when isMainModule:
+  setControlCHook(proc() {.noconv.} = quit(1))
   dispatchMulti(
     ["multi", noHdr=true, doc=multiDoc, usage=multiUsage],
     [cmdInit, noHdr=true, cmdName="init", usage=cmdUsage, help={

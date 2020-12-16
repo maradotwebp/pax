@@ -1,4 +1,4 @@
-import sequtils, strutils, tables, json
+import sequtils, tables, json
 
 type
   McModFile* = object

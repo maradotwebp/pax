@@ -1,5 +1,5 @@
 import json, os, nim_miniz
-import ../lib/io/files, ../lib/io/term
+import ../lib/io/files, ../lib/io/io, ../lib/io/term
 
 proc cmdExport*: void =
     ## export the modpack to .zip

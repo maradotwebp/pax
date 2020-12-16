@@ -1,11 +1,11 @@
 import cligen, sequtils, strformat, strutils, tables, json
-import ../lib/io/files, ../lib/io/http, ../lib/io/term
+import ../lib/io/cli, ../lib/io/files, ../lib/io/http, ../lib/io/io, ../lib/io/term
 import ../lib/obj/manifest, ../lib/obj/mods, ../lib/obj/modutils
 
 proc cmdModUpdate(project: ManifestProject, mcMod: McMod): void =
     ## update a selected mod
-    echoDebug "Updating selected mod.."
-    let installMethod = readChoice("Install recommended or newest compatible version?", @['r', 'n'], format="[r]ecommended, [n]ewest", default='r')
+    let installMethod = promptChoice("Install recommended or newest compatible version?", @['r', 'n'], format="[r]ecommended, [n]ewest", default='r')
+    echoInfo "Updating ", mcMod.name.clrCyan, ".."
     let recommendedVersion = project.mcVersion
     let latestFiles = mcMod.gameVersionLatestFiles
     var newestCompatibleVersion = ""
@@ -25,7 +25,6 @@ proc cmdModUpdate(project: ManifestProject, mcMod: McMod): void =
         echoError "No compatible version of this mod was found."
         return
 
-    echoDebug fmt"Updating {mcMod.name} to mc version {installVersion}"
     var modProject = project
     let file = initManifestFile(projectId=mcMod.projectId, fileId=latestFiles[installVersion])
     keepIf(modProject.files, proc(f: ManifestFile): bool =
@@ -38,7 +37,7 @@ proc cmdModUpdate(project: ManifestProject, mcMod: McMod): void =
 
 proc cmdModRemove(project: ManifestProject, mcMod: McMod): void =
     ## remove a selected mod
-    echoDebug "Removing selected mod.."
+    echoInfo "Removing ", mcMod.name.clrCyan, ".."
     let projectId = mcMod.projectId
     var modProject = project
     keepIf(modProject.files, proc(f: ManifestFile): bool =
@@ -50,8 +49,8 @@ proc cmdModRemove(project: ManifestProject, mcMod: McMod): void =
 
 proc cmdModInstall(project: ManifestProject, mcMod: McMod): void =
     ## install a selected mod
-    echoDebug "Installing selected mod.."
-    let installMethod = readChoice("Install recommended or newest compatible version?", @['r', 'n'], format="[r]ecommended, [n]ewest", default='r')
+    let installMethod = promptChoice("Install recommended or newest compatible version?", @['r', 'n'], format="[r]ecommended, [n]ewest", default='r')
+    echoInfo "Installing ", mcMod.name.clrCyan, ".."
     let recommendedVersion = project.mcVersion
     let latestFiles = mcMod.gameVersionLatestFiles
     var newestCompatibleVersion = ""
@@ -71,7 +70,6 @@ proc cmdModInstall(project: ManifestProject, mcMod: McMod): void =
         echoError "No compatible version of this mod was found."
         return
 
-    echoDebug fmt"Installing {mcMod.name} with mc version {installVersion}"
     var modProject = project
     let file = initManifestFile(projectId=mcMod.projectId, fileId=latestFiles[installVersion])
     modProject.files = modProject.files & file
@@ -100,12 +98,12 @@ proc cmdMod*(name: seq[string]): void =
     echoDebug "Searching for name .."
     let modSearchJson = parseJson(fetch(getSearchUrl(name.join(" "))))
     let mcMods = modsFromJson(modSearchJson)
-    echo "[", "Δ".clrMagenta, "] ", "RESULTS ".clrGray
+    echoRoot " RESULTS".clrGray
     for index, mcMod in mcMods:
         let installedSuffix = getInstallSuffix(mcMod.projectId)
         echo " └─ ", ("[" & ($(index+1)).clrCyan & "]").align(13), " ", mcMod.name, installedSuffix, " ", mcMod.websiteUrl.clrGray
 
-    let selectedIndex = readChoice("Select a mod", toSeq(1..mcMods.len), "1 - " & $mcMods.len)
+    let selectedIndex = promptChoice("Select a mod", toSeq(1..mcMods.len), "1 - " & $mcMods.len)
     
     let selectedMod = mcMods[selectedIndex - 1]
     let gameVersion = project.mcVersion
@@ -126,13 +124,14 @@ proc cmdMod*(name: seq[string]): void =
         of Freshness.newest: "↑".clrGreen & " " & "No mod updates available."
         of Freshness.newestForAVersion: "↑".clrYellow & " " & "Your installed version is newer than the recommended version. Issues may arise."
         of Freshness.old: "↑".clrRed & " " & "There is a newer version of this mod available."
+    
     echo ""
-    echo "[", "Δ".clrMagenta, "] ", "SELECTED MOD".clrGray
+    echoRoot " SELECTED MOD".clrGray
     echo " └─ ", selectedMod.name, installedSuffix, " ", selectedMod.websiteUrl.clrGray
     if isInstalled(selectedMod.projectId):
         echo "    └─ ", fileCompabilityMsg
         echo "    └─ ", fileFreshnessMsg
-        echo "    -----------------------------_".clrGray
+        echo "    ------------------------------".clrGray
     echo "    └─ ", "Description: ".clrCyan, selectedMod.description
     echo "    └─ ", "Downloads: ".clrCyan, ($selectedMod.downloads).insertSep(sep='.')
 
@@ -145,7 +144,7 @@ proc cmdMod*(name: seq[string]): void =
     else:
         actions = @['i']
         format = "[i]nstall"
-    let selectedAction = readChoice("Select an action", actions, format)
+    let selectedAction = promptChoice("Select an action", actions, format)
     case selectedAction:
         of 'u': cmdModUpdate(project, selectedMod)
         of 'r': cmdModRemove(project, selectedMod)
