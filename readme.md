@@ -6,9 +6,46 @@ PAX is a modpack manager for modpack developers. It supports Forge & Fabric, dev
 
 ## Usage
 
-> TODO
+> At any time, if you feel like you're lost, you can execute `./pax help`, or similarily `./pax --help` or `./pax <SUBCOMMAND> --help` to get some information about what you can do.
 
-## Development
+### Creating your modpack
+
+First things first: Create a new folder for your shiny new modpack (or move it to an already existing, preferably empty folder where you'd like to create the pack) and drop your downloaded version of PAX in there.
+
+> To create the necessary files to start working, execute `./pax init` and follow the instructions.
+
+If you have entered all the details and it worked: Well done! Your directory structure should now look like this:
+
+```
+├── modpack/
+│   ├── overrides/
+│   └── manifest.json
+└── pax (or pax.exe under Windows)
+```
+
+If you've ever downloaded a `.zip` modpack from curseforge before, you'll see that the folder/file structure in `modpack/` is remarkably similar to that. In fact, whenever you'll export your pack, PAX does nothing else than just build a `.zip` containing everything in `modpack/` !
+
+### Installing/Updating/Removing mods
+
+In order to enjoy some mods in your custom modpack, you'll need to install them first.
+
+> Install, update or delete mods by executing `./pax mod <mod-name>`.
+
+You'll be presented with a list of mods that match your mod-name (Mods you already have installed will have a `[installed]` tag). Select the one you need by entering it's number.
+
+If you've done that, PAX should now show you some actions you can take, depending on if you have the mod installed or not. Enter the action identifier (`i` for `[i]nstall`, `u` for `[u]pdate`, and so on).
+
+When you're installing or updating mods, PAX will ask you whether to install/update to the newest or recommended version:
+- The recommended version is the latest version of this mod for your current modpack version. If your modpack version is `1.16.2`, PAX will install the newest version that is compatible with `1.16.2`.
+- The newest version is the latest version of this mod for the current major version. Mods installed this way will **probably** work. For example, if your modpack version is `1.16.2`, PAX may also install versions of your selected mod that only specify `1.16.4` as a working version.
+
+### Listing your mods
+
+Since the `projectID`s and `fileID`s in your manifest don't actually tell you much about your currently installed mods, PAX has a command to list information about these.
+
+> Execute `./pax ls` to display your currently installed mods & information about them.
+
+## PAX Development
 
 You'll need:
 * [Nim](https://nim-lang.org/)
@@ -16,3 +53,9 @@ You'll need:
 
 Clone the repository - and you're good to go!
 To build the application, run `nimble build` & execute it with `./pax` (on Linux) or `./pax.exe` (on Windows).
+
+---
+
+## License
+
+PAX is licensed under the [MIT License](license.md).
