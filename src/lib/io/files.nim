@@ -6,6 +6,7 @@ const
   projectFolder* = "./"
   packFolder* = joinPath(projectFolder, "modpack/")
   overridesFolder* = joinPath(packFolder, "overrides/")
+  paxFile* = joinPath(overridesFolder, ".pax")
   manifestFile* = joinPath(packFolder, "manifest.json")
   outputFolder* = joinPath(projectFolder, ".out/")
 
