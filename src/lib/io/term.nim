@@ -1,5 +1,3 @@
-import strutils
-
 template clrRed*(text: string): string = "\e[31m" & text & "\e[0m"
 template clrGreen*(text: string): string = "\e[32m" & text & "\e[0m"
 template clrYellow*(text: string): string = "\e[33m" & text & "\e[0m"
