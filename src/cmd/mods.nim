@@ -31,9 +31,7 @@ proc cmdModUpdate(project: ManifestProject, mcMod: McMod): void =
     keepIf(modProject.files, proc(f: ManifestFile): bool =
         f.projectId != mcMod.projectId
     )
-    echo "N: ", $modProject.files.len
     modProject.files = modProject.files & file
-    echo "Y: ", $modProject.files.len
 
     echoDebug "Writing to manifest.."
     writeFile(manifestFile, modProject.toJson.pretty)
