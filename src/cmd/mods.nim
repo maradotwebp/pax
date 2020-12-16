@@ -101,7 +101,7 @@ proc cmdMod*(name: seq[string]): void =
     echoRoot " RESULTS".clrGray
     for index, mcMod in mcMods:
         let installedSuffix = getInstallSuffix(mcMod.projectId)
-        echo " └─ ", ("[" & ($(index+1)).clrCyan & "]").align(13), " ", mcMod.name, installedSuffix, " ", mcMod.websiteUrl.clrGray
+        echo promptPrefix, ("[" & ($(index+1)).clrCyan & "]").align(13), " ", mcMod.name, installedSuffix, " ", mcMod.websiteUrl.clrGray
 
     let selectedIndex = promptChoice("Select a mod", toSeq(1..mcMods.len), "1 - " & $mcMods.len)
     
@@ -127,13 +127,13 @@ proc cmdMod*(name: seq[string]): void =
     
     echo ""
     echoRoot " SELECTED MOD".clrGray
-    echo " └─ ", selectedMod.name, installedSuffix, " ", selectedMod.websiteUrl.clrGray
+    echo promptPrefix, selectedMod.name, installedSuffix, " ", selectedMod.websiteUrl.clrGray
     if isInstalled(selectedMod.projectId):
-        echo "    └─ ", fileCompabilityMsg
-        echo "    └─ ", fileFreshnessMsg
-        echo "    ------------------------------".clrGray
-    echo "    └─ ", "Description: ".clrCyan, selectedMod.description
-    echo "    └─ ", "Downloads: ".clrCyan, ($selectedMod.downloads).insertSep(sep='.')
+        echo promptPrefix.indent(3), fileCompabilityMsg
+        echo promptPrefix.indent(3), fileFreshnessMsg
+        echo "------------------------------".indent(4).clrGray
+    echo promptPrefix.indent(3), "Description: ".clrCyan, selectedMod.description
+    echo promptPrefix.indent(3), "Downloads: ".clrCyan, ($selectedMod.downloads).insertSep(sep='.')
 
     echo ""
     var actions = newSeq[char]()

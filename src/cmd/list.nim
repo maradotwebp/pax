@@ -33,4 +33,4 @@ proc cmdList*(): void =
             of Freshness.newest: "↑".clrGreen
             of Freshness.newestForAVersion: "↑".clrYellow
             of Freshness.old: "↑".clrRed
-        echo " └─ ", fileCompabilityIcon, fileFreshnessIcon, " ", mcMod.name, " ", fileUrl.clrGray
+        echo promptPrefix, fileCompabilityIcon, fileFreshnessIcon, " ", mcMod.name, " ", fileUrl.clrGray
