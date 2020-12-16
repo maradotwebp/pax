@@ -96,7 +96,7 @@ proc cmdMod*(name: seq[string]): void =
         if isInstalled(projectId): " [installed]".clrMagenta else: ""
 
     echoDebug "Searching for name .."
-    let modSearchJson = parseJson(fetch(getSearchUrl(name.join(" "))))
+    let modSearchJson = parseJson(fetch(searchUrl(name.join(" "))))
     let mcMods = modsFromJson(modSearchJson)
     echoRoot " RESULTS".clrGray
     for index, mcMod in mcMods:
@@ -111,7 +111,7 @@ proc cmdMod*(name: seq[string]): void =
     var selectedModFile: McModFile
     if isInstalled(selectedMod.projectId):
         let fileId = projectFileMap[selectedMod.projectId]
-        let json = parseJson(fetch(getModFileUrl(selectedMod.projectId, fileId)))
+        let json = parseJson(fetch(modFileUrl(selectedMod.projectId, fileId)))
         selectedModFile = modFileFromJson(json)
     let installedSuffix = getInstallSuffix(selectedMod.projectId)
     let compability = selectedModFile.getFileCompability(project.mcVersion)

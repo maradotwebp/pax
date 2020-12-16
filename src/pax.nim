@@ -25,7 +25,7 @@ when isMainModule:
   dispatchMulti(
     ["multi", noHdr=true, doc=multiDoc, usage=multiUsage],
     [cmdInit, noHdr=true, cmdName="init", usage=cmdUsage, help={
-      "force": "will override the manifest.json if it already exists"
+      "force": "will override manifest.json if it already exists"
     }],
     [cmdMod, noHdr=true, cmdName="mod", usage=cmdUsage],
     [cmdList, noHdr=true, cmdName="ls", usage=cmdUsage],

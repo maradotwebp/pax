@@ -12,7 +12,7 @@ proc cmdExport*: void =
     echoDebug "Exporting modpack/ folder.."
     createDirIfNotExists(outputFolder)
     var zip: Zip
-    let zipPath = getOutputZipFilePath(name)
+    let zipPath = outputZipFilePath(name)
     if not zip.open(zipPath, fmWrite):
         echoError "Creating the .zip file failed"
         return

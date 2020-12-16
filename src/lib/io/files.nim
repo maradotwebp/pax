@@ -10,9 +10,7 @@ const
   manifestFile* = joinPath(packFolder, "manifest.json")
   outputFolder* = joinPath(projectFolder, ".out/")
 
-proc getOutputZipFilePath*(name: string): string =
-  ## get the path of the output zip file for a certain name
-  return joinPath(outputFolder, name & ".zip")
+template outputZipFilePath*(name: string): string = joinPath(outputFolder, name & ".zip")
 
 proc createDirIfNotExists*(dir: string): void =
   ## create a dir if it doesn't exist yet
