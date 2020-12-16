@@ -84,7 +84,9 @@ proc readChoice*(text: string, choices: seq[char], format: string, prefix = " �
 proc readChoice*(text: string, choices: seq[char], format: string, default: char, prefix = " └─ "): char =
   ## Ask the user to choose between multiple options (multiple ints).
   stdout.write prefix, text, " (", format.clrCyan, "  - default: ", ($default).clrCyan, "): "
-  let input = readLine(stdin)[0]
-  if input in choices:
-    return input
+  let input = readLine(stdin)
+  if input == "":
+    return default
+  if input[0] in choices:
+    return input[0]
   return default
