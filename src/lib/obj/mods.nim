@@ -1,4 +1,4 @@
-import sequtils, tables, json
+import sequtils, tables, json, verutils
 
 type
   McModFile* = object
@@ -6,7 +6,7 @@ type
     fileId*: int
     name*: string
     downloadUrl*: string
-    gameVersions*: seq[string]
+    gameVersions*: seq[Version]
 
   McMod* = object
     ## A curseforge mod. Contains multiple versions (McModFile).
@@ -18,14 +18,14 @@ type
     downloads*: int
     popularity*: float
     latestFiles*: seq[McModFile]
-    gameVersionLatestFiles*: Table[string, int]
+    gameVersionLatestFiles*: Table[Version, int]
 
 proc modFileFromJson*(json: JsonNode): McModFile =
   ## creates a mcmodfile object from forgesvc json
   result.fileId = json["id"].getInt()
   result.name = json["displayName"].getStr()
   result.downloadUrl = json["downloadUrl"].getStr()
-  result.gameVersions = json["gameVersion"].getElems().map(proc(x: JsonNode): string = x.getStr())
+  result.gameVersions = json["gameVersion"].getElems().map(proc(x: JsonNode): Version = x.getStr().Version)
 
 proc modFilesFromJson*(json: JsonNode): seq[McModFile] =
   ## creates a sequence of mcmodfile objects from forgesvc json
@@ -41,11 +41,11 @@ proc modFromJson*(json: JsonNode): McMod =
   result.downloads = int(json["downloadCount"].getFloat())
   result.popularity = json["popularityScore"].getFloat()
   result.latestFiles = json["latestFiles"].getElems().map(modFileFromJson)
-  var gameVersionLatestFiles = initTable[string, int]()
+  var gameVersionLatestFiles = initTable[Version, int]()
   for file in json["gameVersionLatestFiles"].getElems():
     let version = file["gameVersion"].getStr()
     let fileId = file["projectFileId"].getInt()
-    gameVersionLatestFiles[version] = fileId
+    gameVersionLatestFiles[version.Version] = fileId
   result.gameVersionLatestFiles = gameVersionLatestFiles
 
 proc modsFromJson*(json: JsonNode): seq[McMod] =

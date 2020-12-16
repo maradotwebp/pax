@@ -1,27 +1,19 @@
 import cligen, sequtils, strutils, tables, json
 import ../lib/io/cli, ../lib/io/files, ../lib/io/http, ../lib/io/io, ../lib/io/term
-import ../lib/obj/manifest, ../lib/obj/mods, ../lib/obj/modutils
+import ../lib/obj/manifest, ../lib/obj/mods, ../lib/obj/modutils, ../lib/obj/verutils
 
 proc cmdModUpdate(project: ManifestProject, mcMod: McMod): void =
     ## update a selected mod
     let installMethod = promptChoice("Install recommended or newest compatible version?", @['r', 'n'], format="[r]ecommended, [n]ewest", default='r')
     echoInfo "Updating ", mcMod.name.clrCyan, ".."
-    let recommendedVersion = project.mcVersion
     let latestFiles = mcMod.gameVersionLatestFiles
-    var newestCompatibleVersion = ""
-    for k in latestFiles.keys:
-        if getMajorVersion(project.mcVersion) == getMajorVersion(k):
-            if newestCompatibleVersion != "":
-                if k.laterVersionThan(newestCompatibleVersion):
-                    newestCompatibleVersion = k
-            else:
-                newestCompatibleVersion = k
-
+    let recommendedVersion = project.mcVersion
+    let newestCompatibleVersion = toSeq(latestFiles.keys).newest
     let installVersion = if installMethod == 'r' and latestFiles.hasKey(recommendedVersion):
         recommendedVersion
     else:
         newestCompatibleVersion
-    if installVersion == "":
+    if installVersion == "".Version:
         echoError "No compatible version of this mod was found."
         return
 
@@ -51,22 +43,14 @@ proc cmdModInstall(project: ManifestProject, mcMod: McMod): void =
     ## install a selected mod
     let installMethod = promptChoice("Install recommended or newest compatible version?", @['r', 'n'], format="[r]ecommended, [n]ewest", default='r')
     echoInfo "Installing ", mcMod.name.clrCyan, ".."
-    let recommendedVersion = project.mcVersion
     let latestFiles = mcMod.gameVersionLatestFiles
-    var newestCompatibleVersion = ""
-    for k in latestFiles.keys:
-        if getMajorVersion(project.mcVersion) == getMajorVersion(k):
-            if newestCompatibleVersion != "":
-                if k.laterVersionThan(newestCompatibleVersion):
-                    newestCompatibleVersion = k
-            else:
-                newestCompatibleVersion = k
-
+    let recommendedVersion = project.mcVersion
+    let newestCompatibleVersion = toSeq(latestFiles.keys).newest
     let installVersion = if installMethod == 'r' and latestFiles.hasKey(recommendedVersion):
         recommendedVersion
     else:
         newestCompatibleVersion
-    if installVersion == "":
+    if installVersion == "".Version:
         echoError "No compatible version of this mod was found."
         return
 

@@ -1,4 +1,4 @@
-import sequtils, json
+import sequtils, json, verutils
 
 type
   ManifestFile* = object
@@ -13,7 +13,7 @@ type
     name*: string
     author*: string
     version*: string
-    mcVersion*: string
+    mcVersion*: Version
     mcModloaderId*: string
     files*: seq[ManifestFile]
 
@@ -33,7 +33,7 @@ proc toJson*(project: ManifestProject): JsonNode =
   ## creates the json for a manifest from a project
   result = %* {
     "minecraft": {
-      "version": project.mcVersion,
+      "version": $project.mcVersion,
       "modLoaders": [{ "id": project.mcModloaderId, "primary": true }]
     },
     "manifestType": "minecraftModpack",
@@ -55,6 +55,6 @@ proc projectFromJson*(json: JsonNode): ManifestProject =
   result.name = json["name"].getStr()
   result.author = json["author"].getStr()
   result.version = json["version"].getStr()
-  result.mcVersion = json["minecraft"]["version"].getStr()
+  result.mcVersion = json["minecraft"]["version"].getStr().Version
   result.mcModloaderId = json["minecraft"]["modLoaders"][0]["id"].getStr()
   result.files = json["files"].getElems().map(fileFromJson)

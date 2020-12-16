@@ -1,7 +1,7 @@
 import strutils, json
 import ../lib/flow
 import ../lib/io/cli, ../lib/io/files, ../lib/io/http, ../lib/io/io, ../lib/io/term
-import ../lib/obj/manifest
+import ../lib/obj/manifest, ../lib/obj/verutils
 
 proc cmdInit*(force = false): void =
   ## initialize a new modpack in the current directory
@@ -17,15 +17,15 @@ proc cmdInit*(force = false): void =
   project.name = prompt(promptPrefix & "Modpack name")
   project.author = prompt(promptPrefix & "Modpack author")
   project.version = prompt(promptPrefix & "Modpack version", default="1.0.0")
-  project.mcVersion = prompt(promptPrefix & "Minecraft version", default="1.16.4")
+  project.mcVersion = prompt(promptPrefix & "Minecraft version", default="1.16.4").Version
   
-  let recommendedForgeVersion = forgeVersionJson{"by_mcversion", project.mcVersion, "recommended"}.getStr()
-  let latestForgeVersion = forgeVersionJson{"by_mcversion", project.mcVersion, "latest"}.getStr()
-  let forgeVersion = if recommendedForgeVersion != "": recommendedForgeVersion else: latestForgeVersion
-  if forgeVersion == "":
+  let recommendedForgeVersion = forgeVersionJson{"by_mcversion", $(project.mcVersion), "recommended"}.getStr().Version
+  let latestForgeVersion = forgeVersionJson{"by_mcversion", $(project.mcVersion), "latest"}.getStr().Version
+  let forgeVersion = if recommendedForgeVersion != "".Version: recommendedForgeVersion else: latestForgeVersion
+  if forgeVersion == "".Version:
     echoError "This is either not a minecraft version, or no forge version exists for this minecraft version."
     return
-  let manifestForgeVersion = "forge-" & forgeVersion.split("-")[1]
+  let manifestForgeVersion = "forge-" & ($forgeVersion).split("-")[1]
   project.mcModloaderId = manifestForgeVersion
   echoDebug "Recommended Forge version is ", project.mcModloaderId
 
