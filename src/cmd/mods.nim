@@ -39,6 +39,7 @@ proc cmdModInstall(project: ManifestProject, mcMod: McMod): void =
     var modProject = project
     let file = initManifestFile(projectId=mcMod.projectId, fileId=latestFiles[installVersion])
     modProject.files = project.files & file
+
     echoDebug "Writing to manifest.."
     writeFile(manifestFile, modProject.toJson.pretty)
 
@@ -92,9 +93,12 @@ proc cmdMod*(name: seq[string]): void =
     echo ""
     echo "[", "Δ".clrMagenta, "] ", "SELECTED MOD".clrGray
     echo " └─ ", selectedMod.name, installedSuffix, " ", selectedMod.websiteUrl.clrGray
+    if isInstalled(selectedMod.projectId):
     echo "    └─ ", fileCompabilityMsg
     echo "    └─ ", fileFreshnessMsg
-    echo "    -------------------------".clrGray
+        echo "    -----------------------------_".clrGray
+    echo "    └─ ", "Description: ".clrCyan, selectedMod.description
+    echo "    └─ ", "Downloads: ".clrCyan, ($selectedMod.downloads).insertSep(sep='.')
 
     echo ""
     var actions = newSeq[char]()

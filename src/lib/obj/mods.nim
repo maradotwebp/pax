@@ -1,4 +1,4 @@
-import sequtils, tables, json
+import sequtils, strutils, tables, json
 
 type
   McModFile* = object
@@ -38,7 +38,7 @@ proc modFromJson*(json: JsonNode): McMod =
   result.description = json["summary"].getStr()
   result.websiteUrl = json["websiteUrl"].getStr()
   result.authors = json["authors"].getElems().map(proc(x: JsonNode): string = x["name"].getStr())
-  result.downloads = json["downloadCount"].getInt()
+  result.downloads = int(json["downloadCount"].getFloat())
   result.popularity = json["popularityScore"].getFloat()
   result.latestFiles = json["latestFiles"].getElems().map(modFileFromJson)
   var gameVersionLatestFiles = initTable[string, int]()
