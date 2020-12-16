@@ -7,10 +7,18 @@ proc cmdModUpdate(project: ManifestProject): void =
     echoDebug "Updating selected mod.."
     # TODO
 
-proc cmdModRemove(project: ManifestProject): void =
+proc cmdModRemove(project: ManifestProject, mcMod: McMod, mcModFile: McModFile): void =
     ## remove a selected mod
     echoDebug "Removing selected mod.."
-    # TODO
+    let projectId = mcMod.projectId
+    let fileId = mcModFile.fileId
+    var modProject = project
+    keepIf(modProject.files, proc(f: ManifestFile): bool =
+        f.projectId != projectId or f.fileId != fileId
+    )
+
+    echoDebug "Writing to manifest.."
+    writeFile(manifestFile, modProject.toJson.pretty)
 
 proc cmdModInstall(project: ManifestProject, mcMod: McMod): void =
     ## install a selected mod
@@ -94,8 +102,8 @@ proc cmdMod*(name: seq[string]): void =
     echo "[", "Δ".clrMagenta, "] ", "SELECTED MOD".clrGray
     echo " └─ ", selectedMod.name, installedSuffix, " ", selectedMod.websiteUrl.clrGray
     if isInstalled(selectedMod.projectId):
-    echo "    └─ ", fileCompabilityMsg
-    echo "    └─ ", fileFreshnessMsg
+        echo "    └─ ", fileCompabilityMsg
+        echo "    └─ ", fileFreshnessMsg
         echo "    -----------------------------_".clrGray
     echo "    └─ ", "Description: ".clrCyan, selectedMod.description
     echo "    └─ ", "Downloads: ".clrCyan, ($selectedMod.downloads).insertSep(sep='.')
@@ -112,6 +120,6 @@ proc cmdMod*(name: seq[string]): void =
     let selectedAction = readChoice("Select an action", actions, format)
     case selectedAction:
         of 'u': cmdModUpdate(project)
-        of 'r': cmdModRemove(project)
+        of 'r': cmdModRemove(project, selectedMod, selectedModFile)
         of 'i': cmdModInstall(project, selectedMod)
         else: return
