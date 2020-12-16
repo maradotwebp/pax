@@ -2,19 +2,49 @@ import cligen, sequtils, strformat, strutils, tables, json
 import ../lib/io/files, ../lib/io/http, ../lib/io/term
 import ../lib/obj/manifest, ../lib/obj/mods, ../lib/obj/modutils
 
-proc cmdModUpdate(project: ManifestProject): void =
+proc cmdModUpdate(project: ManifestProject, mcMod: McMod): void =
     ## update a selected mod
     echoDebug "Updating selected mod.."
-    # TODO
+    let installMethod = readChoice("Install recommended or newest compatible version?", @['r', 'n'], format="[r]ecommended, [n]ewest", default='r')
+    let recommendedVersion = project.mcVersion
+    let latestFiles = mcMod.gameVersionLatestFiles
+    var newestCompatibleVersion = ""
+    for k in latestFiles.keys:
+        if getMajorVersion(project.mcVersion) == getMajorVersion(k):
+            if newestCompatibleVersion != "":
+                if k.laterVersionThan(newestCompatibleVersion):
+                    newestCompatibleVersion = k
+            else:
+                newestCompatibleVersion = k
 
-proc cmdModRemove(project: ManifestProject, mcMod: McMod, mcModFile: McModFile): void =
+    let installVersion = if installMethod == 'r' and latestFiles.hasKey(recommendedVersion):
+        recommendedVersion
+    else:
+        newestCompatibleVersion
+    if installVersion == "":
+        echoError "No compatible version of this mod was found."
+        return
+
+    echoDebug fmt"Updating {mcMod.name} to mc version {installVersion}"
+    var modProject = project
+    let file = initManifestFile(projectId=mcMod.projectId, fileId=latestFiles[installVersion])
+    keepIf(modProject.files, proc(f: ManifestFile): bool =
+        f.projectId != mcMod.projectId
+    )
+    echo "N: ", $modProject.files.len
+    modProject.files = modProject.files & file
+    echo "Y: ", $modProject.files.len
+
+    echoDebug "Writing to manifest.."
+    writeFile(manifestFile, modProject.toJson.pretty)
+
+proc cmdModRemove(project: ManifestProject, mcMod: McMod): void =
     ## remove a selected mod
     echoDebug "Removing selected mod.."
     let projectId = mcMod.projectId
-    let fileId = mcModFile.fileId
     var modProject = project
     keepIf(modProject.files, proc(f: ManifestFile): bool =
-        f.projectId != projectId or f.fileId != fileId
+        f.projectId != projectId
     )
 
     echoDebug "Writing to manifest.."
@@ -43,10 +73,10 @@ proc cmdModInstall(project: ManifestProject, mcMod: McMod): void =
         echoError "No compatible version of this mod was found."
         return
 
-    echoDebug fmt"Installing {mcMod.name} with version {installVersion}"
+    echoDebug fmt"Installing {mcMod.name} with mc version {installVersion}"
     var modProject = project
     let file = initManifestFile(projectId=mcMod.projectId, fileId=latestFiles[installVersion])
-    modProject.files = project.files & file
+    modProject.files = modProject.files & file
 
     echoDebug "Writing to manifest.."
     writeFile(manifestFile, modProject.toJson.pretty)
@@ -119,7 +149,7 @@ proc cmdMod*(name: seq[string]): void =
         format = "[i]nstall"
     let selectedAction = readChoice("Select an action", actions, format)
     case selectedAction:
-        of 'u': cmdModUpdate(project)
-        of 'r': cmdModRemove(project, selectedMod, selectedModFile)
+        of 'u': cmdModUpdate(project, selectedMod)
+        of 'r': cmdModRemove(project, selectedMod)
         of 'i': cmdModInstall(project, selectedMod)
         else: return
