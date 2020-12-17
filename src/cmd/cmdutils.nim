@@ -1,7 +1,7 @@
-import sequtils, strutils, json, options
+import sequtils, strutils, json, tables, options
 import ../lib/genutils
 import ../lib/io/cli, ../lib/io/files, ../lib/io/http, ../lib/io/io, ../lib/io/term
-import ../lib/obj/manifest, ../lib/obj/manifestutils, ../lib/obj/mods, ../lib/obj/modutils
+import ../lib/obj/manifest, ../lib/obj/manifestutils, ../lib/obj/mods, ../lib/obj/modutils, ../lib/obj/verutils
 
 type
   InstallStrategy* = enum
@@ -56,3 +56,16 @@ proc displayMod(project: ManifestProject, mcMod: McMod, mcModFile: Option[McModF
 
 proc displayMod*(project: ManifestProject, mcMod: McMod, mcModFile: McModFile): void = displayMod(project, mcMod, some(mcModFile))
 proc displayMod*(project: ManifestProject, mcMod: McMod): void = displayMod(project, mcMod, none(McModFile))
+
+proc getVersionToInstall*(project: ManifestProject, mcMod: McMod, strategy: InstallStrategy): Version =
+  ## get the correct version of the mcMod to download based on the InstallStrategy.
+  let latestFiles = mcMod.gameVersionLatestFiles
+  let recommendedVersion = project.mcVersion
+  let newestVersion = toSeq(latestFiles.keys).newest(project.mcVersion)
+  let installVersion = case strategy
+    of recommended: latestFiles.hasKey(recommendedVersion) ? (some(recommendedVersion), newestVersion)
+    else: newestVersion
+  if installVersion.isNone:
+    echoError "No compatible version found."
+    quit(1)
+  return installVersion.get()

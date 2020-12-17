@@ -28,16 +28,9 @@ proc cmdUpdate*(name: seq[string], strategy: InstallStrategy = InstallStrategy.r
   returnIfNot promptYN("Are you sure you want to install this mod?", default=true)
 
   let latestFiles = mcMod.gameVersionLatestFiles
-  let recommendedVersion = project.mcVersion
-  let newestVersion = toSeq(latestFiles.keys).newest(project.mcVersion)
-  let installVersion = case strategy
-    of recommended: latestFiles.hasKey(recommendedVersion) ? (some(recommendedVersion), newestVersion)
-    else: newestVersion
-  if installVersion.isNone:
-    echoError "No compatible version found."
-    return
-  echoInfo "Updating ", mcMod.name.clrCyan, " for version ", ($installVersion.get()).clrCyan, ".."
-  project.updateMod(mcMod.projectId, latestFiles[installVersion.get()])
+  let installVersion = project.getVersionToInstall(mcMod, strategy)
+  echoInfo "Updating ", mcMod.name.clrCyan, " for version ", ($installVersion).clrCyan, ".."
+  project.updateMod(mcMod.projectId, latestFiles[installVersion])
 
   echoDebug "Writing to manifest..."
   writeFile(manifestFile, project.toJson.pretty)
