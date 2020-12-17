@@ -37,9 +37,9 @@ You can update and remove mods the same way.
 
 > Update mods by executing `./pax update <modname>`, and remove mods by executing `./pax remove <modname>`.
 
-When you're installing or updating mods, PAX will ask you whether to install/update to the newest or recommended version:
-- The recommended version is the latest version of this mod for your current modpack version. If your modpack version is `1.16.2`, PAX will install the newest version that is compatible with `1.16.2`.
-- The newest version is the latest version of this mod for the current major version. Mods installed this way will **probably** work. For example, if your modpack version is `1.16.2`, PAX may also install versions of your selected mod that only specify `1.16.4` as a working version.
+When you're installing or updating mods, you can specify an optional `--strategy` parameter to control how PAX selects what version to install:
+- `recommended`: PAX will install/update to the latest version of this mod for your current modpack version. If your modpack version is `1.16.1`, PAX will install the newest version that is compatible with `1.16.1`.
+- `newest` PAX will install/update to the latest version of this mod for the current minor minecraft version. Mods installed this way will **probably** work. For example, if your modpack version is `1.16.1`, PAX may also install versions of your selected mod that only specify `1.16.4` as a working version.
 
 ### Listing your mods
 

@@ -3,6 +3,13 @@ import ../lib/genutils
 import ../lib/io/cli, ../lib/io/files, ../lib/io/http, ../lib/io/io, ../lib/io/term
 import ../lib/obj/manifest, ../lib/obj/manifestutils, ../lib/obj/mods, ../lib/obj/modutils
 
+type
+  InstallStrategy* = enum
+    ## Strategy when installing/updating mods.
+    ## recommended =  newest version which is compatible with the modpack version.
+    ## newest = newest version which is compatible with the minor modpack version.
+    recommended, newest
+
 proc searchForMod*(project: ManifestProject, search: string, installed: bool): McMod =
   ## let the user select a mod from a list
   ## list retrieved by searching the mod database for the search string
