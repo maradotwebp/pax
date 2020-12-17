@@ -57,7 +57,7 @@ proc displayMod(project: ManifestProject, mcMod: McMod, mcModFile: Option[McModF
 proc displayMod*(project: ManifestProject, mcMod: McMod, mcModFile: McModFile): void = displayMod(project, mcMod, some(mcModFile))
 proc displayMod*(project: ManifestProject, mcMod: McMod): void = displayMod(project, mcMod, none(McModFile))
 
-proc getVersionToInstall*(project: ManifestProject, mcMod: McMod, strategy: InstallStrategy): Version =
+proc getVersionToInstall*(project: ManifestProject, mcMod: McMod, strategy: InstallStrategy): Option[Version] =
   ## get the correct version of the mcMod to download based on the InstallStrategy.
   let latestFiles = mcMod.gameVersionLatestFiles
   let recommendedVersion = project.mcVersion
@@ -65,7 +65,4 @@ proc getVersionToInstall*(project: ManifestProject, mcMod: McMod, strategy: Inst
   let installVersion = case strategy
     of recommended: latestFiles.hasKey(recommendedVersion) ? (some(recommendedVersion), newestVersion)
     else: newestVersion
-  if installVersion.isNone:
-    echoError "No compatible version found."
-    quit(1)
-  return installVersion.get()
+  return installVersion

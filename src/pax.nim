@@ -1,5 +1,5 @@
 import cligen, strformat
-import cmd/expo, cmd/init, cmd/install, cmd/list, cmd/remove, cmd/update
+import cmd/expo, cmd/init, cmd/install, cmd/list, cmd/remove, cmd/update, cmd/upgrade
 import lib/io/term
 
 const
@@ -31,5 +31,6 @@ when isMainModule:
     [cmdInstall, noHdr=true, cmdName="install", usage=cmdUsage],
     [cmdRemove, noHdr=true, cmdName="remove", usage=cmdUsage],
     [cmdUpdate, noHdr=true, cmdName="update", usage=cmdUsage],
+    [cmdUpgrade, noHdr=true, cmdName="upgrade", usage=cmdUsage],
     [cmdExport, noHdr=true, cmdName="export", usage=cmdUsage]
   )
