@@ -42,11 +42,10 @@ proc getFileFreshness*(file: McModFile, version: Version, mcMod: McMod): Freshne
   if versionFiles.hasKey(version) and versionFiles[version] == file.fileId: return Freshness.newest
   for ver in versionFiles.values:
     if file.fileId == ver:
-      if versionFiles.hasKey(version):
-        if any(file.gameVersions.properVersions, (it) => it > version):
-          return Freshness.newestForAVersion
-        else:
-          return Freshness.newest
+      if any(file.gameVersions.properVersions, (it) => it > version):
+        return Freshness.newestForAVersion
+      else:
+        return Freshness.newest
   return Freshness.old
 
 proc getIcon*(f: Freshness): string =

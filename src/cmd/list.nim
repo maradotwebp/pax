@@ -29,3 +29,5 @@ proc cmdList*(): void =
     let fileCompabilityIcon = mcModFile.getFileCompability(project.mcVersion).getIcon()
     let fileFreshnessIcon = mcModFile.getFileFreshness(project.mcVersion, mcMod).getIcon()
     echo promptPrefix, fileCompabilityIcon, fileFreshnessIcon, " ", mcMod.name, " ", fileUrl.clrGray
+  if fileCount == 0:
+    echo promptPrefix, "No mods installed yet.".clrGray

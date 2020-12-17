@@ -1,4 +1,4 @@
-import hashes, sequtils, strutils
+import hashes, sequtils, strutils, options
 
 type
   ## A minecraft version (1.12.2, 1.16.4, 1.14.1, ...)
@@ -34,11 +34,16 @@ proc minor*(v: Version): string =
   # if format's good, just join the first 2 parts
   return parts[0] & "." & parts[1]
 
-proc newest*(v: seq[Version]): Version =
-  ## get the newest version from a sequence
-  result = v[0]
+proc newest*(v: seq[Version], match: Version): Option[Version] =
+  ## get the newest version from a sequence that is compatible with match
+  result = none(Version)
   for item in v:
-    if item > result: result = item
+    if result.isNone:
+      if minor(item) == minor(match):
+        result = some(item)
+    if result.isSome:
+      if item > result.get() and minor(item) == minor(match):
+        result = some(item)
 
 proc properVersions*(v: seq[Version]): seq[Version] =
   ## only return proper versions

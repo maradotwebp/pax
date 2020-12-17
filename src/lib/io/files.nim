@@ -1,6 +1,6 @@
 import os
-import term
-export term
+import term, io
+export term, io
 
 const
   projectFolder* = "./"

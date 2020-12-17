@@ -1,5 +1,5 @@
 import cligen, strformat
-import cmd/expo, cmd/init, cmd/list, cmd/mods
+import cmd/expo, cmd/init, cmd/install, cmd/list, cmd/remove, cmd/update
 import lib/io/term
 
 const
@@ -27,7 +27,9 @@ when isMainModule:
     [cmdInit, noHdr=true, cmdName="init", usage=cmdUsage, help={
       "force": "will override manifest.json if it already exists"
     }],
-    [cmdMod, noHdr=true, cmdName="mod", usage=cmdUsage],
     [cmdList, noHdr=true, cmdName="ls", usage=cmdUsage],
+    [cmdInstall, noHdr=true, cmdName="install", usage=cmdUsage],
+    [cmdRemove, noHdr=true, cmdName="remove", usage=cmdUsage],
+    [cmdUpdate, noHdr=true, cmdName="update", usage=cmdUsage],
     [cmdExport, noHdr=true, cmdName="export", usage=cmdUsage]
   )

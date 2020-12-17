@@ -10,9 +10,7 @@ PAX is a modpack manager for modpack developers. It supports Forge & Fabric, dev
 
 ### Creating your modpack
 
-First things first: Create a new folder for your shiny new modpack (or move it to an already existing, preferably empty folder where you'd like to create the pack) and drop your downloaded version of PAX in there.
-
-> To create the necessary files to start working, execute `./pax init` and follow the instructions.
+First things first: Create a new folder for your shiny new modpack (or move it to an already existing, preferably empty folder where you'd like to create the pack) and drop your downloaded version of PAX in there. **To start work on your modpack, execute `./pax init` and follow the instructions.**
 
 If you have entered all the details and it worked: Well done! Your directory structure should now look like this:
 
@@ -27,13 +25,11 @@ If you've ever downloaded a `.zip` modpack from curseforge before, you'll see th
 
 ### Installing/Updating/Removing mods
 
-In order to enjoy some mods in your custom modpack, you'll need to install them first.
+In order to enjoy some mods in your custom modpack, you'll need to install them first. **Install mods by executing `./pax install <modname>`.**
 
-> Install, update or delete mods by executing `./pax mod <mod-name>`.
+You'll be presented with a list of mods that match your modname (Mods you already have installed will have a `[installed]` tag). Select the one you need by entering it's number.
 
-You'll be presented with a list of mods that match your mod-name (Mods you already have installed will have a `[installed]` tag). Select the one you need by entering it's number.
-
-If you've done that, PAX should now show you some actions you can take, depending on if you have the mod installed or not. Enter the action identifier (`i` for `[i]nstall`, `u` for `[u]pdate`, and so on).
+You can update and remove mods the same way. **Update mods by executing `./pax update <modname>`, and remove mods by executing `./pax remove <modname>`.**
 
 When you're installing or updating mods, PAX will ask you whether to install/update to the newest or recommended version:
 - The recommended version is the latest version of this mod for your current modpack version. If your modpack version is `1.16.2`, PAX will install the newest version that is compatible with `1.16.2`.
@@ -41,9 +37,7 @@ When you're installing or updating mods, PAX will ask you whether to install/upd
 
 ### Listing your mods
 
-Since the `projectID`s and `fileID`s in your manifest don't actually tell you much about your currently installed mods, PAX has a command to list information about these.
-
-> Execute `./pax ls` to display your currently installed mods & information about them.
+Since the `projectID`s and `fileID`s in your manifest don't actually tell you much about your currently installed mods, PAX has a command to list information about these. **Execute `./pax ls` to display your currently installed mods & information about them.**
 
 ## PAX Development
 
