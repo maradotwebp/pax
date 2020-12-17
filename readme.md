@@ -1,5 +1,7 @@
 # 📦 PAX - The minecraft modpack manager
 
+![Screenshot](./screenshot.png)
+
 PAX is a modpack manager for modpack developers. It supports Forge & Fabric, development with git, and exporting to a `*.zip` for uploading to Curseforge.
 
 > PAX is currently in an early development stage and may be unstable / contain bugs and errors. If you're having issues, look into the issue tracker to see if your problem has already been solved or submit a new issue if it hasn't.
