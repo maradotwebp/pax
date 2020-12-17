@@ -31,15 +31,15 @@ If you've ever downloaded a `.zip` modpack from curseforge before, you'll see th
 
 In order to enjoy some mods in your custom modpack, you'll need to install them first.
 
->Install mods by executing `./pax install <modname>`.
+>Install a mod by executing `./pax install <modname>`.
 
 You'll be presented with a list of mods that match your modname (Mods you already have installed will have a `[installed]` tag). Select the one you need by entering it's number.
 
-You can update and remove mods the same way.
+You can update and remove mods the same way. For updating, two commands exist: `./pax update <modname>` will update a specific installed mod, while `./pax upgrade` will update every installed mod.
 
-> Update mods by executing `./pax update <modname>`, and remove mods by executing `./pax remove <modname>`.
+> Update a mod by executing `./pax update <modname>`, update all installed mods by executing `./pax upgrade`, and remove a mod by executing `./pax remove <modname>`.
 
-When you're installing or updating mods, you can specify an optional `--strategy` parameter to control how PAX selects what version to install:
+When you're installing, updating or upgrading, you can specify an optional `--strategy` parameter to control how PAX selects what version to install:
 - `recommended`: PAX will install/update to the latest version of this mod for your current modpack version. If your modpack version is `1.16.1`, PAX will install the newest version that is compatible with `1.16.1`.
 - `newest` PAX will install/update to the latest version of this mod for the current minor minecraft version. Mods installed this way will **probably** work. For example, if your modpack version is `1.16.1`, PAX may also install versions of your selected mod that only specify `1.16.4` as a working version.
 
