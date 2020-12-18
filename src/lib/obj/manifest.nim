@@ -1,4 +1,4 @@
-import sequtils, json, verutils
+import algorithm, sequtils, json, verutils
 
 type
   ManifestFile* = object
@@ -31,18 +31,20 @@ proc toJson*(file: ManifestFile): JsonNode =
 
 proc toJson*(project: ManifestProject): JsonNode =
   ## creates the json for a manifest from a project
+  var p = project
+  p.files.sort(proc(x, y: ManifestFile): int = cmp(x.projectId, y.projectId))
   result = %* {
     "minecraft": {
-      "version": $project.mcVersion,
-      "modLoaders": [{ "id": project.mcModloaderId, "primary": true }]
+      "version": $p.mcVersion,
+      "modLoaders": [{ "id": p.mcModloaderId, "primary": true }]
     },
     "manifestType": "minecraftModpack",
     "overrides": "overrides",
     "manifestVersion": 1,
-    "version": project.version,
-    "author": project.author,
-    "name": project.name,
-    "files": project.files.map(toJson)
+    "version": p.version,
+    "author": p.author,
+    "name": p.name,
+    "files": p.files.map(toJson)
   }
 
 proc fileFromJson*(json: JsonNode): ManifestFile =
