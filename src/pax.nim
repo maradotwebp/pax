@@ -1,5 +1,6 @@
-import cligen, strformat
+import cligen, strformat, tables
 import cmd/expo, cmd/init, cmd/install, cmd/list, cmd/remove, cmd/update, cmd/upgrade
+import lib/genutils
 import lib/io/term
 
 const
@@ -28,9 +29,15 @@ when isMainModule:
       "force": "will override manifest.json if it already exists"
     }],
     [cmdList, noHdr=true, cmdName="ls", usage=cmdUsage],
-    [cmdInstall, noHdr=true, cmdName="install", usage=cmdUsage],
+    [cmdInstall, noHdr=true, cmdName="install", usage=cmdUsage, help={
+      "strategy": "control how pax determines the version to install, either 'recommended' or 'newest'"
+    }],
     [cmdRemove, noHdr=true, cmdName="remove", usage=cmdUsage],
-    [cmdUpdate, noHdr=true, cmdName="update", usage=cmdUsage],
-    [cmdUpgrade, noHdr=true, cmdName="upgrade", usage=cmdUsage],
+    [cmdUpdate, noHdr=true, cmdName="update", usage=cmdUsage, help={
+      "strategy": "control how pax determines the version to install, either 'recommended' or 'newest'"
+    }],
+    [cmdUpgrade, noHdr=true, cmdName="upgrade", usage=cmdUsage, help={
+      "strategy": "control how pax determines the version to install, either 'recommended' or 'newest'"
+    }],
     [cmdExport, noHdr=true, cmdName="export", usage=cmdUsage]
   )
