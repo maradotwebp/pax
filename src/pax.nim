@@ -28,7 +28,10 @@ when isMainModule:
     [cmdInit, noHdr=true, cmdName="init", usage=cmdUsage, help={
       "force": "will override manifest.json if it already exists"
     }],
-    [cmdList, noHdr=true, cmdName="ls", usage=cmdUsage],
+    [cmdList, noHdr=true, cmdName="ls", usage=cmdUsage, help={
+      "status": "display mod compability & freshness",
+      "info": "display more mod information"
+    }],
     [cmdInstall, noHdr=true, cmdName="install", usage=cmdUsage, help={
       "strategy": "control how pax determines the version to install, either 'recommended' or 'newest'"
     }],

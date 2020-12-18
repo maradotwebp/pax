@@ -1,8 +1,8 @@
-import algorithm, asyncdispatch, asyncfutures, sequtils, json
+import algorithm, asyncdispatch, asyncfutures, sequtils, strutils, json
 import ../lib/io/files, ../lib/io/http, ../lib/io/io, ../lib/io/term
 import ../lib/obj/manifest, ../lib/obj/mods, ../lib/obj/modutils
 
-proc cmdList*(): void =
+proc cmdList*(status: bool = false, info: bool = false): void =
   ## list installed mods & their current versions
   requirePaxProject
 
@@ -28,8 +28,16 @@ proc cmdList*(): void =
     let mcMod = content[0]
     let mcModFile = content[1]
     let fileUrl = mcMod.websiteUrl & "/files/" & $mcModFile.fileId
-    let fileCompabilityIcon = mcModFile.getFileCompability(project.mcVersion).getIcon()
-    let fileFreshnessIcon = mcModFile.getFileFreshness(project.mcVersion, mcMod).getIcon()
-    echo promptPrefix, fileCompabilityIcon, fileFreshnessIcon, " ", mcMod.name, " ", fileUrl.clrGray
+    let fileCompability = mcModFile.getFileCompability(project.mcVersion)
+    let fileFreshness = mcModFile.getFileFreshness(project.mcVersion, mcMod)
+    echo promptPrefix, fileCompability.getIcon(), fileFreshness.getIcon(), " ", mcMod.name, " ", fileUrl.clrGray
+    if status:
+      echo promptPrefix.indent(6), fileCompability.getMessage()
+      echo promptPrefix.indent(6), fileFreshness.getMessage()
+    if status and info:
+      echo "------------------------------".indent(7).clrGray
+    if info:
+      echo promptPrefix.indent(6), "Description: ".clrCyan, mcMod.description
+      echo promptPrefix.indent(6), "Downloads: ".clrCyan, ($mcMod.downloads).insertSep(sep='.')
   if fileCount == 0:
     echo promptPrefix, "No mods installed yet.".clrGray

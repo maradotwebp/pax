@@ -49,6 +49,8 @@ Since the `projectID`s and `fileID`s in your manifest don't actually tell you mu
 
 > Execute `./pax ls` to display your currently installed mods & information about them.
 
+The `ls` command, besides listing your installed mods, also shows you if mods are compatible with your current modpack version (with the color of the `•` icon), and if updates are available for the installed mod (with the `↑` icon). If you'd rather get a detailed message than icons, try the `--status` option, and if you'd like even more information about your mods, use the `--info` option.
+
 ## PAX Development
 
 You'll need:
