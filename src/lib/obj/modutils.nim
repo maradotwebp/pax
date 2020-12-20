@@ -39,9 +39,9 @@ proc getMessage*(c: Compability): string =
 proc getFileFreshness*(file: McModFile, version: Version, mcMod: McMod): Freshness =
   ## freshness of a file with the modpack
   let versionFiles = mcMod.gameVersionLatestFiles
-  if versionFiles.hasKey(version) and versionFiles[version] == file.fileId: return Freshness.newest
-  for ver in versionFiles.values:
-    if file.fileId == ver:
+  if versionFiles.filter((x) => x.version == version and x.fileId == file.fileId).len > 0: return Freshness.newest
+  for versionFile in versionFiles:
+    if file.fileId == versionFile.fileId:
       if any(file.gameVersions.properVersions, (it) => it > version):
         return Freshness.newestForAVersion
       else:

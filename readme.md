@@ -39,6 +39,8 @@ You can update and remove mods the same way. For updating, two commands exist: `
 
 > Update a mod by executing `./pax update <modname>`, update all installed mods by executing `./pax upgrade`, and remove a mod by executing `./pax remove <modname>`.
 
+If you want to create a Fabric modpack, make sure to install [Jumploader](https://www.curseforge.com/minecraft/mc-mods/jumploader) first. This mod is needed in order for Fabric modpacks to download correctly from Curseforge, and pax will automatically install only fabric versions if Jumploader is detected in your pack.
+
 When you're installing, updating or upgrading, you can specify an optional `--strategy` parameter to control how PAX selects what version to install:
 - `recommended`: PAX will install/update to the latest version of this mod for your current modpack version. If your modpack version is `1.16.1`, PAX will install the newest version that is compatible with `1.16.1`.
 - `newest` PAX will install/update to the latest version of this mod for the current minor minecraft version. Mods installed this way will **probably** work. For example, if your modpack version is `1.16.1`, PAX may also install versions of your selected mod that only specify `1.16.4` as a working version.

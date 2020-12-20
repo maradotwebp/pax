@@ -24,14 +24,10 @@ proc cmdInstall*(name: seq[string], strategy: InstallStrategy = InstallStrategy.
   echo ""
 
   returnIfNot promptYN("Are you sure you want to install this mod?", default=true)
-  
-  let latestFiles = mcMod.gameVersionLatestFiles
-  let installVersion = project.getVersionToInstall(mcMod, strategy)
-  if installVersion.isNone:
-    echoError "No compatible version found."
-    return
-  echoInfo "Installing ", mcMod.name.clrCyan, " for version ", ($installVersion.get()).clrCyan, ".."
-  project.installMod(mcMod.projectId, latestFiles[installVersion.get()])
+
+  let mcModFile = project.getModFileToInstall(mcMod, strategy)
+  echoInfo "Installing ", mcMod.name.clrCyan, ".."
+  project.installMod(mcMod.projectId, mcModFile.fileId)
 
   echoDebug "Writing to manifest..."
   writeFile(manifestFile, project.toJson.pretty)

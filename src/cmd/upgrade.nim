@@ -1,8 +1,8 @@
-import asyncdispatch, asyncfutures, json, sequtils, tables, options
+import asyncdispatch, asyncfutures, json, sequtils
 import cmdutils
 import ../lib/flow
 import ../lib/io/cli, ../lib/io/files, ../lib/io/http, ../lib/io/io, ../lib/io/term
-import ../lib/obj/manifest, ../lib/obj/manifestutils, ../lib/obj/mods, ../lib/obj/verutils
+import ../lib/obj/manifest, ../lib/obj/manifestutils, ../lib/obj/mods
 
 proc cmdUpgrade*(strategy: InstallStrategy = InstallStrategy.recommended): void =
   ## update all installed mods
@@ -21,13 +21,9 @@ proc cmdUpgrade*(strategy: InstallStrategy = InstallStrategy.recommended): void 
   returnIfNot promptYN(($fileCount).clrMagenta & " mods will be updated to the " & $strategy & " version. Do you want to continue?", default=true)
 
   for mcMod in mods:
-    let latestFiles = mcMod.gameVersionLatestFiles
-    let installVersion = project.getVersionToInstall(mcMod, strategy)
-    if installVersion.isNone:
-      echoWarn mcMod.name.clrCyan, " does not have a compatible version. Skipping.."
-      continue
-    echoInfo "Updating ", mcMod.name.clrCyan, " for version ", ($installVersion.get()).clrCyan, ".."
-    project.updateMod(mcMod.projectId, latestFiles[installVersion.get()])
+    let mcModFile = project.getModFileToInstall(mcMod, strategy)
+    echoInfo "Updating ", mcMod.name.clrCyan, ".."
+    project.updateMod(mcMod.projectId, mcModFile.fileId)
 
   echoDebug "Writing to manifest..."
   writeFile(manifestFile, project.toJson.pretty)

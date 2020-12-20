@@ -1,8 +1,8 @@
-import cligen, json, sequtils, tables, options
+import cligen, json
 import cmdutils
-import ../lib/flow, ../lib/genutils
+import ../lib/flow
 import ../lib/io/cli, ../lib/io/files, ../lib/io/http, ../lib/io/io, ../lib/io/term
-import ../lib/obj/manifest, ../lib/obj/manifestutils, ../lib/obj/mods, ../lib/obj/verutils
+import ../lib/obj/manifest, ../lib/obj/manifestutils, ../lib/obj/mods
 
 proc cmdUpdate*(name: seq[string], strategy: InstallStrategy = InstallStrategy.recommended): void =
   ## update an installed mod
@@ -27,13 +27,9 @@ proc cmdUpdate*(name: seq[string], strategy: InstallStrategy = InstallStrategy.r
 
   returnIfNot promptYN("Are you sure you want to install this mod?", default=true)
 
-  let latestFiles = mcMod.gameVersionLatestFiles
-  let installVersion = project.getVersionToInstall(mcMod, strategy)
-  if installVersion.isNone:
-    echoError "No compatible version found."
-    quit(1)
-  echoInfo "Updating ", mcMod.name.clrCyan, " to version ", ($installVersion.get()).clrCyan, ".."
-  project.updateMod(mcMod.projectId, latestFiles[installVersion.get()])
+  let newMcModFile = project.getModFileToInstall(mcMod, strategy)
+  echoInfo "Updating ", mcMod.name.clrCyan, ".."
+  project.updateMod(mcMod.projectId, newMcModFile.fileId)
 
   echoDebug "Writing to manifest..."
   writeFile(manifestFile, project.toJson.pretty)

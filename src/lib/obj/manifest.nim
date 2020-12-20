@@ -1,6 +1,11 @@
 import algorithm, sequtils, json, verutils
 
 type
+  Loader* = enum
+    ## The loader used for a modpack.
+    ## Mods may be compatible with one or both of them.
+    fabric, forge
+
   ManifestFile* = object
     ## A file of a given project in a manifest.json.
     ## Describes a specific version of a curseforge mod.
@@ -16,6 +21,7 @@ type
     mcVersion*: Version
     mcModloaderId*: string
     files*: seq[ManifestFile]
+    loader*: Loader
 
 proc initManifestFile*(projectId: int, fileId: int): ManifestFile =
   result.projectId = projectId
@@ -59,4 +65,10 @@ proc projectFromJson*(json: JsonNode): ManifestProject =
   result.version = json["version"].getStr()
   result.mcVersion = json["minecraft"]["version"].getStr().Version
   result.mcModloaderId = json["minecraft"]["modLoaders"][0]["id"].getStr()
-  result.files = json["files"].getElems().map(fileFromJson)
+  result.files = newSeq[ManifestFile]()
+  result.loader = Loader.forge
+  for jsonFile in json["files"].getElems():
+    let file = jsonFile.fileFromJson
+    result.files.add(file)
+    if file.projectId == 361988:
+      result.loader = Loader.fabric
