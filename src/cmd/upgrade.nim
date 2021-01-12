@@ -1,4 +1,4 @@
-import asyncdispatch, asyncfutures, json, sequtils
+import asyncdispatch, asyncfutures, json, sequtils, options
 import cmdutils
 import ../lib/flow
 import ../lib/io/cli, ../lib/io/files, ../lib/io/http, ../lib/io/io, ../lib/io/term
@@ -22,8 +22,11 @@ proc cmdUpgrade*(strategy: InstallStrategy = InstallStrategy.recommended): void 
 
   for mcMod in mods:
     let mcModFile = project.getModFileToInstall(mcMod, strategy)
+    if mcModFile.isNone:
+      echoWarn mcMod.name.clrCyan, " does not have a compatible version. Skipping.."
+      continue
     echoInfo "Updating ", mcMod.name.clrCyan, ".."
-    project.updateMod(mcMod.projectId, mcModFile.fileId)
+    project.updateMod(mcMod.projectId, mcModFile.get().fileId)
 
   echoDebug "Writing to manifest..."
   writeFile(manifestFile, project.toJson.pretty)

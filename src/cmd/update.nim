@@ -1,4 +1,4 @@
-import cligen, json
+import cligen, json, options
 import cmdutils
 import ../lib/flow
 import ../lib/io/cli, ../lib/io/files, ../lib/io/http, ../lib/io/io, ../lib/io/term
@@ -28,8 +28,11 @@ proc cmdUpdate*(name: seq[string], strategy: InstallStrategy = InstallStrategy.r
   returnIfNot promptYN("Are you sure you want to install this mod?", default=true)
 
   let newMcModFile = project.getModFileToInstall(mcMod, strategy)
+  if newMcModFile.isNone:
+    echoError "No compatible version found."
+    quit(1)
   echoInfo "Updating ", mcMod.name.clrCyan, ".."
-  project.updateMod(mcMod.projectId, newMcModFile.fileId)
+  project.updateMod(mcMod.projectId, newMcModFile.get().fileId)
 
   echoDebug "Writing to manifest..."
   writeFile(manifestFile, project.toJson.pretty)

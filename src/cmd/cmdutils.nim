@@ -57,7 +57,7 @@ proc displayMod(project: ManifestProject, mcMod: McMod, mcModFile: Option[McModF
 proc displayMod*(project: ManifestProject, mcMod: McMod, mcModFile: McModFile): void = displayMod(project, mcMod, some(mcModFile))
 proc displayMod*(project: ManifestProject, mcMod: McMod): void = displayMod(project, mcMod, none(McModFile))
 
-proc getModFileToInstall*(project: ManifestProject, mcMod: McMod, strategy: InstallStrategy): McModFile =
+proc getModFileToInstall*(project: ManifestProject, mcMod: McMod, strategy: InstallStrategy): Option[McModFile] =
   ## get the correct version of the mcMod to download based on the InstallStrategy & Loader.
   echoDebug "Retrieving mod versions.."
   let modFileContent = waitFor(asyncFetch(modFilesUrl(mcMod.projectId)))
@@ -74,10 +74,6 @@ proc getModFileToInstall*(project: ManifestProject, mcMod: McMod, strategy: Inst
       if onFabric or onForge or mcMod.projectId == 361988:
         if onRecommended or onNewest:
           latestFile = some(file)
-
-  if latestFile.isNone:
-    echoError "No compatible version found."
-    quit(1)
   
-  return latestFile.get()
+  return latestFile
   
