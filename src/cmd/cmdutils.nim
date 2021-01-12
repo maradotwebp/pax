@@ -70,7 +70,7 @@ proc getModFileToInstall*(project: ManifestProject, mcMod: McMod, strategy: Inst
     let onForge = project.loader == Loader.forge and not ("Fabric".Version in file.gameVersions and not ("Forge".Version in file.gameVersions))
     let onRecommended = strategy == InstallStrategy.recommended and project.mcVersion in file.gameVersions
     let onNewest = strategy == InstallStrategy.newest and project.mcVersion.minor in file.gameVersions.map(minor)
-    if latestFile.isNone or latestFile.get().fileId > file.fileId:
+    if latestFile.isNone or latestFile.get().fileId < file.fileId:
       if onFabric or onForge or mcMod.projectId == 361988:
         if onRecommended or onNewest:
           latestFile = some(file)
