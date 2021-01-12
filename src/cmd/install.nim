@@ -1,8 +1,8 @@
-import cligen, json, sequtils, tables, options
+import cligen, json
 import cmdutils
-import ../lib/flow, ../lib/genutils
+import ../lib/flow
 import ../lib/io/cli, ../lib/io/files, ../lib/io/io, ../lib/io/term
-import ../lib/obj/manifest, ../lib/obj/manifestutils, ../lib/obj/mods, ../lib/obj/verutils
+import ../lib/obj/manifest, ../lib/obj/manifestutils, ../lib/obj/mods
 
 proc cmdInstall*(name: seq[string], strategy: InstallStrategy = InstallStrategy.recommended): void =
   ## install a new mod
