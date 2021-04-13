@@ -1,5 +1,7 @@
-import json, os, nim_miniz
+import json, streams, os, zip/zipfiles
 import ../lib/io/files, ../lib/io/io, ../lib/io/term
+
+{.passl: "-lz".}
 
 proc cmdExport*: void =
   ## export the modpack to .zip
@@ -11,16 +13,15 @@ proc cmdExport*: void =
 
   echoDebug "Exporting modpack/ folder.."
   createDirIfNotExists(outputFolder)
-  var zip: Zip
+  var zip: ZipArchive
   let zipPath = outputZipFilePath(name)
   if not zip.open(zipPath, fmWrite):
     echoError "Creating the .zip file failed"
     return
 
   for path in walkDirRec(packFolder):
-    let zipPath = tailDir(path)
-    zip.add_file(path, archivePath=zipPath)
+    let archivePath = tailDir(path)
+    zip.addFile(archivePath, newFileStream(path, fmRead))
 
   zip.close()
   echoInfo "Pack exported to ", zipPath.clrGreen
-    
