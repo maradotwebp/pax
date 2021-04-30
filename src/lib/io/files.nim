@@ -14,12 +14,12 @@ template outputZipFilePath*(name: string): string = joinPath(outputFolder, name 
 
 proc createDirIfNotExists*(dir: string): void =
   ## create a dir if it doesn't exist yet
-  if not existsDir(dir):
+  if not dirExists(dir):
     createDir(dir)
 
 template isPaxProject*(): bool =
   ## returns true if the current folder is a pax project folder
-  existsFile(manifestFile)
+  fileExists(manifestFile)
 
 template requirePaxProject*(): void =
   ## will error if the current folder isn't a pax project
