@@ -3,7 +3,7 @@ import hashes, sequtils, strutils, options
 type
   ## A minecraft version (1.12.2, 1.16.4, 1.14.1, ...)
   ## May contain alternative-style versions (1.16-Snapshot)
-  Version* {.borrow: `==` .} = distinct string
+  Version* = distinct string
 
 proc `$`*(v: Version): string {.borrow.}
 proc `==`*(v1: Version, v2: Version): bool {.borrow.}

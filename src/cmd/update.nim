@@ -1,22 +1,18 @@
-import cligen, json, options
+import json, options
 import cmdutils
-import ../lib/flow
-import ../lib/io/cli, ../lib/io/files, ../lib/io/http, ../lib/io/io, ../lib/io/term
-import ../lib/obj/manifest, ../lib/obj/manifestutils, ../lib/obj/mods
+import ../flow/flow
+import ../io/cli, ../io/files, ../io/http
+import ../modpack/cf, ../modpack/manifest
 
-proc cmdUpdate*(name: seq[string], strategy: InstallStrategy = InstallStrategy.recommended): void =
+proc paxUpdate*(name: string, strategy: string): void =
   ## update an installed mod
-  requirePaxProject
-  if name.len == 0:
-    stderr.write "Missing these required parameters:\n"
-    stderr.write "  name\n"
-    raise newException(ParseError, "")
+  requirePaxProject()
 
-  echoDebug "Loading data from manifest.."
+  echoDebug("Loading data from manifest..")
   var project = parseJson(readFile(manifestFile)).projectFromJson
   let search = name.join(" ")
 
-  echoDebug "Searching for mod.."
+  echoDebug("Searching for mod..")
   let mcMod = project.searchForMod(search, installed=true)
 
   echo ""
@@ -27,12 +23,12 @@ proc cmdUpdate*(name: seq[string], strategy: InstallStrategy = InstallStrategy.r
 
   returnIfNot promptYN("Are you sure you want to install this mod?", default=true)
 
-  let newMcModFile = project.getModFileToInstall(mcMod, strategy)
+  let newMcModFile = project.getModFileToInstall(mcMod, strategy.installStrategyFromString())
   if newMcModFile.isNone:
-    echoError "No compatible version found."
+    echoError("No compatible version found.")
     quit(1)
-  echoInfo "Updating ", mcMod.name.clrCyan, ".."
+  echoInfo("Updating ", fgCyan, mcMod.name, resetStyle, "..")
   project.updateMod(mcMod.projectId, newMcModFile.get().fileId)
 
-  echoDebug "Writing to manifest..."
+  echoDebug("Writing to manifest...")
   writeFile(manifestFile, project.toJson.pretty)

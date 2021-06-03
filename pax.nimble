@@ -12,8 +12,8 @@ bin           = @["pax"]
 # Dependencies
 
 requires "nim >= 1.2.0"
-requires "cligen >= 1.3.2"
-requires "zip >= 0.3.1"
+requires "therapist >= 0.2.0"
+requires "zippy >= 0.5.10"
 
 task buildDev, "Build for usage during development":
     exec "nimble build -d:ssl"
