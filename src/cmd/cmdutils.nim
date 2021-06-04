@@ -1,4 +1,5 @@
-import asyncfutures, sequtils, strutils, json, options
+import asyncfutures, re, sequtils, strutils, json, options
+from unicode import toLower
 import ../io/cli, ../io/files, ../io/http
 import ../modpack/cf, ../modpack/manifest, ../modpack/version
 
@@ -75,10 +76,30 @@ proc getModFileToInstall*(project: ManifestProject, mcMod: CfMod, mcModFiles: se
   echoDebug("Checking ", $project.loader, " compability..")
   var latestFile = none[CfModFile]()
   for file in mcModFiles:
-    let onFabric = project.loader == Loader.fabric and "Fabric".Version in file.gameVersions
-    let onForge = project.loader == Loader.forge and not ("Fabric".Version in file.gameVersions and not ("Forge".Version in file.gameVersions))
-    let onRecommended = strategy == InstallStrategy.recommended and project.mcVersion in file.gameVersions
-    let onNewest = strategy == InstallStrategy.newest and project.mcVersion.minor in file.gameVersions.map(minor)
+    var onFabric = false
+    if project.loader == Loader.fabric:
+      if "Fabric".Version in file.gameVersions:
+        onFabric = true
+      elif file.name.toLower.match(re".*\Wfabric\W.*"):
+        onFabric = true
+
+    var onForge = false
+    if project.loader == Loader.forge:
+      if not ("Fabric".Version in file.gameVersions and not ("Forge".Version in file.gameVersions)):
+        onForge = true
+      elif file.name.toLower.match(re".*\Wforge\W.*"):
+        onForge = true
+
+    var onRecommended = false
+    if strategy == InstallStrategy.recommended:
+      if project.mcVersion in file.gameVersions:
+        onRecommended = true
+
+    var onNewest = false
+    if strategy == InstallStrategy.newest:
+      if project.mcVersion.minor in file.gameVersions.map(minor):
+        onNewest = true
+
     if latestFile.isNone or latestFile.get().fileId < file.fileId:
       if onFabric or onForge or mcMod.projectId == 361988:
         if onRecommended or onNewest:
