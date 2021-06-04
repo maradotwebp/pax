@@ -1,0 +1,79 @@
+name: main
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+env:
+  APP_NAME: 'pax'
+  NIM_VERSION: 'stable'
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Setup Nim
+        uses: jiro4989/setup-nim-action@v1
+        with:
+          nim-version: ${{ env.NIM_VERSION }}
+      - name: Build
+        run: nimble build -y -d:ssl -d:release
+      - name: Store artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: binary-${{ matrix.os }}
+          path: |
+            ${{ env.APP_NAME }}
+            ${{ env.APP_NAME }}.exe
+
+  changelog:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Generate changelog
+        id: changelog
+        uses: metcalfc/changelog-generator@v1.0.0
+        with:
+          myToken: ${{ secrets.GITHUB_TOKEN }}
+      - name: Write changelog to file
+        run: echo '${{ steps.changelog.outputs.changelog }}' > changelog.txt
+      - name: Store changelog
+        uses: actions/upload-artifact@v2
+        with:
+          name: changelog
+          path: changelog.txt
+
+  release:
+    runs-on: ubuntu-latest
+    needs: [build, changelog]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Download Windows artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: binary-windows-latest
+      - name: Download Linux artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: binary-ubuntu-latest
+      - name: Download changelog
+        uses: actions/download-artifact@v2
+        with:
+          name: changelog
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          body_path: changelog.txt
+          files: |
+            ${{ env.APP_NAME }}
+            ${{ env.APP_NAME }}.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
