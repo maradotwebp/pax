@@ -33,7 +33,7 @@ proc searchForMod*(project: ManifestProject, search: string, installed: bool): C
   echoRoot(styleDim, "RESULTS")
   for index, mcMod in mcMods:
     stdout.styledWrite(promptPrefix)
-    if installed or not project.isInstalled(mcMod.projectId)):
+    if installed or not project.isInstalled(mcMod.projectId):
       let count = ("[" & $(index+1) & "]").align(4)
       stdout.styledWrite(fgCyan, count, resetStyle)
     else:
@@ -105,5 +105,9 @@ proc getModFileToInstall*(project: ManifestProject, mcMod: CfMod, mcModFiles: se
         if onRecommended or onNewest:
           latestFile = some(file)
   
+  if latestFile.isNone and strategy == InstallStrategy.recommended:
+    echoInfo("No recommended version. Searching for newest version instead..")
+    return getModFileToInstall(project, mcMod, mcModFiles, InstallStrategy.newest)
+
   return latestFile
   
