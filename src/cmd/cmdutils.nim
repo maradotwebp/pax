@@ -33,7 +33,7 @@ proc searchForMod*(project: ManifestProject, search: string, installed: bool): C
   echoRoot(styleDim, "RESULTS")
   for index, mcMod in mcMods:
     stdout.styledWrite(promptPrefix)
-    if not installed and not project.isInstalled(mcMod.projectId):
+    if installed or not project.isInstalled(mcMod.projectId)):
       let count = ("[" & $(index+1) & "]").align(4)
       stdout.styledWrite(fgCyan, count, resetStyle)
     else:
