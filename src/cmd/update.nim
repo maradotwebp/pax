@@ -1,4 +1,4 @@
-import json, options
+import asyncdispatch, json, options
 import cmdutils
 import ../flow/flow
 import ../io/cli, ../io/files, ../io/http
@@ -23,7 +23,11 @@ proc paxUpdate*(name: string, strategy: string): void =
 
   returnIfNot promptYN("Are you sure you want to install this mod?", default=true)
 
-  let newMcModFile = project.getModFileToInstall(mcMod, strategy.installStrategyFromString())
+  echoDebug("Retrieving mod versions..")
+  let modFileContent = waitFor(asyncFetch(modFilesUrl(mcMod.projectId)))
+  let mcModFiles = modFileContent.parseJson.modFilesFromJson
+
+  let newMcModFile = project.getModFileToInstall(mcMod, mcModFiles, strategy.installStrategyFromString())
   if newMcModFile.isNone:
     echoError("No compatible version found.")
     quit(1)

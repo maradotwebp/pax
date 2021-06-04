@@ -1,5 +1,5 @@
-import asyncdispatch, asyncfutures, sequtils, strutils, json, options
-import ../io/cli, ../io/files, ..//io/http
+import asyncfutures, sequtils, strutils, json, options
+import ../io/cli, ../io/files, ../io/http
 import ../modpack/cf, ../modpack/manifest, ../modpack/version
 
 type
@@ -70,15 +70,11 @@ proc displayMod(project: ManifestProject, mcMod: CfMod, mcModFile: Option[CfModF
 proc displayMod*(project: ManifestProject, mcMod: CfMod, mcModFile: CfModFile): void = displayMod(project, mcMod, some(mcModFile))
 proc displayMod*(project: ManifestProject, mcMod: CfMod): void = displayMod(project, mcMod, none(CfModFile))
 
-proc getModFileToInstall*(project: ManifestProject, mcMod: CfMod, strategy: InstallStrategy): Option[CfModFile] =
-  ## get the correct version of the mcMod to download based on the InstallStrategy & Loader.
-  echoDebug("Retrieving mod versions..")
-  let modFileContent = waitFor(asyncFetch(modFilesUrl(mcMod.projectId)))
-  let allModFiles = modFileContent.parseJson.modFilesFromJson
-
+proc getModFileToInstall*(project: ManifestProject, mcMod: CfMod, mcModFiles: seq[CfModFile], strategy: InstallStrategy): Option[CfModFile] =
+  ## get the best modfile based on the InstallStrategy & Loader.
   echoDebug("Checking ", $project.loader, " compability..")
   var latestFile = none[CfModFile]()
-  for file in allModFiles:
+  for file in mcModFiles:
     let onFabric = project.loader == Loader.fabric and "Fabric".Version in file.gameVersions
     let onForge = project.loader == Loader.forge and not ("Fabric".Version in file.gameVersions and not ("Forge".Version in file.gameVersions))
     let onRecommended = strategy == InstallStrategy.recommended and project.mcVersion in file.gameVersions

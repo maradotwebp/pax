@@ -11,17 +11,24 @@ proc paxUpgrade*(strategy: string): void =
   echoDebug("Loading data from manifest..")
   var project = parseJson(readFile(manifestFile)).projectFromJson
   let fileCount = project.files.len
-  let allModRequests = project.files.map(proc(file: ManifestFile): Future[CfMod] {.async.} =
-    return (await asyncFetch(modUrl(file.projectId))).parseJson.modFromJson
-  )
-
-  echoInfo("Loading mods..")
-  let mods = waitFor(all(allModRequests))
 
   returnIfNot promptYN($fileCount & " mods will be updated to the " & $strategy & " version. Do you want to continue?", default=true)
 
-  for mcMod in mods:
-    let mcModFile = project.getModFileToInstall(mcMod, strategy.installStrategyFromString())
+  let allModRequests = project.files.map(proc(file: ManifestFile): Future[CfMod] {.async.} =
+    return (await asyncFetch(modUrl(file.projectId))).parseJson.modFromJson
+  )
+  echoInfo("Loading mods..")
+  let mods = waitFor(all(allModRequests))
+
+  let allModFileRequests = mods.map(proc(mcMod: CfMod): Future[seq[CfModFile]] {.async.} =
+    return (await asyncFetch(modFilesUrl(mcMod.projectId))).parseJson.modFilesFromJson
+  )
+  echoInfo("Loading mod versions..")
+  let modFilesArray = waitFor(all(allModFileRequests))
+
+  for pairs in zip(mods, modFilesArray):
+    let (mcMod, mcModFiles) = pairs
+    let mcModFile = project.getModFileToInstall(mcMod, mcModFiles, strategy.installStrategyFromString())
     if mcModFile.isNone:
       echoWarn(fgCyan, mcMod.name, resetStyle, " does not have a compatible version. Skipping..")
       continue
