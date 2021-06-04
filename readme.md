@@ -1,5 +1,12 @@
 # 📦 PAX - The minecraft modpack manager
 
+[![main](https://github.com/froehlichA/pax/actions/workflows/main.yml/badge.svg)](https://github.com/froehlichA/pax/actions/workflows/main.yml)
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/froehlichA/pax)
+![GitHub all releases](https://img.shields.io/github/downloads/froehlichA/pax/total)
+![GitHub issues](https://img.shields.io/github/issues/froehlichA/pax)
+![GitHub last commit](https://img.shields.io/github/last-commit/froehlichA/pax)
+![GitHub](https://img.shields.io/github/license/froehlichA/pax)
+
 ![Screenshot](./screenshot.png)
 
 PAX is a modpack manager for modpack developers. It supports Forge & Fabric, development with git, and exporting to a `*.zip` for uploading to Curseforge.
