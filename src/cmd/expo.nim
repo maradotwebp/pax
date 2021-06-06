@@ -7,7 +7,7 @@ proc paxExport*: void =
   ## export the modpack to .zip
   requirePaxProject()
 
-  echoDebug("Extracting .zip name..")
+  echoDebug("Extracting .zip..")
   let manifestJson = parseJson(readFile(manifestFile))
   let name = manifestJson["name"].getStr()
 
