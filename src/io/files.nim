@@ -4,6 +4,7 @@ export cli, terminal
 const
   projectFolder* = "./"
   packFolder* = joinPath(projectFolder, "modpack/")
+  tempPackFolder* = joinPath(projectFolder, "temppack/")
   overridesFolder* = joinPath(packFolder, "overrides/")
   paxFile* = joinPath(overridesFolder, ".pax")
   manifestFile* = joinPath(packFolder, "manifest.json")
