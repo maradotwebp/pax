@@ -1,4 +1,4 @@
-# 📦 PAX - The minecraft modpack manager
+# 📦 PAX - The minecraft modpack manager for professionals
 
 [![main](https://github.com/froehlichA/pax/actions/workflows/main.yml/badge.svg)](https://github.com/froehlichA/pax/actions/workflows/main.yml)
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/froehlichA/pax)
@@ -9,56 +9,55 @@
 
 ![Screenshot](./screenshot.png)
 
-PAX is a modpack manager for modpack developers. It supports Forge & Fabric, development with git, and exporting to a `*.zip` for uploading to Curseforge.
+PAX is the solution to modern modpack development for Minecraft, usable both alone and in a team. It supports Forge & Fabric, can be version controlled with git, and one command is all you need in order to upload your pack to Curseforge.
 
-> PAX is currently in an early development stage and may be unstable / contain bugs and errors. If you're having issues, look into the issue tracker to see if your problem has already been solved or submit a new issue if it hasn't.
+*The following features are implemented*:
+
+- ⌨️ **CLI interface** for quick actions
+- 🔎 **Search & Install** for Curseforge mods
+- 📥 **Updating one mod or the whole modpack**, automatically selecting the best available version
+- 👁️ **Mod Information** (compability & whether an update is available) at one glance (see above picture ;) )
+- 💾 **Easily diffable files** for ease of working with git
+
+*The following features are on the roadmap for the following weeks*:
+
+- 🤖 **Continous Integration**
+  - You push your project to Github/Gitlab and a runner automatically builds your modpack and uploads it to Curseforge. It's magic, woohoo!
+- 🔃 **Minecraft Development Environment**
+  - Sync file changes between your project and your minecraft launcher, so you don't have to import your modpack every time you make a change.
 
 ## Usage
 
-> At any time, if you feel like you're lost, you can execute `./pax help`, or similarily `./pax --help` or `./pax <SUBCOMMAND> --help` to get some information about what you can do.
+*The newest version of PAX is available [here](https://github.com/froehlichA/pax/releases/tag/v0.9.3-beta).*
 
-### Creating your modpack
+Information about how to use PAX is available on the [wiki](https://github.com/froehlichA/pax/wiki), which contains:
 
-First things first: Create a new folder for your shiny new modpack (or move it to an already existing, preferably empty folder where you'd like to create the pack) and drop your downloaded version of PAX in there.
+- **A [Quickstart](https://github.com/froehlichA/pax/wiki/Quickstart) guide** if you want to get up and running quickly
+- **A [Getting Started](https://github.com/froehlichA/pax/wiki/Getting-started) page** for users that want to go more in-depth.
 
-> To start work on your modpack, execute `./pax init` and follow the instructions.
+## Why PAX?
 
-If you have entered all the details and it worked: Well done! Your directory structure should now look like this:
+| Feature | PAX | Curseforge Launcher | GDLauncher | MultiMC |
+| ------- | --- | ------------------- | ---------- | ------- |
+| Creating a modpack | 👍 | 👍 | 👍 | 👍 |
+| Fabric | 👍 | 👍 | 👍 | 👍 |
+| Adding/Removing mods | 👍 | 👍 | 👍 | 👍 |
+| Viewing installed mods | 👍 | 👍 | 👍 | 👍 |
+| Updating installed mods | 👍 | 👍 | 👍 | ❌ |
+| Loader compability information | 👍 | ❌ | 👍 | ❌ |
+| Mod compability information | 👍 | ❌ | ❌ | ❌ |
+| Mod update availability information | 👍 | 👍 | 👍 | ❌ |
+| Export to `.zip` | 👍 | 👍 | 👍 | 👍 |
+| Export to Curseforge-compatible `.zip` | 👍 | 👍 | 👍 | ❌ |
+| Open Source | 👍 | ❌ | 👍 | 👍 |
+| Multiple people working on one modpack | 👍 | ☹️ | ☹️ | ☹️ |
+| Concurrent mod updates | 👍 | ❌ | ❌ | ❌ | 
+| Version control support | 👍 | ❌ | ❌ | ❌ |
+| CI/CD support | W.I.P | ❌ | ❌ | ❌ |
+| Project/Minecraft Instance Sync | W.I.P | ❌ | ❌ | ❌ |
 
-```
-├── modpack/
-│   ├── overrides/
-│   └── manifest.json
-└── pax (or pax.exe under Windows)
-```
+---
 
-If you've ever downloaded a `.zip` modpack from curseforge before, you'll see that the folder/file structure in `modpack/` is remarkably similar to that. In fact, whenever you'll export your pack, PAX does nothing else than just build a `.zip` containing everything in `modpack/` !
-
-### Installing/Updating/Removing mods
-
-In order to enjoy some mods in your custom modpack, you'll need to install them first.
-
->Install a mod by executing `./pax install <modname>`.
-
-You'll be presented with a list of mods that match your modname (Mods you already have installed will have a `[installed]` tag). Select the one you need by entering it's number.
-
-You can update and remove mods the same way. For updating, two commands exist: `./pax update <modname>` will update a specific installed mod, while `./pax upgrade` will update every installed mod.
-
-> Update a mod by executing `./pax update <modname>`, update all installed mods by executing `./pax upgrade`, and remove a mod by executing `./pax remove <modname>`.
-
-If you want to create a Fabric modpack, make sure to install [Jumploader](https://www.curseforge.com/minecraft/mc-mods/jumploader) first. This mod is needed in order for Fabric modpacks to download correctly from Curseforge, and pax will automatically install only fabric versions if Jumploader is detected in your pack.
-
-When you're installing, updating or upgrading, you can specify an optional `--strategy` parameter to control how PAX selects what version to install:
-- `recommended`: PAX will install/update to the latest version of this mod for your current modpack version. If your modpack version is `1.16.1`, PAX will install the newest version that is compatible with `1.16.1`.
-- `newest` PAX will install/update to the latest version of this mod for the current minor minecraft version. Mods installed this way will **probably** work. For example, if your modpack version is `1.16.1`, PAX may also install versions of your selected mod that only specify `1.16.4` as a working version.
-
-### Listing your mods
-
-Since the `projectID`s and `fileID`s in your manifest don't actually tell you much about your currently installed mods, PAX has a command to list information about these.
-
-> Execute `./pax ls` to display your currently installed mods & information about them.
-
-The `ls` command, besides listing your installed mods, also shows you if mods are compatible with your current modpack version (with the color of the `•` icon), and if updates are available for the installed mod (with the `↑` icon). If you'd rather get a detailed message than icons, try the `--status` option, and if you'd like even more information about your mods, use the `--info` option.
 
 ## PAX Development
 
