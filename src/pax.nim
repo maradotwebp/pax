@@ -10,7 +10,8 @@ let initCmd = (
 
 let listCmd = (
   status: newCountArg(@["-s", "--status"], help = "display mod compability and freshness"),
-  info: newCountArg(@["-i", "--info"], help = "display more mod information")
+  info: newCountArg(@["-i", "--info"], help = "display more mod information"),
+  help: newHelpArg()
 )
 
 let addCmd = (
