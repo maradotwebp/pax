@@ -28,7 +28,7 @@ PAX is the solution to modern modpack development for Minecraft, usable both alo
 
 ## Usage
 
-*The newest version of PAX is available [here](https://github.com/froehlichA/pax/releases/tag/v0.9.3-beta).*
+*The newest version of PAX is available [here](https://github.com/froehlichA/pax/releases/latest).*
 
 Information about how to use PAX is available on the [wiki](https://github.com/froehlichA/pax/wiki), which contains:
 
