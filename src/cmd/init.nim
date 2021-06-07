@@ -1,7 +1,8 @@
-import strutils, terminal, json
+import asyncdispatch, strutils, terminal, json, os, options
+import cmdutils
 import ../flow/flow
 import ../io/files, ../io/http
-import ../modpack/manifest, ../modpack/version
+import ../modpack/cf, ../modpack/manifest, ../modpack/version
 
 proc paxInit*(force: bool): void =
   ## initialize a new modpack in the current directory
@@ -18,6 +19,7 @@ proc paxInit*(force: bool): void =
   project.author = prompt(promptPrefix & "Modpack author")
   project.version = prompt(promptPrefix & "Modpack version", default="1.0.0")
   project.mcVersion = prompt(promptPrefix & "Minecraft version", default="1.16.5").Version
+  let loader = promptChoice(promptPrefix & "Loader", choices = @["forge", "fabric"], default = "forge")
   
   let recommendedForgeVersion = forgeVersionJson{"by_mcversion", $(project.mcVersion), "recommended"}.getStr().Version
   let latestForgeVersion = forgeVersionJson{"by_mcversion", $(project.mcVersion), "latest"}.getStr().Version
@@ -27,7 +29,18 @@ proc paxInit*(force: bool): void =
     return
   let manifestForgeVersion = "forge-" & ($forgeVersion).split("-")[1]
   project.mcModloaderId = manifestForgeVersion
-  echoDebug("Recommended Forge version is ", project.mcModloaderId)
+  echoDebug("Installed Forge version ", fgGreen, project.mcModloaderId)
+
+  if loader == "fabric":
+    echoDebug("Installing Jumploader..")
+    let modFileContent = waitFor(asyncFetch(modFilesUrl(361988)))
+    let mcModFiles = modFileContent.parseJson.modFilesFromJson
+    let mcModFile = getModFileToInstall(Loader.fabric, project.mcVersion, 361988, mcModFiles, InstallStrategy.recommended)
+    if mcModFile.isNone:
+      echoError("No compatible Jumploader version found for ", fgCyan, $project.mcVersion, resetStyle, ".")
+      quit(1)
+    project.installMod(361988, mcModFile.get().fileId)
+    echoDebug("Installed Jumploader version ", fgGreen, $mcModFile.get().fileId)
 
   echoInfo("Creating manifest..")
   removeDir(packFolder)

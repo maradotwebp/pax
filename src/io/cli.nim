@@ -94,6 +94,21 @@ proc promptYN(prompt: string, default: Option[bool]): bool =
     stdout.cursorUp()
     stdout.eraseLine()
 
+proc promptChoice(prompt: string, choices: seq[string], format: string, default: Option[string]): string =
+  ## prompt the user for a choice between multiple char values.
+  while true:
+    stdout.styledWrite(prompt, " (", fgCyan, format, resetStyle)
+    if default.isSome:
+      stdout.styledWrite(" - default ", fgCyan, $(default.get()), resetStyle)
+    stdout.styledWrite("): ")
+    let res = readLine(stdin)
+    if res.isEmptyOrWhitespace() and default.isSome:
+      return default.get()
+    if res in choices:
+      return res
+    stdout.cursorUp()
+    stdout.eraseLine()
+
 proc promptChoice(prompt: string, choices: seq[char], format: string, default: Option[char]): char =
   ## prompt the user for a choice between multiple char values.
   while true:
@@ -133,6 +148,10 @@ proc prompt*(prompt: string): string = prompt(prompt, none[string]())
 proc promptYN*(prompt: string, default: bool): bool = promptYN(prompt, some(default))
 proc promptYN*(prompt: string): bool = promptYN(prompt, none[bool]())
 
+proc promptChoice*(prompt: string, choices: seq[string], format: string, default: string): string = promptChoice(prompt, choices, format, some(default))
+proc promptChoice*(prompt: string, choices: seq[string], format: string): string = promptChoice(prompt, choices, format, none[string]())
+proc promptChoice*(prompt: string, choices: seq[string], default: string): string = promptChoice(prompt, choices, choices.pretty, some(default))
+proc promptChoice*(prompt: string, choices: seq[string]): string = promptChoice(prompt, choices, choices.pretty, none[string]())
 proc promptChoice*(prompt: string, choices: seq[char], format: string, default: char): char = promptChoice(prompt, choices, format, some(default))
 proc promptChoice*(prompt: string, choices: seq[char], format: string): char = promptChoice(prompt, choices, format, none[char]())
 proc promptChoice*(prompt: string, choices: seq[char], default: char): char = promptChoice(prompt, choices, choices.pretty, some(default))

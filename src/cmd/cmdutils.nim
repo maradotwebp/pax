@@ -71,20 +71,20 @@ proc displayMod(project: ManifestProject, mcMod: CfMod, mcModFile: Option[CfModF
 proc displayMod*(project: ManifestProject, mcMod: CfMod, mcModFile: CfModFile): void = displayMod(project, mcMod, some(mcModFile))
 proc displayMod*(project: ManifestProject, mcMod: CfMod): void = displayMod(project, mcMod, none(CfModFile))
 
-proc getModFileToInstall*(project: ManifestProject, mcMod: CfMod, mcModFiles: seq[CfModFile], strategy: InstallStrategy): Option[CfModFile] =
+proc getModFileToInstall*(loader: Loader, projectVersion: Version, mcModProjectId: int, mcModFiles: seq[CfModFile], strategy: InstallStrategy): Option[CfModFile] =
   ## get the best modfile based on the InstallStrategy & Loader.
-  echoDebug("Checking ", $project.loader, " compability..")
+  echoDebug("Checking ", $loader, " compability..")
   var latestFile = none[CfModFile]()
   for file in mcModFiles:
     var onFabric = false
-    if project.loader == Loader.fabric:
+    if loader == Loader.fabric:
       if "Fabric".Version in file.gameVersions:
         onFabric = true
       elif file.name.toLower.match(re".*\Wfabric\W.*"):
         onFabric = true
 
     var onForge = false
-    if project.loader == Loader.forge:
+    if loader == Loader.forge:
       if not ("Fabric".Version in file.gameVersions and not ("Forge".Version in file.gameVersions)):
         onForge = true
       elif file.name.toLower.match(re".*\Wforge\W.*"):
@@ -92,22 +92,26 @@ proc getModFileToInstall*(project: ManifestProject, mcMod: CfMod, mcModFiles: se
 
     var onRecommended = false
     if strategy == InstallStrategy.recommended:
-      if project.mcVersion in file.gameVersions:
+      if projectVersion in file.gameVersions:
         onRecommended = true
 
     var onNewest = false
     if strategy == InstallStrategy.newest:
-      if project.mcVersion.minor in file.gameVersions.map(minor):
+      if projectVersion.minor in file.gameVersions.map(minor):
         onNewest = true
 
     if latestFile.isNone or latestFile.get().fileId < file.fileId:
-      if onFabric or onForge or mcMod.projectId == 361988:
+      if onFabric or onForge or mcModProjectId == 361988:
         if onRecommended or onNewest:
           latestFile = some(file)
   
   if latestFile.isNone and strategy == InstallStrategy.recommended:
     echoInfo("No recommended version. Searching for newest version instead..")
-    return getModFileToInstall(project, mcMod, mcModFiles, InstallStrategy.newest)
+    return getModFileToInstall(loader, projectVersion, mcModProjectId, mcModFiles, InstallStrategy.newest)
 
   return latestFile
+
+proc getModFileToInstall*(project: ManifestProject, mcMod: CfMod, mcModFiles: seq[CfModFile], strategy: InstallStrategy): Option[CfModFile] =
+  ## get the best modfile based on the InstallStrategy & Loader.
+  return getModFileToInstall(project.loader, project.mcVersion, mcMod.projectId, mcModFiles, strategy)
   
