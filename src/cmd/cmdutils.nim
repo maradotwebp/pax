@@ -1,4 +1,4 @@
-import asyncfutures, re, sequtils, strutils, json, options
+import asyncfutures, regex, sequtils, strutils, json, options
 from unicode import toLower
 import ../io/cli, ../io/files, ../io/http
 import ../modpack/cf, ../modpack/manifest, ../modpack/version
