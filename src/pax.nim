@@ -1,5 +1,5 @@
 import therapist
-import cmd/add, cmd/expo, cmd/impo, cmd/init, cmd/list, cmd/remove, cmd/update, cmd/upgrade
+import cmd/add, cmd/expo, cmd/impo, cmd/init, cmd/list, cmd/remove, cmd/update, cmd/upgrade, cmd/version
 
 let strategyArg = newStringArg(@["-s", "--strategy"], choices = @["recommended", "newest"], help = "how pax determines the version to install")
 
@@ -36,6 +36,11 @@ let upgradeCmd = (
   help: newHelpArg()
 )
 
+let versionCmd = (
+  version: newStringArg(@["<version>"], help = "Minecraft version"),
+  help: newHelpArg()
+)
+
 let importCmd = (
   path: newFileArg(@["<path>"], help = "path to file"),
   force: newCountArg(@["-f", "--force"], help = "will override the modpack folder if it already exists"),
@@ -53,6 +58,7 @@ let spec = (
   remove: newCommandArg(@["remove"], removeCmd, help = "remove a mod from the modpack"),
   update: newCommandArg(@["update"], updateCmd, help = "update a specific mod"),
   upgrade: newCommandArg(@["upgrade"], upgradeCmd, help = "upgrade ALL mods"),
+  version: newCommandArg(@["version"], versionCmd, help = "set minecraft & forge version"),
   impo: newCommandArg(@["import"], importCmd, help = "import from .zip"),
   expo: newCommandArg(@["export"], exportCmd, help = "export to .zip"),
   help: newHelpArg()
@@ -72,6 +78,8 @@ elif spec.update.seen:
   paxUpdate(name = updateCmd.name.value, strategy = updateCmd.strategy.value)
 elif spec.upgrade.seen:
   paxUpgrade(strategy = upgradeCmd.strategy.value)
+elif spec.version.seen:
+  paxVersion(version = versionCmd.version.value)
 elif spec.impo.seen:
   paxImport(path = importCmd.path.value, force = importCmd.force.seen)
 elif spec.expo.seen:

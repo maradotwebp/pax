@@ -21,13 +21,11 @@ proc paxInit*(force: bool): void =
   project.mcVersion = prompt(promptPrefix & "Minecraft version", default="1.16.5").Version
   let loader = promptChoice(promptPrefix & "Loader", choices = @["forge", "fabric"], default = "forge")
   
-  let recommendedForgeVersion = forgeVersionJson{"by_mcversion", $(project.mcVersion), "recommended"}.getStr().Version
-  let latestForgeVersion = forgeVersionJson{"by_mcversion", $(project.mcVersion), "latest"}.getStr().Version
-  let forgeVersion = if recommendedForgeVersion != "".Version: recommendedForgeVersion else: latestForgeVersion
-  if forgeVersion == "".Version:
+  let forgeVersion = forgeVersionJson.getForgeVersion($project.mcVersion)
+  if isNone(forgeVersion):
     echoError("This is either not a minecraft version, or no forge version exists for this minecraft version.")
-    return
-  let manifestForgeVersion = "forge-" & ($forgeVersion).split("-")[1]
+    quit(1)
+  let manifestForgeVersion = "forge-" & ($forgeVersion.get()).split("-")[1]
   project.mcModloaderId = manifestForgeVersion
   echoDebug("Installed Forge version ", fgGreen, project.mcModloaderId)
 
