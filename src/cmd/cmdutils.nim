@@ -115,3 +115,9 @@ proc getModFileToInstall*(project: ManifestProject, mcMod: CfMod, mcModFiles: se
   ## get the best modfile based on the InstallStrategy & Loader.
   return getModFileToInstall(project.loader, project.mcVersion, mcMod.projectId, mcModFiles, strategy)
   
+proc getForgeVersion*(forgeVersionJson: JsonNode, mcVersion: string): Option[Version] =
+  ## get the forge version for a given minecraft version
+  let recommendedForgeVersion = forgeVersionJson{"by_mcversion", mcVersion, "recommended"}.getStr().Version
+  let latestForgeVersion = forgeVersionJson{"by_mcversion", mcVersion, "latest"}.getStr().Version
+  let forgeVersion = if recommendedForgeVersion != "".Version: recommendedForgeVersion else: latestForgeVersion
+  return if forgeVersion != "".Version: some(forgeVersion) else: none[Version]()
