@@ -3,12 +3,12 @@ import cmdutils
 import ../io/cli, ../io/files, ../io/http
 import ../modpack/manifest, ../modpack/version
 
-proc paxVersion*(version: string): void =
+proc paxVersion*(version: string, loader: string): void =
   ## change the minecraft version (and set the recommended forge version for it)
   requirePaxProject()
 
   var project = projectFromJson(parseJson(readFile(manifestFile)))
-  let loader = project.loader
+  let loader = if loader == "": project.loader else: loader.toLoader
   var loaderVersion: Option[Version]
   if loader == Loader.forge:
     let forgeVersionJson = parseJson(fetch(forgeVersionUrl))
@@ -30,3 +30,6 @@ proc paxVersion*(version: string): void =
   writeFile(manifestFile, project.toJson.pretty)
   echoInfo("Set MC version ", fgGreen, $project.mcVersion)
   echoDebug("Set ", $loader, " version ", fgGreen, project.mcModloaderId)
+
+proc paxVersion*(version: string): void =
+  paxVersion(version, "")

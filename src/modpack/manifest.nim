@@ -70,9 +70,12 @@ proc projectFromJson*(json: JsonNode): ManifestProject =
     let file = jsonFile.fileFromJson
     result.files.add(file)
 
+proc toLoader*(str: string): Loader =
+  return if str.contains("forge"): Loader.forge else: Loader.fabric
+
 proc loader*(project: ManifestProject): Loader =
   ## returns the loader (either Fabric or Forge)
-  return if project.mcModloaderId.contains("forge"): Loader.forge else: Loader.fabric
+  return project.mcModloaderId.toLoader
 
 proc isInstalled*(project: ManifestProject, projectId: int): bool =
   ## returns true if the ManifestFile with the given projectId is installed
