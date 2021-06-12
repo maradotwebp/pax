@@ -7,18 +7,26 @@ proc paxVersion*(version: string): void =
   ## change the minecraft version (and set the recommended forge version for it)
   requirePaxProject()
 
-  echoDebug("Updating databases..")
   var project = projectFromJson(parseJson(readFile(manifestFile)))
-  let forgeVersionJson = parseJson(fetch(forgeVersionUrl))
-
-  let forgeVersion = forgeVersionJson.getForgeVersion(version)
-  if isNone(forgeVersion):
-    echoError("This is either not a minecraft version, or no forge version exists for this minecraft version.")
+  let loader = project.loader
+  var loaderVersion: Option[Version]
+  if loader == Loader.forge:
+    let forgeVersionJson = parseJson(fetch(forgeVersionUrl))
+    loaderVersion = forgeVersionJson.getForgeVersion($version)
+  else:
+    let fabricVersionJson = parseJson(fetch(fabricVersionUrl($version)))
+    loaderVersion = fabricVersionJson.getFabricVersion()
+  if isNone(loaderVersion):
+    echoError("This is either not a minecraft version, or no ", $loader, " version exists for this minecraft version.")
     quit(1)
-  let manifestForgeVersion = "forge-" & ($forgeVersion.get()).split("-")[1]
+  var manifestLoaderVersion: string
+  if loader == Loader.forge:
+    manifestLoaderVersion = "forge-" & ($loaderVersion.get()).split("-")[1]
+  else:
+    manifestLoaderVersion = "fabric-" & ($loaderVersion.get())
 
   project.mcVersion = version.Version
-  project.mcModloaderId = manifestForgeVersion
+  project.mcModloaderId = manifestLoaderVersion
   writeFile(manifestFile, project.toJson.pretty)
   echoInfo("Set MC version ", fgGreen, $project.mcVersion)
-  echoInfo("Set Forge version ", fgGreen, project.mcModloaderId)
+  echoDebug("Set ", $loader, " version ", fgGreen, project.mcModloaderId)

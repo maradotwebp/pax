@@ -101,7 +101,7 @@ proc getModFileToInstall*(loader: Loader, projectVersion: Version, mcModProjectI
         onNewest = true
 
     if latestFile.isNone or latestFile.get().fileId < file.fileId:
-      if onFabric or onForge or mcModProjectId == 361988:
+      if onFabric or onForge:
         if onRecommended or onNewest:
           latestFile = some(file)
   
@@ -121,3 +121,12 @@ proc getForgeVersion*(forgeVersionJson: JsonNode, mcVersion: string): Option[Ver
   let latestForgeVersion = forgeVersionJson{"by_mcversion", mcVersion, "latest"}.getStr().Version
   let forgeVersion = if recommendedForgeVersion != "".Version: recommendedForgeVersion else: latestForgeVersion
   return if forgeVersion != "".Version: some(forgeVersion) else: none[Version]()
+
+proc getFabricVersion*(fabricVersionJson: JsonNode): Option[Version] =
+  ## get the fabric version from the json
+  let loaderElems = fabricVersionJson.getElems()
+  if len(loaderElems) == 0:
+      return none[Version]()
+  let ver = loaderElems[0]{"loader", "version"}.getStr().Version
+  return some(ver)
+  

@@ -1,4 +1,4 @@
-import algorithm, sequtils, sugar, json, version
+import algorithm, sequtils, strutils, sugar, json, version
 
 type
   Loader* = enum
@@ -21,7 +21,6 @@ type
     mcVersion*: Version
     mcModloaderId*: string
     files*: seq[ManifestFile]
-    loader*: Loader
 
 proc initManifestFile*(projectId: int, fileId: int): ManifestFile =
   ## create a new manifest file object.
@@ -67,12 +66,13 @@ proc projectFromJson*(json: JsonNode): ManifestProject =
   result.mcVersion = json["minecraft"]["version"].getStr().Version
   result.mcModloaderId = json["minecraft"]["modLoaders"][0]["id"].getStr()
   result.files = newSeq[ManifestFile]()
-  result.loader = Loader.forge
   for jsonFile in json["files"].getElems():
     let file = jsonFile.fileFromJson
     result.files.add(file)
-    if file.projectId == 361988:
-      result.loader = Loader.fabric
+
+proc loader*(project: ManifestProject): Loader =
+  ## returns the loader (either Fabric or Forge)
+  return if project.mcModloaderId.contains("forge"): Loader.forge else: Loader.fabric
 
 proc isInstalled*(project: ManifestProject, projectId: int): bool =
   ## returns true if the ManifestFile with the given projectId is installed
