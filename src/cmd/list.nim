@@ -33,7 +33,7 @@ proc paxList*(status: bool, info: bool): void =
     stdout.styledWrite(promptPrefix)
     stdout.styledWrite(fileCompability.getColor(), compabilityIcon, resetStyle)
     stdout.styledWrite(fileFreshness.getColor(), freshnessIcon, resetStyle)
-    stdout.styledWriteLine(" ", mcMod.name, " ", styleDim, fileUrl)
+    stdout.styledWriteLine(" ", mcMod.name, styleDim, " - ", fileUrl)
     if status:
       echo promptPrefix.indent(6), fileCompability.getMessage()
       echo promptPrefix.indent(6), fileFreshness.getMessage()

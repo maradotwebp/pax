@@ -1,17 +1,14 @@
-import asyncdispatch, strutils, terminal, json, os, options
+import strutils, terminal, json, os, options
 import cmdutils
 import ../flow/flow
 import ../io/files, ../io/http
-import ../modpack/cf, ../modpack/manifest, ../modpack/version
+import ../modpack/manifest, ../modpack/version
 
 proc paxInit*(force: bool): void =
   ## initialize a new modpack in the current directory
   if not force:
     rejectPaxProject()
     returnIfNot(promptYN("Are you sure you want to create a pax project in the current folder?", default=true))
-
-  echoInfo("Updating databases..")
-  let forgeVersionJson = parseJson(fetch(forgeVersionUrl))
 
   echoRoot(styleDim, "MANIFEST")
   var project = ManifestProject()
@@ -21,24 +18,23 @@ proc paxInit*(force: bool): void =
   project.mcVersion = prompt(promptPrefix & "Minecraft version", default="1.16.5").Version
   let loader = promptChoice(promptPrefix & "Loader", choices = @["forge", "fabric"], default = "forge")
   
-  let forgeVersion = forgeVersionJson.getForgeVersion($project.mcVersion)
-  if isNone(forgeVersion):
-    echoError("This is either not a minecraft version, or no forge version exists for this minecraft version.")
+  var loaderVersion: Option[Version]
+  if loader == "forge":
+    let forgeVersionJson = parseJson(fetch(forgeVersionUrl))
+    loaderVersion = forgeVersionJson.getForgeVersion($project.mcVersion)
+  else:
+    let fabricVersionJson = parseJson(fetch(fabricVersionUrl($project.mcVersion)))
+    loaderVersion = fabricVersionJson.getFabricVersion()
+  if isNone(loaderVersion):
+    echoError("This is either not a minecraft version, or no ", loader, " version exists for this minecraft version.")
     quit(1)
-  let manifestForgeVersion = "forge-" & ($forgeVersion.get()).split("-")[1]
-  project.mcModloaderId = manifestForgeVersion
-  echoDebug("Installed Forge version ", fgGreen, project.mcModloaderId)
-
-  if loader == "fabric":
-    echoDebug("Installing Jumploader..")
-    let modFileContent = waitFor(asyncFetch(modFilesUrl(361988)))
-    let mcModFiles = modFileContent.parseJson.modFilesFromJson
-    let mcModFile = getModFileToInstall(Loader.fabric, project.mcVersion, 361988, mcModFiles, InstallStrategy.recommended)
-    if mcModFile.isNone:
-      echoError("No compatible Jumploader version found for ", fgCyan, $project.mcVersion, resetStyle, ".")
-      quit(1)
-    project.installMod(361988, mcModFile.get().fileId)
-    echoDebug("Installed Jumploader version ", fgGreen, $mcModFile.get().fileId)
+  var manifestLoaderVersion: string
+  if loader == "forge":
+    manifestLoaderVersion = "forge-" & ($loaderVersion.get()).split("-")[1]
+  else:
+    manifestLoaderVersion = "fabric-" & ($loaderVersion.get())
+  project.mcModloaderId = manifestLoaderVersion
+  echoDebug("Installed ", loader, " version ", fgGreen, project.mcModloaderId)
 
   echoInfo("Creating manifest..")
   removeDir(packFolder)

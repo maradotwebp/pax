@@ -38,6 +38,7 @@ let upgradeCmd = (
 
 let versionCmd = (
   version: newStringArg(@["<version>"], help = "Minecraft version"),
+  loader: newStringArg(@["-l", "--loader"], choices = @["fabric", "forge"], help = "which loader to use"),
   help: newHelpArg()
 )
 
@@ -58,7 +59,7 @@ let spec = (
   remove: newCommandArg(@["remove"], removeCmd, help = "remove a mod from the modpack"),
   update: newCommandArg(@["update"], updateCmd, help = "update a specific mod"),
   upgrade: newCommandArg(@["upgrade"], upgradeCmd, help = "upgrade ALL mods"),
-  version: newCommandArg(@["version"], versionCmd, help = "set minecraft & forge version"),
+  version: newCommandArg(@["version"], versionCmd, help = "set minecraft & loader version"),
   impo: newCommandArg(@["import"], importCmd, help = "import from .zip"),
   expo: newCommandArg(@["export"], exportCmd, help = "export to .zip"),
   help: newHelpArg()
@@ -79,7 +80,10 @@ elif spec.update.seen:
 elif spec.upgrade.seen:
   paxUpgrade(strategy = upgradeCmd.strategy.value)
 elif spec.version.seen:
-  paxVersion(version = versionCmd.version.value)
+  if versionCmd.loader.seen:
+    paxVersion(version = versionCmd.version.value, loader = versionCmd.loader.value)
+  else:
+    paxVersion(version = versionCmd.version.value)
 elif spec.impo.seen:
   paxImport(path = importCmd.path.value, force = importCmd.force.seen)
 elif spec.expo.seen:
