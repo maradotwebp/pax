@@ -38,10 +38,10 @@ proc searchForMod*(project: ManifestProject, search: string, installed: bool): C
       stdout.styledWrite(fgCyan, count, resetStyle)
     else:
       stdout.styledWrite("    ")
-    stdout.styledWrite(" ", mcMod.name, " ")
+    stdout.styledWrite(" ", mcMod.name)
     if project.isInstalled(mcMod.projectId):
-      stdout.styledWrite(fgMagenta, "[installed] ", resetStyle)
-    stdout.styledWriteLine(styleDim, mcMod.websiteUrl)
+      stdout.styledWrite(fgMagenta, "[installed]", resetStyle)
+    stdout.styledWriteLine(styleDim, " - ", mcMod.websiteUrl)
 
   var availableIndexes = toSeq(1..mcMods.len)
   if not installed:
