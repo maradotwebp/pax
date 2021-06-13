@@ -1,5 +1,7 @@
-import json, os, zippy/ziparchives
-import ../io/cli, ../io/files
+import os, zippy/ziparchives
+import common
+import ../cli/term
+import ../modpack/files, ../modpack/install
 
 {.passl: "-lz".}
 
@@ -7,12 +9,12 @@ proc paxExport*: void =
   ## export the modpack to .zip
   requirePaxProject()
 
-  echoDebug("Extracting .zip..")
-  let manifestJson = parseJson(readFile(manifestFile))
-  let name = manifestJson["name"].getStr()
+  echoDebug "Extracting .zip.."
+  let manifest = readManifestFromDisk()
 
-  echoDebug("Exporting modpack/ folder..")
-  createDirIfNotExists(outputFolder)
-  let zipPath = outputZipFilePath(name)
-  createZipArchive(packFolder, zipPath)
-  echoInfo("Pack exported to ", fgGreen, zipPath)
+  echoDebug "Exporting modpack/ folder.."
+  createDir(outputFolder)
+  let zipPath = joinPath(outputFolder, manifest.name & ".zip")
+  packFolder.createZipArchive(zipPath)
+
+  echoInfo "Pack exported to ", fgGreen, zipPath

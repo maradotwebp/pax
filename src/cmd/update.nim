@@ -1,38 +1,43 @@
-import asyncdispatch, json, options
-import cmdutils
-import ../flow/flow
-import ../io/cli, ../io/files, ../io/http
-import ../modpack/cf, ../modpack/manifest
+import asyncdispatch, asyncfutures, strutils, terminal, options, os
+import common
+import ../api/cf
+import ../cli/prompt, ../cli/term
+import ../modpack/files, ../modpack/install
+import ../util/flow
 
 proc paxUpdate*(name: string, strategy: string): void =
   ## update an installed mod
   requirePaxProject()
 
-  echoDebug("Loading data from manifest..")
-  var project = parseJson(readFile(manifestFile)).projectFromJson
-  let search = name.join(" ")
+  echoDebug "Loading data from manifest.."
+  var manifest = readManifestFromDisk()
 
-  echoDebug("Searching for mod..")
-  let mcMod = project.searchForMod(search, installed=true)
+  echoDebug "Loading mods.."
+  let cfMods = waitFor(fetchModsByQuery(name))
 
-  echo ""
-  let file = project.getFile(mcMod.projectId)
-  let mcModFile = parseJson(fetch(modFileUrl(file.projectId, file.fileId))).modFileFromJson
-  project.displayMod(mcMod, mcModFile)
-  echo ""
-
-  returnIfNot promptYN("Are you sure you want to install this mod?", default=true)
-
-  echoDebug("Retrieving mod versions..")
-  let modFileContent = waitFor(asyncFetch(modFilesUrl(mcMod.projectId)))
-  let mcModFiles = modFileContent.parseJson.modFilesFromJson
-
-  let newMcModFile = project.getModFileToInstall(mcMod, mcModFiles, strategy.installStrategyFromString())
-  if newMcModFile.isNone:
-    echoError("No compatible version found.")
+  echoDebug "Searching for mod.."
+  let cfModOption = manifest.promptModChoice(cfMods, selectInstalled = true)
+  if cfModOption.isNone:
+    echoError "No installed mods found for your search."
     quit(1)
-  echoInfo("Updating ", fgCyan, mcMod.name, resetStyle, "..")
-  project.updateMod(mcMod.projectId, newMcModFile.get().fileId)
+  let cfMod = cfModOption.get()
+
+  echo ""
+  echoRoot styleDim, "SELECTED MOD"
+  echoMod(cfMod, moreInfo = true)
+  echo ""
+
+  returnIfNot promptYN("Are you sure you want to update this mod?", default = true)
+
+  echoDebug "Retrieving mod versions.."
+  let cfModFiles = waitFor(fetchModFiles(cfMod.projectId))
+
+  let cfModFile = cfModFiles.selectModFile(manifest, strategy)
+  if cfModFile.isNone:
+    echoError "No compatible version found."
+    quit(1)
+  echoInfo "Updating ", fgCyan, cfMod.name, resetStyle, ".."
+  manifest.updateMod(cfMod.projectId, cfModFile.get().fileId)
 
   echoDebug("Writing to manifest...")
-  writeFile(manifestFile, project.toJson.pretty)
+  manifest.writeToDisk()

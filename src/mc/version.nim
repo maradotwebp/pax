@@ -45,6 +45,6 @@ proc newest*(v: seq[Version], match: Version): Option[Version] =
       if item > result.get() and minor(item) == minor(match):
         result = some(item)
 
-proc properVersions*(v: seq[Version]): seq[Version] =
+proc proper*(v: seq[Version]): seq[Version] =
   ## only return proper versions
   return v.filter(proc(x: Version): bool = x != "Forge".Version and x != "Fabric".Version)

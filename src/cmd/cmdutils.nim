@@ -1,21 +1,10 @@
-import asyncfutures, regex, sequtils, strutils, json, options
+import asyncfutures, json, regex, sequtils, strutils, options
 from unicode import toLower
 import ../io/cli, ../io/files, ../io/http
-import ../modpack/cf, ../modpack/manifest, ../modpack/version
+import ../mc/version
+import ../modpack/cf, ../modpack/manifest
 
-type
-  InstallStrategy* = enum
-    ## Strategy when installing/updating mods.
-    ## recommended =  newest version which is compatible with the modpack version.
-    ## newest = newest version which is compatible with the minor modpack version.
-    recommended, newest
-
-proc installStrategyFromString*(str: string): InstallStrategy =
-  case str:
-    of "recommended": return InstallStrategy.recommended
-    of "newest": return InstallStrategy.newest
-
-proc searchForMod*(project: ManifestProject, search: string, installed: bool): CfMod =
+proc searchForMod*(project: Manifest, search: string, installed: bool): CfMod =
   ## let the user select a mod from a list
   ## list retrieved by searching the mod database for the search string
   var mcMods = parseJson(fetch(searchUrl(search))).modsFromJson
@@ -71,62 +60,4 @@ proc displayMod(project: ManifestProject, mcMod: CfMod, mcModFile: Option[CfModF
 proc displayMod*(project: ManifestProject, mcMod: CfMod, mcModFile: CfModFile): void = displayMod(project, mcMod, some(mcModFile))
 proc displayMod*(project: ManifestProject, mcMod: CfMod): void = displayMod(project, mcMod, none(CfModFile))
 
-proc getModFileToInstall*(loader: Loader, projectVersion: Version, mcModProjectId: int, mcModFiles: seq[CfModFile], strategy: InstallStrategy): Option[CfModFile] =
-  ## get the best modfile based on the InstallStrategy & Loader.
-  echoDebug("Checking ", $loader, " compability..")
-  var latestFile = none[CfModFile]()
-  for file in mcModFiles:
-    var onFabric = false
-    if loader == Loader.fabric:
-      if "Fabric".Version in file.gameVersions:
-        onFabric = true
-      elif file.name.toLower.match(re".*\Wfabric\W.*"):
-        onFabric = true
-
-    var onForge = false
-    if loader == Loader.forge:
-      if not ("Fabric".Version in file.gameVersions and not ("Forge".Version in file.gameVersions)):
-        onForge = true
-      elif file.name.toLower.match(re".*\Wforge\W.*"):
-        onForge = true
-
-    var onRecommended = false
-    if strategy == InstallStrategy.recommended:
-      if projectVersion in file.gameVersions:
-        onRecommended = true
-
-    var onNewest = false
-    if strategy == InstallStrategy.newest:
-      if projectVersion.minor in file.gameVersions.map(minor):
-        onNewest = true
-
-    if latestFile.isNone or latestFile.get().fileId < file.fileId:
-      if onFabric or onForge:
-        if onRecommended or onNewest:
-          latestFile = some(file)
-  
-  if latestFile.isNone and strategy == InstallStrategy.recommended:
-    echoInfo("No recommended version. Searching for newest version instead..")
-    return getModFileToInstall(loader, projectVersion, mcModProjectId, mcModFiles, InstallStrategy.newest)
-
-  return latestFile
-
-proc getModFileToInstall*(project: ManifestProject, mcMod: CfMod, mcModFiles: seq[CfModFile], strategy: InstallStrategy): Option[CfModFile] =
-  ## get the best modfile based on the InstallStrategy & Loader.
-  return getModFileToInstall(project.loader, project.mcVersion, mcMod.projectId, mcModFiles, strategy)
-  
-proc getForgeVersion*(forgeVersionJson: JsonNode, mcVersion: string): Option[Version] =
-  ## get the forge version for a given minecraft version
-  let recommendedForgeVersion = forgeVersionJson{"by_mcversion", mcVersion, "recommended"}.getStr().Version
-  let latestForgeVersion = forgeVersionJson{"by_mcversion", mcVersion, "latest"}.getStr().Version
-  let forgeVersion = if recommendedForgeVersion != "".Version: recommendedForgeVersion else: latestForgeVersion
-  return if forgeVersion != "".Version: some(forgeVersion) else: none[Version]()
-
-proc getFabricVersion*(fabricVersionJson: JsonNode): Option[Version] =
-  ## get the fabric version from the json
-  let loaderElems = fabricVersionJson.getElems()
-  if len(loaderElems) == 0:
-      return none[Version]()
-  let ver = loaderElems[0]{"loader", "version"}.getStr().Version
-  return some(ver)
   
