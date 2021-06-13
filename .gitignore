@@ -9,3 +9,6 @@ pax.exe
 .pax/
 .out/
 /modpack/
+/testresults/
+/tests/**/t*
+!/tests/**/t*.nim

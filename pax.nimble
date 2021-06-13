@@ -16,6 +16,9 @@ requires "regex >= 0.19.0"
 requires "therapist >= 0.2.0"
 requires "zippy >= 0.5.10"
 
+task test, "Test project":
+    exec "testament pattern \"tests/**/*.nim\""
+
 task buildDev, "Build for usage during development":
     exec "nimble build -d:ssl"
 
