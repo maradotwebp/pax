@@ -44,7 +44,7 @@ proc getFreshness*(file: CfModFile, modpackVersion: Version, cfMod: CfMod): Fres
     if versionFile.fileId == file.fileId:
       if versionFile.version == modpackVersion:
         return Freshness.newest
-      elif file.gameVersions.proper.any((x) => x > modpackVersion):
+      elif file.gameVersions.proper.any((x) => x > modpackVersion and x.minor == modpackVersion.minor):
         return Freshness.newestForAVersion
   return Freshness.old
 
@@ -72,6 +72,8 @@ proc isFabricMod*(file: CfModFile): bool =
 
 proc isForgeMod*(file: CfModFile): bool =
   ## returns true if `file` is a forge mod.
+  if file.name.toLower.match(re".*\Wfabric\W.*"):
+    return false
   if not ("Fabric".Version in file.gameVersions and not ("Forge".Version in file.gameVersions)):
     return true
   elif file.name.toLower.match(re".*\Wforge\W.*"):
