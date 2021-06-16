@@ -1,4 +1,4 @@
-import terminal
+import terminal, unicode
 
 var
   isTerminalColorEnabled* = true
@@ -108,3 +108,9 @@ proc clrWriteLine*(args: varargs[TermOut]): void =
 
 proc echoClr*(args: varargs[TermOut]): void =
   clrWriteLine(args)
+
+proc strLen*(term: TermOut): Natural =
+  result = 0
+  for part in term:
+    if part.kind == okString:
+      result += part.text.runeLen

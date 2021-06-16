@@ -2,7 +2,7 @@ import algorithm, asyncdispatch, asyncfutures, sequtils, strutils, terminal, os,
 import common
 import ../api/cf
 import ../cli/term
-import ../modpack/files, ../modpack/install, ../modpack/modinfo
+import ../modpack/files, ../modpack/modinfo
 
 proc paxList*(status: bool, info: bool): void =
   ## list installed mods & their current versions
@@ -28,14 +28,12 @@ proc paxList*(status: bool, info: bool): void =
     let fileUrl = cfMod.websiteUrl & "/files/" & $cfModFile.fileId
     let compability = cfModFile.getCompability(manifest.mcVersion)
     let freshness = cfModFile.getFreshness(manifest.mcVersion, cfMod)
-    echoClr indentPrefix, compability.getIcon(), freshness.getIcon(), " ", cfMod.name, (" - " & fileUrl).dim
-    if status:
-      echo indentPrefix.indent(6), compability.getMessage()
-      echo indentPrefix.indent(6), freshness.getMessage()
+    let prefix = compability.getIcon() & freshness.getIcon()
+    echoMod(cfMod, prefix = prefix, url = fileUrl.dim, moreInfo = info)
     if status and info:
       echoClr "------------------------------".indent(7).dim
-    if info:
-      echoClr indentPrefix.indent(6), "Description: ".cyanFg, cfMod.description
-      echoClr indentPrefix.indent(6), "Downloads: ".cyanFg, cfMod.downloads.`$`.insertSep(sep='.')
+    if status:
+      echoClr indentPrefix.indent(6), compability.getIcon(), " ", compability.getMessage()
+      echoClr indentPrefix.indent(6), freshness.getIcon(), " ", freshness.getMessage()
   if fileCount == 0:
     echoClr indentPrefix, "No mods installed yet.".dim

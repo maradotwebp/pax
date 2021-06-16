@@ -5,20 +5,22 @@ import ../modpack/files
 
 export terminal, term, files, strutils
 
-proc echoMod*(cfMod: CfMod, prefix: TermOut = "", postfix: TermOut = "", moreInfo: bool = false): void =
+proc echoMod*(cfMod: CfMod, prefix: TermOut = "", postfix: TermOut = "", url: TermOut = cfMod.websiteUrl.dim, moreInfo: bool = false): void =
   ## output a single `cfMod`.
   ## `prefix` and `postfix` is displayed before and after the mod name respectively.
   ## if `moreInfo` is true, description and downloads will be printed as well.
   var modname = cfMod.name
-  if prefix != "":
+  var prefixIndent = 0
+  if prefix.strLen != 0:
     modname = " " & modname
-  if postfix != "":
+    prefixIndent = prefix.strLen + 1
+  if postfix.strLen != 0:
     modname = modname & " "
 
-  echoClr indentPrefix, prefix, modname, postfix, " - ", cfMod.websiteUrl.dim
+  echoClr indentPrefix, prefix, modname, postfix, " - ", url
   if moreInfo:
-    echoClr indentPrefix.indent(3), "Description: ".cyanFg, cfMod.description
-    echoClr indentPrefix.indent(3), "Downloads: ".cyanFg, cfMod.downloads.`$`.insertSep('.')
+    echoClr indentPrefix.indent(3 + prefixIndent), "Description: ".cyanFg, cfMod.description
+    echoClr indentPrefix.indent(3 + prefixIndent), "Downloads: ".cyanFg, cfMod.downloads.`$`.insertSep('.')
 
 proc promptModChoice*(manifest: Manifest, cfMods: seq[CfMod], selectInstalled: bool = false): Option[CfMod] =
   ## prompt the user for a choice between `cfMods`.
