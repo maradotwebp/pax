@@ -1,6 +1,6 @@
-import terminal
+import clr
 
-export terminal
+export clr
 
 const
   # icons
@@ -12,12 +12,12 @@ const
   # prefixes
   indentPrefix* = " └─ "
 
-template echoWithIcon(icon: string, color: typed, args: varargs[untyped]): void =
+template echoWithIcon(icon: TermOut, args: varargs[untyped]): void =
   ## print a message with an icon
-  styledEcho "[", color, icon, resetStyle, "] ", args
+  echoClr "[", icon, "]", " ", args
 
-template echoDebug*(args: varargs[untyped]): void = echoWithIcon(debugIcon, styleDim, args)
-template echoInfo*(args: varargs[untyped]): void = echoWithIcon(infoIcon, fgGreen, args)
-template echoWarn*(args: varargs[untyped]): void = echoWithIcon(warnIcon, fgYellow, args)
-template echoError*(args: varargs[untyped]): void = echoWithIcon(errorIcon, fgRed, args)
-template echoRoot*(args: varargs[untyped]): void = echoWithIcon(rootIcon, fgMagenta, args)
+template echoDebug*(args: varargs[untyped]): void = echoWithIcon(debugIcon.dim, args)
+template echoInfo*(args: varargs[untyped]): void = echoWithIcon(infoIcon.greenFg, args)
+template echoWarn*(args: varargs[untyped]): void = echoWithIcon(warnIcon.yellowFg, args)
+template echoError*(args: varargs[untyped]): void = echoWithIcon(errorIcon.redFg, args)
+template echoRoot*(args: varargs[untyped]): void = echoWithIcon(rootIcon.magentaFg, args)

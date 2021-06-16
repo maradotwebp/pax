@@ -1,11 +1,11 @@
 import sequtils, strutils, sugar, terminal, options
 import ../api/cf
-import ../cli/prompt, ../cli/term
+import ../cli/clr, ../cli/prompt, ../cli/term
 import ../modpack/files
 
 export terminal, term, files, strutils
 
-proc echoMod*(cfMod: CfMod, prefix: string = "", postfix: string = "", moreInfo: bool = false): void =
+proc echoMod*(cfMod: CfMod, prefix: TermOut = "", postfix: TermOut = "", moreInfo: bool = false): void =
   ## output a single `cfMod`.
   ## `prefix` and `postfix` is displayed before and after the mod name respectively.
   ## if `moreInfo` is true, description and downloads will be printed as well.
@@ -15,10 +15,10 @@ proc echoMod*(cfMod: CfMod, prefix: string = "", postfix: string = "", moreInfo:
   if postfix != "":
     modname = modname & " "
 
-  styledEcho indentPrefix, prefix, modname, postfix, " - ", styleDim, cfMod.websiteUrl
+  echoClr indentPrefix, prefix, modname, postfix, " - ", cfMod.websiteUrl.dim
   if moreInfo:
-    styledEcho indentPrefix.indent(3), fgCyan, "Description: ", resetStyle, cfMod.description
-    styledEcho indentPrefix.indent(3), fgCyan, "Downloads: ", resetStyle, cfMod.downloads.`$`.insertSep('.')
+    echoClr indentPrefix.indent(3), "Description: ".cyanFg, cfMod.description
+    echoClr indentPrefix.indent(3), "Downloads: ".cyanFg, cfMod.downloads.`$`.insertSep('.')
 
 proc promptModChoice*(manifest: Manifest, cfMods: seq[CfMod], selectInstalled: bool = false): Option[CfMod] =
   ## prompt the user for a choice between `cfMods`.
@@ -33,7 +33,7 @@ proc promptModChoice*(manifest: Manifest, cfMods: seq[CfMod], selectInstalled: b
   if cfMods.len == 1:
     return some(cfMods[0])
   
-  echoRoot styleDim, "RESULTS"
+  echoRoot "RESULTS".dim
   for index, cfMod in cfMods:
     let isInstalled = manifest.isInstalled(cfMod.projectId)
     let isSelectable = selectInstalled == isInstalled
@@ -44,7 +44,7 @@ proc promptModChoice*(manifest: Manifest, cfMods: seq[CfMod], selectInstalled: b
       if isInstalled: "[installed]"
       else: ""
 
-    echoMod(cfMod, prefix, postfix)
+    echoMod(cfMod, prefix.cyanFg, postfix.magentaFg)
 
   var availableIndexes = toSeq(1..cfMods.len)
   if selectInstalled:

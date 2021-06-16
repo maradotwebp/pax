@@ -1,6 +1,6 @@
 import algorithm, json, os, sequtils, sugar
 import loader
-import ../cli/term
+import ../cli/clr, ../cli/term
 import ../mc/version
 
 export term
@@ -110,14 +110,14 @@ template requirePaxProject*: void =
   ## will error if the current folder isn't a pax project
   if not isPaxProject():
     echoError "The current folder isn't a pax project."
-    styledEcho indentPrefix, "To initialize a pax project, enter ", fgRed, "pax init"
+    echoClr indentPrefix, "To initialize a pax project, enter ".redFg, "pax init"
     return
 
 template rejectPaxProject*: void =
   ## will error if the current folder is a pax project
   if isPaxProject:
     echoError "The current folder is already a pax project."
-    styledEcho indentPrefix, "If you are sure you want to overwrite existing files, use the ", fgRed, "--force", resetStyle, " option"
+    echoClr indentPrefix, "If you are sure you want to overwrite existing files, use the ", "--force".redFg, " option"
     return
 
 proc readManifestFromDisk*(path = manifestFile): Manifest =

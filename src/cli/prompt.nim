@@ -1,4 +1,4 @@
-import strutils, terminal
+import strutils, clr, terminal
 
 proc pretty[T](s: seq[T]): string =
   ## pretty-print a sequence
@@ -13,18 +13,18 @@ proc prompt*(prompt: string, choices: seq[string] = newSeq[string](), choiceForm
   let hasChoiceFormat = choiceFormat != ""
   let hasDefault = default != ""
   while true:
-    stdout.styledWrite(prompt)
+    clrWrite(prompt)
     if hasChoiceFormat or hasDefault:
-      stdout.styledWrite(" (")
+      clrWrite(" (")
     if choiceFormat != "":
-      stdout.styledWrite(fgCyan, choiceFormat, resetStyle)
+      clrWrite(choiceFormat.cyanFg)
     if hasChoiceFormat and hasDefault:
-      stdout.styledWrite(" - ")
+      clrWrite(" - ")
     if hasDefault:
-      stdout.styledWrite("default ", fgCyan, default, resetStyle)
+      clrWrite("default ", default.cyanFg)
     if hasChoiceFormat or hasDefault:
-      stdout.styledWrite(")")
-    stdout.styledWrite(": ")
+      clrWrite(")")
+    clrWrite(": ")
     let res = stdin.readLine()
     if res.isEmptyOrWhitespace():
       if hasDefault:

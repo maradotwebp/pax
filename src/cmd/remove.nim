@@ -23,13 +23,13 @@ proc paxRemove*(name: string): void =
   let cfMod = cfModOption.get()
 
   echo ""
-  echoRoot styleDim, "SELECTED MOD"
+  echoRoot "SELECTED MOD".dim
   echoMod(cfMod, moreInfo = true)
   echo ""
 
   returnIfNot promptYN("Are you sure you want to remove this mod?", default = true)
   
-  echoInfo "Removing ", fgCyan, cfMod.name, resetStyle, ".."
+  echoInfo "Removing ", cfMod.name.cyanFg, ".."
   manifest.removeMod(cfMod.projectId)
 
   echoDebug "Writing to manifest..."

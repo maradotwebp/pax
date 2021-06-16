@@ -28,9 +28,9 @@ proc paxUpgrade*(strategy: string): void =
     let (cfMod, cfModFiles) = pairs
     let cfModFile = cfModFiles.selectModFile(manifest, strategy)
     if cfModFile.isNone:
-      echoWarn fgCyan, cfMod.name, resetStyle, " does not have a compatible version. Skipping.."
+      echoWarn cfMod.name.cyanFg, " does not have a compatible version. Skipping.."
       continue
-    echoInfo "Updating ", fgCyan, cfMod.name, resetStyle, ".."
+    echoInfo "Updating ", cfMod.name.cyanFg, ".."
     manifest.updateMod(cfMod.projectId, cfModFile.get().fileId)
 
   echoDebug "Writing to manifest..." 

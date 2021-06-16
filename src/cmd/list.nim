@@ -22,23 +22,20 @@ proc paxList*(status: bool, info: bool): void =
   var modData = zip(cfMods.read(), cfModFiles.read())
   modData = modData.sorted((x,y) => cmp(x[0].name, y[0].name))
 
-  echoRoot fgMagenta, "ALL MODS ", resetStyle, styleDim, "(", $fileCount, ")"
+  echoRoot "ALL MODS ".magentaFg, ("(" & $fileCount & ")").dim
   for index, pairs in modData:
     let (cfMod, cfModFile) = pairs
     let fileUrl = cfMod.websiteUrl & "/files/" & $cfModFile.fileId
     let compability = cfModFile.getCompability(manifest.mcVersion)
     let freshness = cfModFile.getFreshness(manifest.mcVersion, cfMod)
-    stdout.styledWrite(indentPrefix)
-    stdout.styledWrite(compability.getColor(), compabilityIcon, resetStyle)
-    stdout.styledWrite(freshness.getColor(), freshnessIcon, resetStyle)
-    stdout.styledWriteLine(" ", cfMod.name, styleDim, " - ", fileUrl)
+    echoClr indentPrefix, compability.getIcon(), freshness.getIcon(), " ", cfMod.name, (" - " & fileUrl).dim
     if status:
       echo indentPrefix.indent(6), compability.getMessage()
       echo indentPrefix.indent(6), freshness.getMessage()
     if status and info:
-      stdout.styledWriteLine(styleDim, "------------------------------".indent(7))
+      echoClr "------------------------------".indent(7).dim
     if info:
-      stdout.styledWriteLine(indentPrefix.indent(6), fgCyan, "Description: ", resetStyle, cfMod.description)
-      stdout.styledWriteLine(indentPrefix.indent(6), fgCyan, "Downloads: ", resetStyle, cfMod.downloads.`$`.insertSep(sep='.'))
+      echoClr indentPrefix.indent(6), "Description: ".cyanFg, cfMod.description
+      echoClr indentPrefix.indent(6), "Downloads: ".cyanFg, cfMod.downloads.`$`.insertSep(sep='.')
   if fileCount == 0:
-    stdout.styledWriteLine(indentPrefix, styleDim, "No mods installed yet.")
+    echoClr indentPrefix, "No mods installed yet.".dim

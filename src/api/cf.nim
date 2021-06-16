@@ -23,10 +23,6 @@ type
     gameVersionLatestFiles*: seq[tuple[version: Version, fileId: int]]
 
 const
-  ## icon for compability
-  compabilityIcon* = "•"
-  ## icon for freshness
-  freshnessIcon* = "↑"
   ## base url of the forgesvc endpoint
   modsBaseUrl = "https://addons-ecs.forgesvc.net/api/v2"
 

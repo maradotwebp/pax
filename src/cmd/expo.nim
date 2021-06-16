@@ -1,7 +1,7 @@
 import os, zippy/ziparchives
 import common
 import ../cli/term
-import ../modpack/files, ../modpack/install
+import ../modpack/files
 
 {.passl: "-lz".}
 
@@ -17,4 +17,4 @@ proc paxExport*: void =
   let zipPath = joinPath(outputFolder, manifest.name & ".zip")
   packFolder.createZipArchive(zipPath)
 
-  echoInfo "Pack exported to ", fgGreen, zipPath
+  echoInfo "Pack exported to ", zipPath.greenFg

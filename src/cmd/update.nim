@@ -23,7 +23,7 @@ proc paxUpdate*(name: string, strategy: string): void =
   let cfMod = cfModOption.get()
 
   echo ""
-  echoRoot styleDim, "SELECTED MOD"
+  echoRoot "SELECTED MOD".dim
   echoMod(cfMod, moreInfo = true)
   echo ""
 
@@ -36,7 +36,7 @@ proc paxUpdate*(name: string, strategy: string): void =
   if cfModFile.isNone:
     echoError "No compatible version found."
     quit(1)
-  echoInfo "Updating ", fgCyan, cfMod.name, resetStyle, ".."
+  echoInfo "Updating ", cfMod.name.cyanFg, ".."
   manifest.updateMod(cfMod.projectId, cfModFile.get().fileId)
 
   echoDebug("Writing to manifest...")

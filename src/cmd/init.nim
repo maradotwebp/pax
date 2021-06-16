@@ -4,7 +4,7 @@ import ../api/metadata
 import ../cli/prompt, ../cli/term
 import ../util/flow
 import ../mc/version
-import ../modpack/files, ../modpack/install, ../modpack/loader
+import ../modpack/files, ../modpack/loader
 
 proc paxInit*(force: bool): void =
   ## initialize a new modpack in the current directory
@@ -12,7 +12,7 @@ proc paxInit*(force: bool): void =
     rejectPaxProject()
     returnIfNot promptYN("Are you sure you want to create a pax manifest in the current folder?", default = true)
 
-  echoRoot styleDim, "MANIFEST" 
+  echoRoot "MANIFEST".dim
   var manifest = Manifest()
   manifest.name = prompt(indentPrefix & "Modpack name")
   manifest.author = prompt(indentPrefix & "Modpack author")
@@ -22,10 +22,10 @@ proc paxInit*(force: bool): void =
   let loader = prompt(indentPrefix & "Loader", choices = @["forge", "fabric"], default = "forge").toLoader
   let loaderId = waitFor(manifest.mcVersion.getMcModloaderId(loader))
   if loaderId.isNone:
-    echoError "This is either not a minecraft version, or no ", loader, " version exists for this minecraft version."
+    echoError "This is either not a minecraft version, or no ", $loader, " version exists for this minecraft version."
     quit(1)
   manifest.mcModloaderId = loaderId.get()
-  echoDebug "Installed ", loader, " version ", fgGreen, manifest.mcModloaderId
+  echoDebug "Installed ", $loader, " version ", manifest.mcModloaderId.greenFg
 
   echoInfo "Creating manifest.."
   removeDir(packFolder)

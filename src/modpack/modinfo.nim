@@ -1,5 +1,6 @@
-import regex, sequtils, strutils, sugar, terminal
+import regex, sequtils, strutils, sugar
 import ../api/cf
+import ../cli/clr
 import ../mc/version
 
 type
@@ -17,18 +18,24 @@ type
     ## newest = file is the newest version for the current modpack version
     old, newestForAVersion, newest
 
+const
+  ## icon for compability
+  compabilityIcon = "•"
+  ## icon for freshness
+  freshnessIcon = "↑"
+
 proc getCompability*(file: CfModFile, modpackVersion: Version): Compability =
   ## get compability of a file
   if modpackVersion in file.gameVersions: return Compability.full
   if modpackVersion.minor in file.gameVersions.proper.map(minor): return Compability.major
   return Compability.none
 
-proc getColor*(c: Compability): ForegroundColor =
+proc getIcon*(c: Compability): TermOut =
   ## get the color for a compability
   case c:
-    of Compability.full: fgGreen
-    of Compability.major: fgYellow
-    of Compability.none: fgRed
+    of Compability.full: compabilityIcon.greenFg
+    of Compability.major: compabilityIcon.yellowFg
+    of Compability.none: compabilityIcon.redFg
 
 proc getMessage*(c: Compability): string =
   ## get the message for a certain compability
@@ -48,12 +55,12 @@ proc getFreshness*(file: CfModFile, modpackVersion: Version, cfMod: CfMod): Fres
         return Freshness.newestForAVersion
   return Freshness.old
 
-proc getColor*(f: Freshness): ForegroundColor =
+proc getIcon*(f: Freshness): TermOut =
   ## get the color for a freshness
   case f:
-    of Freshness.newest: fgGreen
-    of Freshness.newestForAVersion: fgYellow
-    of Freshness.old: fgRed
+    of Freshness.newest: freshnessIcon.greenFg
+    of Freshness.newestForAVersion: freshnessIcon.yellowFg
+    of Freshness.old: freshnessIcon.redFg
 
 proc getMessage*(f: Freshness): string =
   ## get the message for a certain freshness
