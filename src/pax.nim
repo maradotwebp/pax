@@ -1,7 +1,7 @@
 import therapist
 import cmd/add, cmd/expo, cmd/impo, cmd/init, cmd/list, cmd/remove, cmd/update, cmd/upgrade, cmd/version
 
-let strategyArg = newStringArg(@["-s", "--strategy"], choices = @["recommended", "newest"], help = "how pax determines the version to install")
+let strategyArg = newStringArg(@["-s", "--strategy"], choices = @["recommended", "newest"], defaultVal = "recommended", help = "how pax determines the version to install")
 
 let initCmd = (
   force: newCountArg(@["-f", "--force"], help = "will override manifest.json if it already exists"),

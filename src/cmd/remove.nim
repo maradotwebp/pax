@@ -1,29 +1,36 @@
-import json
-import cmdutils
-import ../flow/flow
-import ../io/cli, ../io/files, ../io/http
-import ../modpack/cf, ../modpack/manifest
+import asyncdispatch, asyncfutures, strutils, terminal, options, os
+import common
+import ../api/cf
+import ../cli/prompt, ../cli/term
+import ../modpack/files, ../modpack/install
+import ../util/flow
 
 proc paxRemove*(name: string): void =
   ## remove an installed mod
   requirePaxProject()
 
-  echoDebug("Loading data from manifest..")
-  var project = parseJson(readFile(manifestFile)).projectFromJson
+  echoDebug "Loading data from manifest.."
+  var manifest = readManifestFromDisk()
 
-  echoDebug("Searching for mod..")
-  let mcMod = project.searchForMod(name, installed=true)
+  echoDebug "Loading mods.."
+  let cfMods = waitFor(fetchModsByQuery(name))
+
+  echoDebug "Searching for mod.."
+  let cfModOption = manifest.promptModChoice(cfMods, selectInstalled = true)
+  if cfModOption.isNone:
+    echoError "No installed mods found for your search."
+    quit(1)
+  let cfMod = cfModOption.get()
 
   echo ""
-  let file = project.getFile(mcMod.projectId)
-  let mcModFile = parseJson(fetch(modFileUrl(file.projectId, file.fileId))).modFileFromJson
-  project.displayMod(mcMod, mcModFile)
+  echoRoot "SELECTED MOD".dim
+  echoMod(cfMod, moreInfo = true)
   echo ""
 
-  returnIfNot promptYN("Are you sure you want to remove this mod?", default=true)
+  returnIfNot promptYN("Are you sure you want to remove this mod?", default = true)
   
-  echoInfo("Removing ", fgCyan, mcMod.name, resetStyle, "..")
-  project.removeMod(mcMod.projectId)
+  echoInfo "Removing ", cfMod.name.cyanFg, ".."
+  manifest.removeMod(cfMod.projectId)
 
-  echoDebug("Writing to manifest...")
-  writeFile(manifestFile, project.toJson.pretty)
+  echoDebug "Writing to manifest..."
+  manifest.writeToDisk()
