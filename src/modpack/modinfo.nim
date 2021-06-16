@@ -47,12 +47,12 @@ proc getMessage*(c: Compability): string =
 proc getFreshness*(file: CfModFile, modpackVersion: Version, cfMod: CfMod): Freshness =
   ## get freshness of a file
   let latestFiles = cfMod.gameVersionLatestFiles
-  for versionFile in latestFiles:
-    if versionFile.fileId == file.fileId:
-      if versionFile.version == modpackVersion:
-        return Freshness.newest
-      elif file.gameVersions.proper.any((x) => x > modpackVersion and x.minor == modpackVersion.minor):
-        return Freshness.newestForAVersion
+  let modpackVersionFiles = latestFiles.filter((x) => x.version == modpackVersion)
+  if modpackVersionFiles.len == 1:
+    if modpackVersionFiles[0].fileId == file.fileId:
+      return Freshness.newest
+  if latestFiles.any((x) => x.fileId == file.fileId and x.version.minor == modpackVersion.minor):
+    return Freshness.newestForAVersion
   return Freshness.old
 
 proc getIcon*(f: Freshness): TermOut =

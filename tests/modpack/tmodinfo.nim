@@ -41,7 +41,7 @@ block: # freshness
   let fileB = initCfModFile(4, "rei-1.1.2.jar", @["1.16", "1.16.1", "1.16.3"])
 
   doAssert fileB.getFreshness("1.12".Version, cfMod) == Freshness.old
-  doAssert fileB.getFreshness("1.16".Version, cfMod) == Freshness.old
+  doAssert fileB.getFreshness("1.16".Version, cfMod) == Freshness.newestForAVersion
   doAssert fileB.getFreshness("1.16.1".Version, cfMod) == Freshness.newest
   doAssert fileB.getFreshness("1.16.2".Version, cfMod) == Freshness.newestForAVersion
   doAssert fileB.getFreshness("1.16.3".Version, cfMod) == Freshness.newest
@@ -49,7 +49,7 @@ block: # freshness
   let fileC = initCfModFile(3, "rei-1.1.1.jar", @["1.16", "1.16.2"])
 
   doAssert fileC.getFreshness("1.12".Version, cfMod) == Freshness.old
-  doAssert fileC.getFreshness("1.16".Version, cfMod) == Freshness.old
+  doAssert fileC.getFreshness("1.16".Version, cfMod) == Freshness.newestForAVersion
   doAssert fileC.getFreshness("1.16.1".Version, cfMod) == Freshness.newestForAVersion
   doAssert fileC.getFreshness("1.16.2".Version, cfMod) == Freshness.newest
-  doAssert fileC.getFreshness("1.16.3".Version, cfMod) == Freshness.old
+  doAssert fileC.getFreshness("1.16.3".Version, cfMod) == Freshness.newestForAVersion
