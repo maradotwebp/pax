@@ -1,4 +1,4 @@
-import asyncdispatch, json, sequtils, sugar, uri
+import asyncdispatch, json, sequtils, strutils, sugar, uri
 import http
 import ../mc/version
 
@@ -59,7 +59,7 @@ converter toCfMods(json: JsonNode): seq[CfMod] =
 
 proc fetchModsByQuery*(query: string): Future[seq[CfMod]] {.async.} =
   ## search for CfMods by `query` on the Curseforge API
-  const searchUrl = modsBaseUrl & "/addon/search?gameId=432&sectionId=6&pageSize=50"
+  const searchUrl = modsBaseUrl & "/addon/search?gameId=432&sectionId=6&pageSize=100"
   let url = searchUrl & "&searchFilter=" & encodeUrl(query, usePlus=false)
   return fetch(url).await.parseJson.toCfMods
 
@@ -67,6 +67,11 @@ proc fetchMod*(projectId: int): Future[CfMod] {.async.} =
   ## get the CfMod with the given `projectID` from the Curseforge API
   let url = modsBaseUrl & "/addon/" & $projectId
   return fetch(url).await.parseJson.toCfMod
+
+proc fetchMod*(slug: string): Future[CfMod] {.async.} =
+  ## get the mod matching the `slug`
+  let cfMods = await fetchModsByQuery(slug)
+  return cfMods.filter((x) => x.websiteUrl.endsWith(slug))[0]
 
 proc fetchModFiles*(projectId: int): Future[seq[CfModFile]] {.async.} =
   ## get all mod files associated with the given `projectId`

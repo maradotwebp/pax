@@ -11,7 +11,7 @@ proc paxVersion*(version: string, loader: string): void =
 
   echoDebug "Loading data from manifest.."
   var manifest = readManifestFromDisk()
-  let loader = manifest.loader
+  let loader = if loader == "": manifest.loader else: loader
 
   let loaderId = waitFor(manifest.mcVersion.getMcModloaderId(loader))
   if loaderId.isNone:

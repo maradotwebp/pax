@@ -1,4 +1,4 @@
-import sequtils, strutils, sugar, terminal, options
+import algorithm, sequtils, strutils, sugar, terminal, options
 import ../api/cf
 import ../cli/clr, ../cli/prompt, ../cli/term
 import ../modpack/files
@@ -25,7 +25,7 @@ proc echoMod*(cfMod: CfMod, prefix: TermOut = "", postfix: TermOut = "", url: Te
 proc promptModChoice*(manifest: Manifest, cfMods: seq[CfMod], selectInstalled: bool = false): Option[CfMod] =
   ## prompt the user for a choice between `cfMods`.
   ## if `selectInstalled` is true, only installed mods may be selected, otherwise installed mods may not be selected.
-  var cfMods = cfMods
+  var cfMods = cfMods.reversed
   if selectInstalled:
     cfMods.keepIf((x) => manifest.isInstalled(x.projectId))
     if manifest.files.len == 0:
@@ -40,7 +40,7 @@ proc promptModChoice*(manifest: Manifest, cfMods: seq[CfMod], selectInstalled: b
     let isInstalled = manifest.isInstalled(cfMod.projectId)
     let isSelectable = selectInstalled == isInstalled
     let prefix: string =
-      if isSelectable: ("[" & $(index+1) & "]").align(4)
+      if isSelectable: ("[" & $(cfMods.len - index) & "]").align(4)
       else: "    "
     let postfix: string =
       if isInstalled: "[installed]"
@@ -55,4 +55,4 @@ proc promptModChoice*(manifest: Manifest, cfMods: seq[CfMod], selectInstalled: b
     availableIndexes.keepIf((x) => not manifest.isInstalled(cfMods[x - 1].projectId))
 
   let selectedIndex = prompt("Select a mod", choices = availableIndexes.map((x) => $x), choiceFormat = "1 - " & $cfMods.len).parseInt
-  return some(cfMods[selectedIndex - 1])
+  return some(cfMods[cfMods.len - selectedIndex])
