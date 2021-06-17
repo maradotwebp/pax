@@ -59,7 +59,7 @@ converter toCfMods(json: JsonNode): seq[CfMod] =
 
 proc fetchModsByQuery*(query: string): Future[seq[CfMod]] {.async.} =
   ## search for CfMods by `query` on the Curseforge API
-  const searchUrl = modsBaseUrl & "/addon/search?gameId=432&sectionId=6&pageSize=50"
+  const searchUrl = modsBaseUrl & "/addon/search?gameId=432&sectionId=6&pageSize=100"
   let url = searchUrl & "&searchFilter=" & encodeUrl(query, usePlus=false)
   return fetch(url).await.parseJson.toCfMods
 
