@@ -12,10 +12,10 @@ let listCmd = (
   status: newCountArg(@["-s", "--status"], help = "display mod compability and freshness"),
   info: newCountArg(@["-i", "--info"], help = "display more mod information"),
   help: newHelpArg()
-)
+) 
 
 let addCmd = (
-  name: newStringArg(@["<name>"], help = "name of the mod to search for"),
+  input: newStringArg(@["<input>"], multi = true, help = "modname, projectid or curseforge url of the mod to add"),
   strategy: strategyArg,
   help: newHelpArg()
 )
@@ -72,7 +72,7 @@ if spec.init.seen:
 elif spec.list.seen:
   paxList(status = listCmd.status.seen, info = listCmd.info.seen)
 elif spec.add.seen:
-  paxAdd(name = addCmd.name.value, strategy = addCmd.strategy.value)
+  paxAdd(input = addCmd.input.value, strategy = addCmd.strategy.value)
 elif spec.remove.seen:
   paxRemove(name = removeCmd.name.value)
 elif spec.update.seen:
