@@ -4,7 +4,9 @@ import cmd/add, cmd/expo, cmd/impo, cmd/init, cmd/list, cmd/remove, cmd/update, 
 let strategyArg = newStringArg(@["-s", "--strategy"], choices = @["recommended", "newest"], defaultVal = "recommended", help = "how pax determines the version to install")
 
 let initCmd = (
-  force: newCountArg(@["-f", "--force"], help = "will override manifest.json if it already exists"),
+  force: newCountArg(@["-f", "--force"], help = "will override an existing project in this folder"),
+  skipManifest: newCountArg(@["--skip-manifest"], help = "skip creating the modpack folder"),
+  skipGit: newCountArg(@["--skip-git"], help = "skip creating a git repository"),
   help: newHelpArg()
 )
 
@@ -68,7 +70,7 @@ let spec = (
 spec.parseOrHelp()
 
 if spec.init.seen:
-  paxInit(force = initCmd.force.seen)
+  paxInit(force = initCmd.force.seen, skipManifest = initCmd.skipManifest.seen, skipGit = initCmd.skipGit.seen)
 elif spec.list.seen:
   paxList(status = listCmd.status.seen, info = listCmd.info.seen)
 elif spec.add.seen:

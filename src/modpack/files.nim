@@ -24,6 +24,11 @@ type
 
 const
   projectFolder* = "./"
+  gitIgnoreFile* = joinPath(projectFolder, ".gitignore")
+  gitIgnoreContent* = staticRead("templates/.gitignore")
+  githubCiFolder* = joinPath(projectFolder, ".github/workflows")
+  githubCiFile* = joinPath(githubCiFolder, "main.yml")
+  githubCiContent* = staticRead("templates/main.yml")
   packFolder* = joinPath(projectFolder, "modpack/")
   tempPackFolder* = joinPath(projectFolder, "temppack/")
   overridesFolder* = joinPath(packFolder, "overrides/")
