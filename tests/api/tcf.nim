@@ -9,10 +9,14 @@ block: # fetch by query
   doAssert mods[0].projectId == 238222
   doAssert mods[0].name == "Just Enough Items (JEI)"
 
-block: # fetch mod
+block: # fetch mod by id
   let cfMod = waitFor(fetchMod(220318))
   doAssert cfMod.projectId == 220318
   doAssert cfMod.name == "Biomes O' Plenty"
+
+blocK: # fetch mod by slug
+  let cfMod = waitFor(fetchMod("appleskin"))
+  doAssert cfMod.projectId == 248787
 
 block: # fetch mod files
   let modFiles = waitFor(fetchModFiles(248787))
