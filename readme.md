@@ -9,6 +9,8 @@
 
 ![Screenshot](./screenshot.png)
 
+<a href="https://discord.com/invite/nWkXtEpm"><img src="https://discordapp.com/api/guilds/856647692984778762/widget.png?style=banner2" alt="Join the PAX Discord!"></a>
+
 PAX is the solution to modern modpack development for Minecraft, usable both alone and in a team. It supports Forge & Fabric, can be version controlled with git, and one command is all you need in order to upload your pack to Curseforge.
 
 *The following features are implemented*:
