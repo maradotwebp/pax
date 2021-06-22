@@ -28,13 +28,11 @@ proc paxAdd*(input: string, strategy: string): void =
 
   if input.scanf("https://www.curseforge.com/minecraft/mc-mods/${strScan}/files/$i", slug, fileId):
     ## Curseforge URL with slug & fileId
-    echo "Slug ", slug
     cfMod = waitFor(fetchMod(slug))
     cfModFile = waitFor(fetchModFile(cfMod.projectId, fileId))
 
   elif input.scanf("https://www.curseforge.com/minecraft/mc-mods/${strScan}", slug):
     ## Curseforge URL with slug
-    echo "Slug ", slug
     cfMod = waitFor(fetchMod(slug))
     let cfModFiles = waitFor(fetchModFiles(cfMod.projectId))
     let selectedCfModFile = cfModFiles.selectModFile(manifest, strategy)

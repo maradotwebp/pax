@@ -3,8 +3,6 @@ import common
 import ../cli/term
 import ../modpack/files
 
-{.passl: "-lz".}
-
 proc paxExport*: void =
   ## export the modpack to .zip
   requirePaxProject()
