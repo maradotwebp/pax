@@ -32,7 +32,7 @@ proc paxInitManifest(): void =
 
 template exec(cmd: string): int = execCmdEx(cmd, options = {poUsePath, poStdErrToStdOut, poEvalCommand, poDaemon}).exitCode
 
-proc paxInitGit(): void =
+proc paxInitGit*(): void =
   ## initialize a git repository (+ gitignore and ci files)
   const successValue = 0
   const noGitRepositoryValue = 128
