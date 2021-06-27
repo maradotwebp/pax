@@ -1,7 +1,8 @@
 import terminal, unicode
 
 var
-  isTerminalColorEnabled* = true
+  ## if false, terminal color will be disabled.
+  terminalColorEnabledSetting* = true
 
 type
   TermOutKind = enum
@@ -88,16 +89,16 @@ proc clrWrite*(args: varargs[TermOut]): void =
     for part in arg:
       case part.kind:
         of okForeground:
-          if isTerminalColorEnabled:
+          if terminalColorEnabledSetting:
             stdout.setForegroundColor(part.fgColor)
         of okBackground:
-          if isTerminalColorEnabled:
+          if terminalColorEnabledSetting:
             stdout.setBackgroundColor(part.bgColor)
         of okStyle:
-          if isTerminalColorEnabled:
+          if terminalColorEnabledSetting:
             stdout.setStyle({part.style})
         of okReset:
-          if isTerminalColorEnabled:
+          if terminalColorEnabledSetting:
             stdout.resetAttributes()
         of okString:
           stdout.write(part.text)

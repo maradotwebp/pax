@@ -9,7 +9,7 @@ Concat works too? [RED][BLUE]
 
 import cli/clr
 
-isTerminalColorEnabled = false
+terminalColorEnabledSetting = false
 
 block: # echoClr
   echoClr "Hello! I hope this works.."

@@ -1,5 +1,10 @@
 import strutils, clr, terminal
 
+var
+  ## if true, all promptYN will be skipped and return true.
+  skipYNSetting*: bool = false
+
+
 proc pretty[T](s: seq[T]): string =
   ## pretty-print a sequence
   result = ""
@@ -50,5 +55,6 @@ converter fromYN(choice: string): bool =
 
 proc promptYN*(prompt: string, default: bool): bool =
   ## prompt the user for an answer to a yes/no question.
+  if skipYNSetting: return true
   let answer = prompt(prompt, choices = @["y", "Y", "n", "N"], choiceFormat = "y/n", default = $toYn(default))
   return fromYN(answer)
