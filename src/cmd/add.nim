@@ -29,11 +29,13 @@ proc paxAdd*(input: string, strategy: string): void =
   if input.scanf("https://www.curseforge.com/minecraft/mc-mods/${strScan}/files/$i", slug, fileId):
     ## Curseforge URL with slug & fileId
     cfMod = waitFor(fetchMod(slug))
+    manifest.rejectInstalledMod(cfMod.projectId)
     cfModFile = waitFor(fetchModFile(cfMod.projectId, fileId))
 
   elif input.scanf("https://www.curseforge.com/minecraft/mc-mods/${strScan}", slug):
     ## Curseforge URL with slug
     cfMod = waitFor(fetchMod(slug))
+    manifest.rejectInstalledMod(cfMod.projectId)
     let cfModFiles = waitFor(fetchModFiles(cfMod.projectId))
     let selectedCfModFile = cfModFiles.selectModFile(manifest, strategy)
     if selectedCfModFile.isNone:
@@ -44,11 +46,13 @@ proc paxAdd*(input: string, strategy: string): void =
   elif input.scanf("$i#$i", projectId, fileId):
     ## Input in <projectid>#<fileid> format
     cfMod = waitFor(fetchMod(projectId))
+    manifest.rejectInstalledMod(cfMod.projectId)
     cfModFile = waitFor(fetchModFile(projectId, fileId))
 
   elif input.scanf("$i", projectId):
     ## Input in <projectid> format
     cfMod = waitFor(fetchMod(projectId))
+    manifest.rejectInstalledMod(cfMod.projectId)
     let cfModFiles = waitFor(fetchModFiles(cfMod.projectId))
     let selectedCfModFile = cfModFiles.selectModFile(manifest, strategy)
     if selectedCfModFile.isNone:
@@ -64,6 +68,7 @@ proc paxAdd*(input: string, strategy: string): void =
       echoError "No mods found for your search."
       quit(1)
     cfMod = cfModOption.get()
+    manifest.rejectInstalledMod(cfMod.projectId)
     let cfModFiles = waitFor(fetchModFiles(cfMod.projectId))
     let selectedCfModFile = cfModFiles.selectModFile(manifest, strategy)
     if selectedCfModFile.isNone:

@@ -55,6 +55,22 @@ block: # manifest write / read from disk
   let readM = readManifestFromDisk(path = mpath)
   doAssert m == readM
 
+block: # rejectInstalledMod
+  var m: Manifest
+  m.name = "testmodpack"
+  m.author = "testauthor"
+  m.version = "1.0.0"
+  m.mcVersion = "1.16.3".Version
+  m.files = @[ManifestFile(projectId: 1234, fileId: 100)]
+
+  let f = proc(projectId: int): int =
+    result = -1
+    m.rejectInstalledMod(projectId)
+    result = 1
+
+  doAssert f(1234) == -1
+  doAssert f(9999) == 1
+
 block: # requirePaxProject
   let f = proc(): int =
     result = -1

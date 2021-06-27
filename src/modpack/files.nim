@@ -125,6 +125,12 @@ template rejectPaxProject*: void =
     echoClr indentPrefix, "If you are sure you want to overwrite existing files, use the ", "--force".redFg, " option"
     return
 
+template rejectInstalledMod*(manifest: Manifest, projectId: int): void =
+  ## will error if the mod with the given projectis is already installed.
+  if manifest.isInstalled(projectId):
+    echoError "This mod is already installed."
+    return
+
 proc readManifestFromDisk*(path = manifestFile): Manifest =
   ## get a Manifest from disk (with `path` as the path)
   return readFile(path).parseJson.toManifest
