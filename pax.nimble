@@ -14,7 +14,7 @@ bin           = @["pax"]
 requires "nim >= 1.2.0"
 requires "regex >= 0.19.0"
 requires "therapist >= 0.2.0"
-requires "zippy >= 0.5.10"
+requires "https://github.com/guzba/zippy#8f06088"
 
 task test, "Test project":
     exec "testament pattern \"tests/**/*.nim\""
