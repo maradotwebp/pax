@@ -34,13 +34,19 @@ proc promptModChoice*(manifest: Manifest, cfMods: seq[CfMod], selectInstalled: b
     return none[CfMod]()
   if cfMods.len == 1:
     return some(cfMods[0])
+
+  var availableIndexes = newSeq[int]()
   
   echoRoot "RESULTS".dim
   for index, cfMod in cfMods:
     let isInstalled = manifest.isInstalled(cfMod.projectId)
     let isSelectable = selectInstalled == isInstalled
+    let selectIndex = cfMods.len - index
+    if isSelectable:
+      availableIndexes.add(selectIndex)
+
     let prefix: string =
-      if isSelectable: ("[" & $(cfMods.len - index) & "]").align(4)
+      if isSelectable: ("[" & $selectIndex & "]").align(4)
       else: "    "
     let postfix: string =
       if isInstalled: "[installed]"
@@ -48,11 +54,6 @@ proc promptModChoice*(manifest: Manifest, cfMods: seq[CfMod], selectInstalled: b
 
     echoMod(cfMod, prefix.cyanFg, postfix.magentaFg)
 
-  var availableIndexes = toSeq(1..cfMods.len)
-  if selectInstalled:
-    availableIndexes.keepIf((x) => manifest.isInstalled(cfMods[x - 1].projectId))
-  if not selectInstalled:
-    availableIndexes.keepIf((x) => not manifest.isInstalled(cfMods[x - 1].projectId))
-
+  echo $availableIndexes
   let selectedIndex = prompt("Select a mod", choices = availableIndexes.map((x) => $x), choiceFormat = "1 - " & $cfMods.len).parseInt
   return some(cfMods[cfMods.len - selectedIndex])
