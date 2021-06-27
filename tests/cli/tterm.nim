@@ -10,7 +10,7 @@ discard """
 
 import cli/clr, cli/term
 
-isTerminalColorEnabled = false
+terminalColorEnabledSetting = false
 
 block: # echos
   echoDebug "Hello!"

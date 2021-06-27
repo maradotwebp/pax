@@ -1,46 +1,65 @@
 import therapist
+import cli/clr, cli/prompt
 import cmd/add, cmd/expo, cmd/impo, cmd/init, cmd/list, cmd/remove, cmd/update, cmd/upgrade, cmd/version
 
-let strategyArg = newStringArg(@["-s", "--strategy"], choices = @["recommended", "newest"], defaultVal = "recommended", help = "how pax determines the version to install")
+let commonArgs = (
+  strategy: newStringArg(@["-s", "--strategy"], choices = @["recommended", "newest"], defaultVal = "recommended", help = "how pax determines the version to install"),
+  yes: newCountArg(@["-y"], help = "accept all interactive prompts"),
+  noColor: newCountArg(@["--no-color"], help = "disable colored output")
+)
 
 let initCmd = (
   force: newCountArg(@["-f", "--force"], help = "will override an existing project in this folder"),
   skipManifest: newCountArg(@["--skip-manifest"], help = "skip creating the modpack folder"),
   skipGit: newCountArg(@["--skip-git"], help = "skip creating a git repository"),
+  yes: commonArgs.yes,
+  noColor: commonArgs.noColor,
   help: newHelpArg()
 )
 
 let listCmd = (
   status: newCountArg(@["-s", "--status"], help = "display mod compability and freshness"),
   info: newCountArg(@["-i", "--info"], help = "display more mod information"),
+  yes: commonArgs.yes,
+  noColor: commonArgs.noColor,
   help: newHelpArg()
 ) 
 
 let addCmd = (
   input: newStringArg(@["<input>"], multi = true, help = "modname, projectid or curseforge url of the mod to add"),
-  strategy: strategyArg,
+  strategy: commonArgs.strategy,
+  yes: commonArgs.yes,
+  noColor: commonArgs.noColor,
   help: newHelpArg()
 )
 
 let removeCmd = (
   name: newStringArg(@["<name>"], help = "name of the mod to remove"),
+  yes: commonArgs.yes,
+  noColor: commonArgs.noColor,
   help: newHelpArg()
 )
 
 let updateCmd = (
   name: newStringArg(@["<name>"], help = "name of the mod to update"),
-  strategy: strategyArg,
+  strategy: commonArgs.strategy,
+  yes: commonArgs.yes,
+  noColor: commonArgs.noColor,
   help: newHelpArg()
 )
 
 let upgradeCmd = (
-  strategy: strategyArg,
+  strategy: commonArgs.strategy,
+  yes: commonArgs.yes,
+  noColor: commonArgs.noColor,
   help: newHelpArg()
 )
 
 let versionCmd = (
   version: newStringArg(@["<version>"], help = "Minecraft version"),
   loader: newStringArg(@["-l", "--loader"], choices = @["fabric", "forge"], help = "which loader to use"),
+  yes: commonArgs.yes,
+  noColor: commonArgs.noColor,
   help: newHelpArg()
 )
 
@@ -48,10 +67,14 @@ let importCmd = (
   path: newFileArg(@["<path>"], help = "path to file"),
   force: newCountArg(@["-f", "--force"], help = "will override the modpack folder if it already exists"),
   skipGit: newCountArg(@["--skip-git"], help = "skip creating a git repository"),
+  yes: commonArgs.yes,
+  noColor: commonArgs.noColor,
   help: newHelpArg()
 )
 
 let exportCmd = (
+  yes: commonArgs.yes,
+  noColor: commonArgs.noColor,
   help: newHelpArg()
 )
 
@@ -65,11 +88,20 @@ let spec = (
   version: newCommandArg(@["version"], versionCmd, help = "set minecraft & loader version"),
   impo: newCommandArg(@["import"], importCmd, help = "import from .zip"),
   expo: newCommandArg(@["export"], exportCmd, help = "export to .zip"),
+  yes: commonArgs.yes,
+  noColor: commonArgs.noColor,
   help: newHelpArg()
 )
 
 spec.parseOrHelp()
 
+# GLOBAL OPTIONS
+if commonArgs.yes.seen:
+  skipYNSetting = true
+if commonArgs.noColor.seen:
+  terminalColorEnabledSetting = false
+
+# COMMANDS
 if spec.init.seen:
   paxInit(force = initCmd.force.seen, skipManifest = initCmd.skipManifest.seen, skipGit = initCmd.skipGit.seen)
 elif spec.list.seen:

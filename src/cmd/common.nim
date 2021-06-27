@@ -54,6 +54,5 @@ proc promptModChoice*(manifest: Manifest, cfMods: seq[CfMod], selectInstalled: b
 
     echoMod(cfMod, prefix.cyanFg, postfix.magentaFg)
 
-  echo $availableIndexes
   let selectedIndex = prompt("Select a mod", choices = availableIndexes.map((x) => $x), choiceFormat = "1 - " & $cfMods.len).parseInt
   return some(cfMods[cfMods.len - selectedIndex])
