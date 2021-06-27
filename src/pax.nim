@@ -47,6 +47,7 @@ let versionCmd = (
 let importCmd = (
   path: newFileArg(@["<path>"], help = "path to file"),
   force: newCountArg(@["-f", "--force"], help = "will override the modpack folder if it already exists"),
+  skipGit: newCountArg(@["--skip-git"], help = "skip creating a git repository"),
   help: newHelpArg()
 )
 
@@ -87,7 +88,7 @@ elif spec.version.seen:
   else:
     paxVersion(version = versionCmd.version.value)
 elif spec.impo.seen:
-  paxImport(path = importCmd.path.value, force = importCmd.force.seen)
+  paxImport(path = importCmd.path.value, force = importCmd.force.seen, skipGit = importCmd.skipGit.seen)
 elif spec.expo.seen:
   paxExport()
 else:
