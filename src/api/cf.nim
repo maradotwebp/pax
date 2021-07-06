@@ -9,6 +9,7 @@ type
     name*: string
     downloadUrl*: string
     gameVersions*: seq[Version]
+    dependencies*: seq[int]
 
   CfMod* = object
     ## A curseforge mod. Contains multiple versions (CfModFile).
@@ -26,12 +27,20 @@ const
   ## base url of the forgesvc endpoint
   modsBaseUrl = "https://addons-ecs.forgesvc.net/api/v2"
 
+
+converter getDependencies(json: JsonNode): int =
+  var id: int = json{"id"}.getInt()
+  if id == 0:
+    id = json{"addonId"}.getInt()
+  return id
+
 converter toCfModFile(json: JsonNode): CfModFile =
   ## creates a CfModFile from forgesvc json
   result.fileId = json["id"].getInt()
   result.name = json["displayName"].getStr()
   result.downloadUrl = json["downloadUrl"].getStr()
   result.gameVersions = json["gameVersion"].getElems().map((x) => x.getStr().Version)
+  result.dependencies = json["dependencies"].getElems().map(getDependencies)
 
 converter toCfModFiles(json: JsonNode): seq[CfModFile] =
   ## creates a seq of CfModFiles from forgesvc json
@@ -60,7 +69,7 @@ converter toCfMods(json: JsonNode): seq[CfMod] =
 proc fetchModsByQuery*(query: string): Future[seq[CfMod]] {.async.} =
   ## search for CfMods by `query` on the Curseforge API
   const searchUrl = modsBaseUrl & "/addon/search?gameId=432&sectionId=6&pageSize=50"
-  let url = searchUrl & "&searchFilter=" & encodeUrl(query, usePlus=false)
+  let url = searchUrl & "&searchFilter=" & encodeUrl(query, usePlus = false)
   return fetch(url).await.parseJson.toCfMods
 
 proc fetchMod*(projectId: int): Future[CfMod] {.async.} =
