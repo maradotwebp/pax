@@ -5,7 +5,7 @@ import ../cli/prompt, ../cli/term
 import ../modpack/files, ../modpack/install
 import ../util/flow
 
-proc paxRemove*(name: string): void =
+proc paxRemove*(name: string, strategy: string, dependency: bool): void =
   ## remove an installed mod
   requirePaxProject()
 
@@ -27,8 +27,31 @@ proc paxRemove*(name: string): void =
   echoMod(cfMod, moreInfo = true)
   echo ""
 
-  returnIfNot promptYN("Are you sure you want to remove this mod?", default = true)
-  
+  returnIfNot promptYN("Are you sure you want to remove this mod?",
+      default = true)
+
+  if dependency:
+    let cfModFiles = waitFor(fetchModFiles(cfMod.projectId))
+    let selectedCfModFile = cfModFiles.selectModFile(manifest, strategy)
+    if not selectedCfModFile.isNone:
+      let cfModFile = selectedCfModFile.get()
+
+      if len(cfModFile.dependencies) > 0:
+        for id in cfModFile.dependencies:
+          let cfMod = waitFor(fetchMod(id))
+          if not manifest.isInstalled(id):
+            continue
+
+          let cfModFiles = waitFor(fetchModFiles(id))
+          let selectedCfModFile = cfModFiles.selectModFile(manifest, strategy)
+          if selectedCfModFile.isNone:
+            echoError "Warning: unable to resolve dependencies."
+          let cfModFile = selectedCfModFile.get()
+          echoInfo "Removing ", cfMod.name.cyanFg, ".."
+          manifest.removeMod(id)
+
+
+
   echoInfo "Removing ", cfMod.name.cyanFg, ".."
   manifest.removeMod(cfMod.projectId)
 
