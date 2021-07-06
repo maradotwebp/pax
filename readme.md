@@ -67,7 +67,10 @@ You'll need:
 * A C compiler (depending on your operating system, one might be already installed)
 
 Clone the repository - and you're good to go!
-To build the application, run `nimble build` & execute it with `./pax` (on Linux) or `./pax.exe` (on Windows).
+To build the application, run `nimble build` & execute it with `./pax` (on Linux) or `pax.exe` (on Windows).
+
+To create an optimized release build, add the `-d:release` flag to the build command.
+For SSL support (which may be needed when downloading mods), add the `-d:ssl` flag.
 
 ---
 
