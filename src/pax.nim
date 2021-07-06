@@ -34,6 +34,7 @@ let listCmd = (
 let addCmd = (
   input: newStringArg(@["<input>"], multi = true,
       help = "modname, projectid or curseforge url of the mod to add"),
+  noDepends: newCountArg(@["-d", "--no-deps"], help = "don't install dependencies"),
   strategy: commonArgs.strategy,
   yes: commonArgs.yes,
   noColor: commonArgs.noColor,
@@ -121,7 +122,8 @@ if spec.init.seen:
 elif spec.list.seen:
   paxList(status = listCmd.status.seen, info = listCmd.info.seen)
 elif spec.add.seen:
-  paxAdd(input = addCmd.input.value, strategy = addCmd.strategy.value)
+  paxAdd(input = addCmd.input.value, noDepends = not addCmd.noDepends.seen,
+      strategy = addCmd.strategy.value)
 elif spec.remove.seen:
   paxRemove(name = removeCmd.name.value, strategy = removeCmd.strategy.value)
 elif spec.update.seen:
