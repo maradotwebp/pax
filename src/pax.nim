@@ -42,8 +42,6 @@ let addCmd = (
 
 let removeCmd = (
   name: newStringArg(@["<name>"], help = "name of the mod to remove"),
-  rmDepends: newCountArg(@["-d", "--dependencies"],
-      help = "remove dependencies"),
   strategy: commonArgs.strategy,
   yes: commonArgs.yes,
   noColor: commonArgs.noColor,
@@ -125,8 +123,7 @@ elif spec.list.seen:
 elif spec.add.seen:
   paxAdd(input = addCmd.input.value, strategy = addCmd.strategy.value)
 elif spec.remove.seen:
-  paxRemove(name = removeCmd.name.value, strategy = removeCmd.strategy.value,
-      dependency = removeCmd.rmDepends.seen)
+  paxRemove(name = removeCmd.name.value, strategy = removeCmd.strategy.value)
 elif spec.update.seen:
   paxUpdate(name = updateCmd.name.value, strategy = updateCmd.strategy.value)
 elif spec.upgrade.seen:

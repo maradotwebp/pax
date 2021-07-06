@@ -5,7 +5,7 @@ import ../cli/prompt, ../cli/term
 import ../modpack/files, ../modpack/install
 import ../util/flow
 
-proc paxRemove*(name: string, strategy: string, dependency: bool): void =
+proc paxRemove*(name: string, strategy: string): void =
   ## remove an installed mod
   requirePaxProject()
 
@@ -30,13 +30,16 @@ proc paxRemove*(name: string, strategy: string, dependency: bool): void =
   returnIfNot promptYN("Are you sure you want to remove this mod?",
       default = true)
 
-  if dependency:
-    let cfModFiles = waitFor(fetchModFiles(cfMod.projectId))
-    let selectedCfModFile = cfModFiles.selectModFile(manifest, strategy)
-    if not selectedCfModFile.isNone:
-      let cfModFile = selectedCfModFile.get()
+  echoInfo "Removing ", cfMod.name.cyanFg, ".."
+  manifest.removeMod(cfMod.projectId)
 
-      if len(cfModFile.dependencies) > 0:
+  let cfModFiles = waitFor(fetchModFiles(cfMod.projectId))
+  let selectedCfModFile = cfModFiles.selectModFile(manifest, strategy)
+  if not selectedCfModFile.isNone:
+    let cfModFile = selectedCfModFile.get()
+
+    if len(cfModFile.dependencies) > 0:
+      if promptYN("Do you want to remove dependencies?", default = true):
         for id in cfModFile.dependencies:
           let cfMod = waitFor(fetchMod(id))
           if not manifest.isInstalled(id):
@@ -49,11 +52,6 @@ proc paxRemove*(name: string, strategy: string, dependency: bool): void =
           let cfModFile = selectedCfModFile.get()
           echoInfo "Removing ", cfMod.name.cyanFg, ".."
           manifest.removeMod(id)
-
-
-
-  echoInfo "Removing ", cfMod.name.cyanFg, ".."
-  manifest.removeMod(cfMod.projectId)
 
   echoDebug "Writing to manifest..."
   manifest.writeToDisk()
