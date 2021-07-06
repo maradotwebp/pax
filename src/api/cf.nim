@@ -27,12 +27,8 @@ const
   ## base url of the forgesvc endpoint
   modsBaseUrl = "https://addons-ecs.forgesvc.net/api/v2"
 
-
-converter getDependencies(json: JsonNode): int =
-  var id: int = json{"id"}.getInt()
-  if id == 0:
-    id = json{"addonId"}.getInt()
-  return id
+proc getDependencies(json: JsonNode): int =
+  return json["addonId"].getInt()
 
 converter toCfModFile(json: JsonNode): CfModFile =
   ## creates a CfModFile from forgesvc json

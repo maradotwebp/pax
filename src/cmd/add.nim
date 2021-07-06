@@ -91,22 +91,18 @@ proc paxAdd*(input: string, strategy: string): void =
   echoInfo "Resolving Dependencies..."
   ## Get Dependendencies
   if len(cfModFile.dependencies) > 0:
-    if promptYN("Do you want to install dependencies?", default = true):
-      for id in cfModFile.dependencies:
-        let cfMod = waitFor(fetchMod(id))
-        if manifest.isInstalled(id):
-          echoInfo cfMod.name.cyanFg, " is already installed, skipping"
-          continue
-        let cfModFiles = waitFor(fetchModFiles(id))
-        let selectedCfModFile = cfModFiles.selectModFile(manifest, strategy)
-        if selectedCfModFile.isNone:
-          echoError "Warning: unable to resolve dependencies."
-        let cfModFile = selectedCfModFile.get()
-        echoInfo "Installing ", cfMod.name.cyanFg, ".."
-        manifest.installMod(id, cfModFile.fileId)
-  else:
-    echoInfo "No dependencies found..."
+    for id in cfModFile.dependencies:
+      let cfMod = waitFor(fetchMod(id))
+      if manifest.isInstalled(id):
+        echoDebug cfMod.name.cyanFg, " is already installed, skipping"
+        continue
+      let cfModFiles = waitFor(fetchModFiles(id))
+      let selectedCfModFile = cfModFiles.selectModFile(manifest, strategy)
+      if selectedCfModFile.isNone:
+        echoError "Warning: unable to resolve dependencies."
+      let cfModFile = selectedCfModFile.get()
+      echoInfo "Installing ", cfMod.name.cyanFg, ".."
+      manifest.installMod(id, cfModFile.fileId)
 
   echoDebug "Writing to manifest.."
   manifest.writeToDisk()
-
