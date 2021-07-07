@@ -36,7 +36,10 @@ converter toCfModFile(json: JsonNode): CfModFile =
   result.name = json["displayName"].getStr()
   result.downloadUrl = json["downloadUrl"].getStr()
   result.gameVersions = json["gameVersion"].getElems().map((x) => x.getStr().Version)
-  result.dependencies = json["dependencies"].getElems().map(getDependencies)
+  result.dependencies = @[]
+  for depends in json["dependencies"].getElems():
+    if depends["type"].getInt() == 3:
+      result.dependencies.add(depends["addonId"].getInt())
 
 converter toCfModFiles(json: JsonNode): seq[CfModFile] =
   ## creates a seq of CfModFiles from forgesvc json
