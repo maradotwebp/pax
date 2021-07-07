@@ -9,6 +9,7 @@ type
     name*: string
     downloadUrl*: string
     gameVersions*: seq[Version]
+    dependencies*: seq[int]
 
   CfMod* = object
     ## A curseforge mod. Contains multiple versions (CfModFile).
@@ -32,6 +33,9 @@ converter toCfModFile(json: JsonNode): CfModFile =
   result.name = json["displayName"].getStr()
   result.downloadUrl = json["downloadUrl"].getStr()
   result.gameVersions = json["gameVersion"].getElems().map((x) => x.getStr().Version)
+  result.dependencies = collect(newSeq):
+    for depends in json["dependencies"].getElems():
+      if depends["type"].getInt() == 3: depends["addonId"].getInt()
 
 converter toCfModFiles(json: JsonNode): seq[CfModFile] =
   ## creates a seq of CfModFiles from forgesvc json
@@ -60,7 +64,7 @@ converter toCfMods(json: JsonNode): seq[CfMod] =
 proc fetchModsByQuery*(query: string): Future[seq[CfMod]] {.async.} =
   ## search for CfMods by `query` on the Curseforge API
   const searchUrl = modsBaseUrl & "/addon/search?gameId=432&sectionId=6&pageSize=50"
-  let url = searchUrl & "&searchFilter=" & encodeUrl(query, usePlus=false)
+  let url = searchUrl & "&searchFilter=" & encodeUrl(query, usePlus = false)
   return fetch(url).await.parseJson.toCfMods
 
 proc fetchMod*(projectId: int): Future[CfMod] {.async.} =

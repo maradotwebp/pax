@@ -9,7 +9,7 @@
 
 ![Screenshot](./screenshot.png)
 
-<a href="https://discord.com/invite/nWkXtEpm"><img src="https://discordapp.com/api/guilds/856647692984778762/widget.png?style=banner2" alt="Join the PAX Discord!"></a>
+<a href="https://discord.gg/GQ4MTquzyX"><img src="https://discordapp.com/api/guilds/856647692984778762/widget.png?style=banner2" alt="Join the PAX Discord!"></a>
 
 PAX is the solution to modern modpack development for Minecraft, usable both alone and in a team. It supports Forge & Fabric, can be version controlled with git, and one command is all you need in order to upload your pack to Curseforge.
 
@@ -20,11 +20,10 @@ PAX is the solution to modern modpack development for Minecraft, usable both alo
 - 📥 **Updating one mod or the whole modpack**, automatically selecting the best available version
 - 👁️ **Mod Information** (compability & whether an update is available) at one glance (see above picture ;) )
 - 💾 **Easily diffable files** for ease of working with git
+- 🤖 **Continous Integration** where you push your project to Github/Gitlab and a runner automatically builds your modpack and uploads it to Curseforge. It's magic, woohoo!
 
 *The following features are on the roadmap for the following weeks*:
 
-- 🤖 **Continous Integration**
-  - You push your project to Github/Gitlab and a runner automatically builds your modpack and uploads it to Curseforge. It's magic, woohoo!
 - 🔃 **Minecraft Development Environment**
   - Sync file changes between your project and your minecraft launcher, so you don't have to import your modpack every time you make a change.
 
@@ -42,7 +41,7 @@ Information about how to use PAX is available on the [wiki](https://github.com/f
 | Feature | PAX | Curseforge Launcher | GDLauncher | MultiMC |
 | ------- | --- | ------------------- | ---------- | ------- |
 | Creating a modpack | 👍 | 👍 | 👍 | 👍 |
-| Fabric | 👍 | 👍 | 👍 | 👍 |
+| Support for Fabric modpacks | 👍 | 👍 | 👍 | 👍 |
 | Adding/Removing mods | 👍 | 👍 | 👍 | 👍 |
 | Viewing installed mods | 👍 | 👍 | 👍 | 👍 |
 | Updating installed mods | 👍 | 👍 | 👍 | ❌ |
@@ -55,7 +54,7 @@ Information about how to use PAX is available on the [wiki](https://github.com/f
 | Multiple people working on one modpack | 👍 | ☹️ | ☹️ | ☹️ |
 | Concurrent mod updates | 👍 | ❌ | ❌ | ❌ | 
 | Version control support | 👍 | ❌ | ❌ | ❌ |
-| CI/CD support | W.I.P | ❌ | ❌ | ❌ |
+| CI/CD support | 👍 | ❌ | ❌ | ❌ |
 | Project/Minecraft Instance Sync | W.I.P | ❌ | ❌ | ❌ |
 
 ---
