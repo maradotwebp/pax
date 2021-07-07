@@ -14,7 +14,7 @@ block: # fetch mod by id
   doAssert cfMod.projectId == 220318
   doAssert cfMod.name == "Biomes O' Plenty"
 
-blocK: # fetch mod by slug
+block: # fetch mod by slug
   let cfMod = waitFor(fetchMod("appleskin"))
   doAssert cfMod.projectId == 248787
 
@@ -26,3 +26,7 @@ block: # fetch mod file
   let modFile = waitFor(fetchModFile(306770, 2992184))
   doAssert modFile.fileId == 2992184
   doAssert modFile.name == "Patchouli-1.0-21.jar"
+
+block: # Check if dependencies install
+  let modFile = waitFor(fetchModFile(243121, 3366626))
+  doAssert modFile.dependencies == @[250363]

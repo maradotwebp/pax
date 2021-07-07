@@ -5,13 +5,39 @@ import ../cli/term, ../cli/prompt
 import ../util/flow
 import ../modpack/files, ../modpack/install
 
+proc addDependencies(manifest: var Manifest, file: ManifestFile,
+    strategy: string): void =
+  ## Recursively add dependencies of a mod
+  for id in file.metadata.dependencies:
+    let cfMod = waitFor(fetchMod(id))
+    if manifest.isInstalled(id):
+      continue
+    let cfModFiles = waitFor(fetchModFiles(id))
+    let selectedCfModFile = cfModFiles.selectModFile(manifest, strategy)
+    if selectedCfModFile.isNone:
+      echoError "Warning: unable to resolve dependencies."
+    let cfModFile = selectedCfModFile.get()
+    echoInfo "Installing ", cfMod.name.cyanFg, ".."
+    let modToInstall = initManifestFile(
+      projectId = id,
+      fileId = cfModFile.fileId,
+      metadata = initManifestMetadata(
+        name = cfMod.name,
+        explicit = false,
+        dependencies = cfModFile.dependencies
+      )
+      
+    )
+    manifest.installMod(modToInstall)
+    addDependencies(manifest, modToinstall, strategy)
+
 proc strScan(input: string, strVal: var string, start: int): int =
   result = 0
   while start+result < input.len and not (input[start+result] in {'/', ' '}):
     inc result
   strVal = input.substr(start, start+result-1)
 
-proc paxAdd*(input: string, strategy: string): void =
+proc paxAdd*(input: string, noDepends: bool, strategy: string): void =
   ## add a new mod
   requirePaxProject()
 
@@ -26,7 +52,8 @@ proc paxAdd*(input: string, strategy: string): void =
   var cfMod: CfMod
   var cfModFile: CfModFile
 
-  if input.scanf("https://www.curseforge.com/minecraft/mc-mods/${strScan}/files/$i", slug, fileId):
+  if input.scanf("https://www.curseforge.com/minecraft/mc-mods/${strScan}/files/$i",
+      slug, fileId):
     ## Curseforge URL with slug & fileId
     cfMod = waitFor(fetchMod(slug))
     manifest.rejectInstalledMod(cfMod.projectId)
@@ -81,11 +108,24 @@ proc paxAdd*(input: string, strategy: string): void =
   echoMod(cfMod, moreInfo = true)
   echo ""
 
-  returnIfNot promptYN("Are you sure you want to install this mod?", default = true)
+  returnIfNot promptYN("Are you sure you want to install this mod?",
+      default = true)
 
   echoInfo "Installing ", cfMod.name.cyanFg, ".."
-  manifest.installMod(cfMod.projectId, cfModFile.fileId)
+  let modToInstall = initManifestFile(
+    projectId = cfMod.projectId,
+    fileId = cfModFile.fileId,
+    metadata = initManifestMetadata(
+      name = cfMod.name,
+      explicit = true,
+      dependencies = cfModFile.dependencies
+    )
+  )
+  manifest.installMod(modToInstall)
+
+  if not noDepends:
+    echoDebug "Resolving Dependencies..."
+    addDependencies(manifest, modToInstall, strategy)
 
   echoDebug "Writing to manifest.."
   manifest.writeToDisk()
-
