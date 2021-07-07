@@ -6,14 +6,19 @@ import ../mc/version
 export term
 
 type
+  ManifestMetadata* = object
+    ## Metadata for a given project in a manifest.json
+    name*: string
+    explicit*: bool
+    dependencies*: seq[int]
+
   ManifestFile* = object
     ## a file of a given project in a manifest.json.
     ## describes a specific version of a curseforge mod.
     projectId*: int
     fileId*: int
-    name*: string
-    explicit*: bool
-    dependencies*: seq[int]
+    metadata*: ManifestMetadata
+    
 
   Manifest* = object
     ## a project in a manifest.json.
@@ -39,22 +44,24 @@ const
   manifestFile* = joinPath(packFolder, "manifest.json")
   outputFolder* = joinPath(projectFolder, ".out/")
 
-proc initManifestFile*(projectId: int, fileId: int, name: string,
-    explicit: bool, dependencies: seq[int]): ManifestFile =
-  ## create a new manifest fmod object.
-  result.projectId = projectId
-  result.fileId = fileId
+proc initManifestMetadata*(name: string, explicit: bool, dependencies: seq[int]): ManifestMetadata =
   result.name = name
   result.explicit = explicit
   result.dependencies = dependencies
+
+proc initManifestFile*(projectId: int, fileId: int, metadata: ManifestMetadata): ManifestFile =
+  ## create a new manifest fmod object.
+  result.projectId = projectId
+  result.fileId = fileId
+  result.metadata = metadata
 
 converter toManifestFile(json: JsonNode): ManifestFile =
   ## creates a ManifestFile from manifest json
   result.projectId = json["projectID"].getInt()
   result.fileId = json["fileID"].getInt()
-  result.name = json["name"].getStr()
-  result.explicit = json["explicit"].getBool()
-  result.dependencies = json["dependencies"].getElems().map((x) => x.getInt())
+  result.metadata.name = json["__meta"]["name"].getStr()
+  result.metadata.explicit = json["__meta"]["explicit"].getBool()
+  result.metadata.dependencies = json["__meta"]["dependencies"].getElems().map((x) => x.getInt())
 
 converter toJson(file: ManifestFile): JsonNode {.used.} =
   ## creates the json for a manifest file `file`
@@ -62,9 +69,11 @@ converter toJson(file: ManifestFile): JsonNode {.used.} =
     "projectID": file.projectId,
     "fileID": file.fileId,
     "required": true,
-    "name": file.name,
-    "explicit": file.explicit,
-    "dependencies": file.dependencies
+    "__meta": {
+      "name": file.metadata.name,
+      "explicit": file.metadata.explicit,
+      "dependencies": file.metadata.dependencies
+    }
   }
 
 converter toManifest(json: JsonNode): Manifest =
@@ -104,7 +113,7 @@ proc isInstalled*(manifest: Manifest, projectId: int): bool =
 
 proc getDependents*(manifest: Manifest, projectId: int): seq[ManifestFile] =
   ## returns the dependents of the mod associated with projectId
-  return manifest.files.filter((file) => file.dependencies.any((dependency) =>
+  return manifest.files.filter((file) => file.metadata.dependencies.any((dependency) =>
       dependency == projectId))
 
 proc getFile*(manifest: Manifest, projectId: int): ManifestFile =

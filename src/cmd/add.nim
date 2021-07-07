@@ -8,7 +8,7 @@ import ../modpack/files, ../modpack/install
 proc addDependencies(manifest: var Manifest, file: ManifestFile,
     strategy: string): void =
   ## Recursively add dependencies of a mod
-  for id in file.dependencies:
+  for id in file.metadata.dependencies:
     let cfMod = waitFor(fetchMod(id))
     if manifest.isInstalled(id):
       continue
@@ -21,9 +21,12 @@ proc addDependencies(manifest: var Manifest, file: ManifestFile,
     let modToInstall = initManifestFile(
       projectId = id,
       fileId = cfModFile.fileId,
-      name = cfMod.name,
-      explicit = false,
-      dependencies = cfModFile.dependencies
+      metadata = initManifestMetadata(
+        name = cfMod.name,
+        explicit = false,
+        dependencies = cfModFile.dependencies
+      )
+      
     )
     manifest.installMod(modToInstall)
     addDependencies(manifest, modToinstall, strategy)
@@ -112,9 +115,11 @@ proc paxAdd*(input: string, noDepends: bool, strategy: string): void =
   let modToInstall = initManifestFile(
     projectId = cfMod.projectId,
     fileId = cfModFile.fileId,
-    name = cfMod.name,
-    explicit = true,
-    dependencies = cfModFile.dependencies
+    metadata = initManifestMetadata(
+      name = cfMod.name,
+      explicit = true,
+      dependencies = cfModFile.dependencies
+    )
   )
   manifest.installMod(modToInstall)
 
