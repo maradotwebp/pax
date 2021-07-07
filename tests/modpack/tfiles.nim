@@ -27,11 +27,15 @@ block: # manifest mods
   doAssert m.files.len == 0
 
   m.installMod(initManifestFile(
-    projectId = 111,
-    fileId = 200,
-    name = "test",
-    explicit = true,
-    dependencies = @[]))
+      projectId = 111,
+      fileId = 200,
+      initManifestMetadata(
+        name = "test",
+        explicit = true,
+        dependencies = @[]
+      )
+    )
+  )
   doAssert m.files.len == 1
   doAssert m.files[0].projectId == 111
   doAssert m.files[0].fileId == 200
