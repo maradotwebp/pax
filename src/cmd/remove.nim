@@ -14,9 +14,11 @@ proc removeDependencies(manifest: var Manifest, file: ManifestFile): void =
     let modToRemove = manifest.getFile(id)
 
     if not modToRemove.explicit:
-      echoInfo "Removing ", modToRemove.name.cyanFg, ".."
-      discard manifest.removeMod(id)
-      removeDependencies(manifest, modToRemove)
+      let dependents = manifest.getDependents(id)
+      if len(dependents) == 0:
+        echoInfo "Removing ", modToRemove.name.cyanFg, ".."
+        discard manifest.removeMod(id)
+        removeDependencies(manifest, modToRemove)
 
 
 proc paxRemove*(name: string, strategy: string): void =
