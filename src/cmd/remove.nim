@@ -45,7 +45,7 @@ proc paxRemove*(name: string, strategy: string): void =
   returnIfNot promptYN("Are you sure you want to remove this mod?",
       default = true)
 
-  var dependents = manifest.isDepended(cfMod.projectId)
+  var dependents = manifest.getDependents(cfMod.projectId)
   if len(dependents) > 0:
     echoRoot "Cannot remove ", cfMod.name.cyanFg, " it is a dependent of:"
     for dependent in dependents:

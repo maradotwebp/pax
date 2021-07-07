@@ -102,7 +102,7 @@ proc isInstalled*(manifest: Manifest, projectId: int): bool =
   ## returns true if the ManifestFile with the given `projectId` is installed
   return projectId in manifest.files.map((x) => x.projectId)
 
-proc isDepended*(manifest: Manifest, projectId: int): seq[ManifestFile] =
+proc getDependents*(manifest: Manifest, projectId: int): seq[ManifestFile] =
   ## returns true if `projectId` is found as a dependency for another mod
   return manifest.files.filter((file) => file.dependencies.any((dependency) =>
       dependency == projectId))
@@ -112,7 +112,7 @@ proc getFile*(manifest: Manifest, projectId: int): ManifestFile =
   return manifest.files.filter((x) => x.projectId == projectId)[0]
 
 proc installMod*(manifest: var Manifest, file: ManifestFile): void =
-  ## install a mod with the given `projectId`, `fileId`, `name`, `explicitly installed`, and `dependencies`
+  ## install a mod with a given ManifestFile
   manifest.files = manifest.files & file
 
 proc removeMod*(manifest: var Manifest, projectId: int): ManifestFile =
