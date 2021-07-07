@@ -11,6 +11,9 @@ type
     ## describes a specific version of a curseforge mod.
     projectId*: int
     fileId*: int
+    name*: string
+    explicit*: bool
+    dependencies*: seq[int]
 
   Manifest* = object
     ## a project in a manifest.json.
@@ -36,22 +39,32 @@ const
   manifestFile* = joinPath(packFolder, "manifest.json")
   outputFolder* = joinPath(projectFolder, ".out/")
 
-proc initManifestFile(projectId: int, fileId: int): ManifestFile =
+proc initManifestFile*(projectId: int, fileId: int, name: string,
+    explicit: bool, dependencies: seq[int]): ManifestFile =
   ## create a new manifest fmod object.
   result.projectId = projectId
   result.fileId = fileId
+  result.name = name
+  result.explicit = explicit
+  result.dependencies = dependencies
 
 converter toManifestFile(json: JsonNode): ManifestFile =
   ## creates a ManifestFile from manifest json
   result.projectId = json["projectID"].getInt()
   result.fileId = json["fileID"].getInt()
+  result.name = json["name"].getStr()
+  result.explicit = json["explicit"].getBool()
+  result.dependencies = json["dependencies"].getElems().map((x) => x.getInt())
 
 converter toJson(file: ManifestFile): JsonNode {.used.} =
   ## creates the json for a manifest file `file`
   result = %* {
     "projectID": file.projectId,
     "fileID": file.fileId,
-    "required": true
+    "required": true,
+    "name": file.name,
+    "explicit": file.explicit,
+    "dependencies": file.dependencies
   }
 
 converter toManifest(json: JsonNode): Manifest =
@@ -66,11 +79,11 @@ converter toManifest(json: JsonNode): Manifest =
 converter toJson(manifest: Manifest): JsonNode =
   ## creates the json for a manifest from `manifest`
   var manifest = manifest
-  manifest.files.sort((x,y) => cmp(x.projectId, y.projectId))
+  manifest.files.sort((x, y) => cmp(x.projectId, y.projectId))
   result = %* {
     "minecraft": {
       "version": $manifest.mcVersion,
-      "modLoaders": [{ "id": manifest.mcModloaderId, "primary": true }]
+      "modLoaders": [{"id": manifest.mcModloaderId, "primary": true}]
     },
     "manifestType": "minecraftModpack",
     "overrides": "overrides",
@@ -89,23 +102,31 @@ proc isInstalled*(manifest: Manifest, projectId: int): bool =
   ## returns true if the ManifestFile with the given `projectId` is installed
   return projectId in manifest.files.map((x) => x.projectId)
 
+proc isDepended*(manifest: Manifest, projectId: int): seq[ManifestFile] =
+  ## returns true if `projectId` is found as a dependency for another mod
+  return manifest.files.filter((file) => file.dependencies.any((dependency) =>
+      dependency == projectId))
+
 proc getFile*(manifest: Manifest, projectId: int): ManifestFile =
   ## returns the file with the provided `projectId`
   return manifest.files.filter((x) => x.projectId == projectId)[0]
 
-proc installMod*(manifest: var Manifest, projectId: int, fileId: int): void =
-  ## install a mod with the given `projectId` and `fileId`
-  let file = initManifestFile(projectId, fileId)
+proc installMod*(manifest: var Manifest, file: ManifestFile): void =
+  ## install a mod with the given `projectId`, `fileId`, `name`, `explicitly installed`, and `dependencies`
   manifest.files = manifest.files & file
 
-proc removeMod*(manifest: var Manifest, projectId: int): void =
-  ## remove a mod from the project with the given `projectId`
-  manifest.files.keepIf((x) => x.projectId != projectId)
+proc removeMod*(manifest: var Manifest, projectId: int): ManifestFile =
+  ## remove a mod from the project with the given `projectId`, returns removed mod.
+  for i, file in manifest.files:
+    if file.projectId == projectId:
+      manifest.files.delete(i, i)
+      return file
 
 proc updateMod*(manifest: var Manifest, projectId: int, fileId: int): void =
   ## update a mod with the given `projectId` to the given `fileId`
-  removeMod(manifest, projectId)
-  installMod(manifest, projectId, fileId)
+  var modToUpdate = removeMod(manifest, projectId)
+  modToUpdate.fileId = fileId
+  installMod(manifest, modToUpdate)
 
 template isPaxProject*: bool =
   ## returns true if the current folder is a pax project folder
@@ -122,7 +143,8 @@ template rejectPaxProject*: void =
   ## will error if the current folder is a pax project
   if isPaxProject:
     echoError "The current folder is already a pax project."
-    echoClr indentPrefix, "If you are sure you want to overwrite existing files, use the ", "--force".redFg, " option"
+    echoClr indentPrefix, "If you are sure you want to overwrite existing files, use the ",
+        "--force".redFg, " option"
     return
 
 template rejectInstalledMod*(manifest: Manifest, projectId: int): void =

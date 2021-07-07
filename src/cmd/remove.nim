@@ -5,6 +5,21 @@ import ../cli/prompt, ../cli/term
 import ../modpack/files, ../modpack/install
 import ../util/flow
 
+proc removeDependencies(manifest: var Manifest, file: ManifestFile): void =
+  ## Recursively removes dependencies of a mod
+  if len(file.dependencies) > 0:
+    for id in file.dependencies:
+      if not manifest.isInstalled(id):
+        continue
+
+      let modToRemove = manifest.getFile(id)
+
+      if not modToRemove.explicit:
+        echoInfo "Removing ", modToRemove.name.cyanFg, ".."
+        discard manifest.removeMod(id)
+        removeDependencies(manifest, modToRemove)
+
+
 proc paxRemove*(name: string, strategy: string): void =
   ## remove an installed mod
   requirePaxProject()
@@ -30,28 +45,16 @@ proc paxRemove*(name: string, strategy: string): void =
   returnIfNot promptYN("Are you sure you want to remove this mod?",
       default = true)
 
-  echoInfo "Removing ", cfMod.name.cyanFg, ".."
-  manifest.removeMod(cfMod.projectId)
+  var dependents = manifest.isDepended(cfMod.projectId)
+  if len(dependents) > 0:
+    echoRoot "Cannot remove ", cfMod.name.cyanFg, " it is a dependent of:"
+    for dependent in dependents:
+      echoClr indentPrefix, dependent.name
+  else:
+    echoInfo "Removing ", cfMod.name.cyanFg, ".."
+    let removedMod = manifest.removeMod(cfMod.projectId)
 
-  let cfModFiles = waitFor(fetchModFiles(cfMod.projectId))
-  let selectedCfModFile = cfModFiles.selectModFile(manifest, strategy)
-  if not selectedCfModFile.isNone:
-    let cfModFile = selectedCfModFile.get()
+    removeDependencies(manifest, removedMod)
 
-    if len(cfModFile.dependencies) > 0:
-      if promptYN("Do you want to remove dependencies?", default = true):
-        for id in cfModFile.dependencies:
-          let cfMod = waitFor(fetchMod(id))
-          if not manifest.isInstalled(id):
-            continue
-
-          let cfModFiles = waitFor(fetchModFiles(id))
-          let selectedCfModFile = cfModFiles.selectModFile(manifest, strategy)
-          if selectedCfModFile.isNone:
-            echoError "Warning: unable to resolve dependencies."
-          let cfModFile = selectedCfModFile.get()
-          echoInfo "Removing ", cfMod.name.cyanFg, ".."
-          manifest.removeMod(id)
-
-  echoDebug "Writing to manifest..."
-  manifest.writeToDisk()
+    echoDebug "Writing to manifest..."
+    manifest.writeToDisk()

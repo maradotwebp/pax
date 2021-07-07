@@ -26,7 +26,7 @@ block: # manifest mods
 
   doAssert m.files.len == 0
 
-  m.installMod(111, 200)
+  m.installMod(initManifestFile(111, 200, "test", true, @[]))
   doAssert m.files.len == 1
   doAssert m.files[0].projectId == 111
   doAssert m.files[0].fileId == 200
@@ -36,7 +36,7 @@ block: # manifest mods
   doAssert m.files[0].projectId == 111
   doAssert m.files[0].fileId == 300
 
-  m.removeMod(111)
+  discard m.removeMod(111)
   doAssert m.files.len == 0
 
 block: # manifest write / read from disk
