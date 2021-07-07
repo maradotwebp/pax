@@ -66,11 +66,10 @@ You'll need:
 * [Nim](https://nim-lang.org/)
 * A C compiler (depending on your operating system, one might be already installed)
 
-Clone the repository - and you're good to go!
-To build the application, run `nimble build` & execute it with `./pax` (on Linux) or `pax.exe` (on Windows).
+Clone and `cd` into the repository - and you're good to go!\
+Run `nimble buildDev` to build the application for development, or run `nimble buildProd` to create an optimized release build.\
+Execute the program with `./pax` (on Linux) or `pax.exe` (on Windows).
 
-To create an optimized release build, add the `-d:release` flag to the build command.
-For SSL support (which may be needed when downloading mods), add the `-d:ssl` flag.
 
 ---
 
