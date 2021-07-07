@@ -46,6 +46,7 @@ const
   outputFolder* = joinPath(projectFolder, ".out/")
 
 proc initManifestMetadata*(name: string, explicit: bool, dependencies: seq[int]): ManifestMetadata =
+  ## create a new manifest metadata object.
   result.name = name
   result.explicit = explicit
   result.dependencies = dependencies
