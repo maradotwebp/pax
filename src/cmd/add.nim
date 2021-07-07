@@ -109,7 +109,7 @@ proc paxAdd*(input: string, noDepends: bool, strategy: string): void =
       cfMod.name, true, cfModFile.dependencies)
   manifest.installMod(modToInstall)
 
-  if noDepends:
+  if not noDepends:
     echoDebug "Resolving Dependencies..."
     addDependencies(manifest, modToInstall, strategy)
 
