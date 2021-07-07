@@ -5,6 +5,25 @@ import ../cli/term, ../cli/prompt
 import ../util/flow
 import ../modpack/files, ../modpack/install
 
+proc addDependencies(manifest: var Manifest, file: ManifestFile,
+    strategy: string): void =
+  ## Recursively add dependencies of a mod
+  if len(file.dependencies) > 0:
+    for id in file.dependencies:
+      let cfMod = waitFor(fetchMod(id))
+      if manifest.isInstalled(id):
+        continue
+      let cfModFiles = waitFor(fetchModFiles(id))
+      let selectedCfModFile = cfModFiles.selectModFile(manifest, strategy)
+      if selectedCfModFile.isNone:
+        echoError "Warning: unable to resolve dependencies."
+      let cfModFile = selectedCfModFile.get()
+      echoInfo "Installing ", cfMod.name.cyanFg, ".."
+      let modToInstall = initManifestFile(id, cfModFile.fileId, cfMod.name,
+          false, cfModFile.dependencies)
+      manifest.installMod(modToInstall)
+      addDependencies(manifest, modToinstall, strategy)
+
 proc strScan(input: string, strVal: var string, start: int): int =
   result = 0
   while start+result < input.len and not (input[start+result] in {'/', ' '}):
@@ -86,26 +105,13 @@ proc paxAdd*(input: string, noDepends: bool, strategy: string): void =
       default = true)
 
   echoInfo "Installing ", cfMod.name.cyanFg, ".."
-  manifest.installMod(initManifestFile(cfMod.projectId,
-      cfModFile.fileId, cfMod.name, true, cfModFile.dependencies))
+  let modToInstall = initManifestFile(cfMod.projectId, cfModFile.fileId,
+      cfMod.name, true, cfModFile.dependencies)
+  manifest.installMod(modToInstall)
 
   if noDepends:
-    echoInfo "Resolving Dependencies..."
-    ## Get Dependendencies
-    if len(cfModFile.dependencies) > 0:
-      for id in cfModFile.dependencies:
-        let cfMod = waitFor(fetchMod(id))
-        if manifest.isInstalled(id):
-          echoDebug cfMod.name.cyanFg, " is already installed, skipping"
-          continue
-        let cfModFiles = waitFor(fetchModFiles(id))
-        let selectedCfModFile = cfModFiles.selectModFile(manifest, strategy)
-        if selectedCfModFile.isNone:
-          echoError "Warning: unable to resolve dependencies."
-        let cfModFile = selectedCfModFile.get()
-        echoInfo "Installing ", cfMod.name.cyanFg, ".."
-        manifest.installMod(initManifestFile(id, cfModFile.fileId,
-            cfMod.name, false, cfModFile.dependencies))
+    echoDebug "Resolving Dependencies..."
+    addDependencies(manifest, modToInstall, strategy)
 
   echoDebug "Writing to manifest.."
   manifest.writeToDisk()
