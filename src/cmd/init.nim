@@ -37,11 +37,12 @@ proc paxInitGit*(): void =
   const successValue = 0
   const noGitRepositoryValue = 128
 
-  if exec("git --version") == successValue:
-    if exec("git status") == noGitRepositoryValue:
-      echoDebug "Initializing .git repository.."
-      discard exec("git init")
-      discard exec("git branch -m main")
+  try:
+    if exec("git --version") == successValue:
+      if exec("git status") == noGitRepositoryValue:
+        echoDebug "Initializing .git repository.."
+        discard exec("git init")
+        discard exec("git branch -m main")
 
     echoDebug "Writing .gitignore.."
     writeFile(gitIgnoreFile, gitIgnoreContent)
@@ -49,6 +50,8 @@ proc paxInitGit*(): void =
     echoDebug "Writing Github CI file.."
     createDir(githubCiFolder)
     writeFile(githubCiFile, githubCiContent)
+  except OSError:
+    discard
 
 proc paxInit*(force: bool, skipManifest: bool, skipGit: bool): void =
   ## initialize a new modpack in the current directory
