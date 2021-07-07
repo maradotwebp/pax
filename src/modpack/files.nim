@@ -1,7 +1,8 @@
-import algorithm, json, os, sequtils, sugar
+import algorithm, json, os, sequtils, sugar, asyncdispatch
 import loader
 import ../cli/clr, ../cli/term
 import ../mc/version
+import ../api/cf
 
 export term
 
@@ -59,9 +60,16 @@ converter toManifestFile(json: JsonNode): ManifestFile =
   ## creates a ManifestFile from manifest json
   result.projectId = json["projectID"].getInt()
   result.fileId = json["fileID"].getInt()
-  result.metadata.name = json["__meta"]["name"].getStr()
-  result.metadata.explicit = json["__meta"]["explicit"].getBool()
-  result.metadata.dependencies = json["__meta"]["dependencies"].getElems().map((x) => x.getInt())
+  if json{"__meta"} == nil:
+    let cfMod = waitFor(fetchMod(json["projectID"].getInt()))
+    let cfModFile = waitFor(fetchModFile(json["projectID"].getInt(), json["fileID"].getInt()))
+    result.metadata.name = cfMod.name
+    result.metadata.explicit = true
+    result.metadata.dependencies = cfModFile.dependencies
+  else:
+    result.metadata.name = json["__meta"]["name"].getStr()
+    result.metadata.explicit = json["__meta"]["explicit"].getBool()
+    result.metadata.dependencies = json["__meta"]["dependencies"].getElems().map((x) => x.getInt())
 
 converter toJson(file: ManifestFile): JsonNode {.used.} =
   ## creates the json for a manifest file `file`
