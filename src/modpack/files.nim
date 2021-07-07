@@ -103,7 +103,7 @@ proc isInstalled*(manifest: Manifest, projectId: int): bool =
   return projectId in manifest.files.map((x) => x.projectId)
 
 proc getDependents*(manifest: Manifest, projectId: int): seq[ManifestFile] =
-  ## returns true if `projectId` is found as a dependency for another mod
+  ## returns the dependents of the mod associated with projectId
   return manifest.files.filter((file) => file.dependencies.any((dependency) =>
       dependency == projectId))
 

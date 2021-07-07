@@ -26,7 +26,12 @@ block: # manifest mods
 
   doAssert m.files.len == 0
 
-  m.installMod(initManifestFile(111, 200, "test", true, @[]))
+  m.installMod(initManifestFile(
+    projectId = 111,
+    fileId = 200,
+    name = "test",
+    explicit = true,
+    dependencies = @[]))
   doAssert m.files.len == 1
   doAssert m.files[0].projectId == 111
   doAssert m.files[0].fileId == 200
@@ -76,7 +81,7 @@ block: # requirePaxProject
     result = -1
     requirePaxProject()
     result = 1
-  
+
   removeDir(packFolder)
 
   doAssert f() == -1
@@ -92,7 +97,7 @@ block: # rejectPaxProject
     result = -1
     rejectPaxProject()
     result = 1
-  
+
   removeDir(packFolder)
 
   doAssert f() == 1
@@ -102,4 +107,3 @@ block: # rejectPaxProject
   writeFile(manifestFile, "Hello pax test")
 
   doAssert f() == -1
-  

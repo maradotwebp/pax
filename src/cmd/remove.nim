@@ -7,17 +7,16 @@ import ../util/flow
 
 proc removeDependencies(manifest: var Manifest, file: ManifestFile): void =
   ## Recursively removes dependencies of a mod
-  if len(file.dependencies) > 0:
-    for id in file.dependencies:
-      if not manifest.isInstalled(id):
-        continue
+  for id in file.dependencies:
+    if not manifest.isInstalled(id):
+      continue
 
-      let modToRemove = manifest.getFile(id)
+    let modToRemove = manifest.getFile(id)
 
-      if not modToRemove.explicit:
-        echoInfo "Removing ", modToRemove.name.cyanFg, ".."
-        discard manifest.removeMod(id)
-        removeDependencies(manifest, modToRemove)
+    if not modToRemove.explicit:
+      echoInfo "Removing ", modToRemove.name.cyanFg, ".."
+      discard manifest.removeMod(id)
+      removeDependencies(manifest, modToRemove)
 
 
 proc paxRemove*(name: string, strategy: string): void =
