@@ -32,6 +32,7 @@ block: # manifest mods
       initManifestMetadata(
         name = "test",
         explicit = true,
+        installOn = "both",
         dependencies = @[]
       )
     )
