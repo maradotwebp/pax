@@ -2,7 +2,7 @@ import asyncdispatch, asyncfutures, strutils, terminal, options, os
 import common
 import ../api/cf
 import ../cli/prompt, ../cli/term
-import ../modpack/files
+import ../modpack/files, ../modpack/install
 import ../util/flow
 
 proc removeDependencies(manifest: var Manifest, file: ManifestFile): void =

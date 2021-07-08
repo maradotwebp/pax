@@ -7,14 +7,10 @@ import ../api/cf
 export term
 
 type
-  serverOrClient* = enum
-    serverAndClient, serverOnly, clientOnly, unknown
-
   ManifestMetadata* = object
     ## Metadata for a given project in a manifest.json
     name*: string
     explicit*: bool
-    serverOrClient: serverOrClient
     dependencies*: seq[int]
 
   ManifestFile* = object
@@ -23,6 +19,7 @@ type
     projectId*: int
     fileId*: int
     metadata*: ManifestMetadata
+    
 
   Manifest* = object
     ## a project in a manifest.json.
@@ -53,35 +50,12 @@ proc initManifestMetadata*(name: string, explicit: bool, dependencies: seq[int])
   result.name = name
   result.explicit = explicit
   result.dependencies = dependencies
-  result.serverOrClient = serverAndClient
 
 proc initManifestFile*(projectId: int, fileId: int, metadata: ManifestMetadata): ManifestFile =
   ## create a new manifest fmod object.
   result.projectId = projectId
   result.fileId = fileId
   result.metadata = metadata
-
-converter toServerOrClient*(str: string): serverOrClient =
-  case str:
-    of "serverAndClient":
-      return serverAndClient
-    of "serverOnly":
-      return serverOnly
-    of "clientOnly":
-      return clientOnly
-    else:
-      return unknown
-
-converter toServerOrClient*(integer: int): serverOrClient =
-  case integer:
-    of 0:
-      return serverAndClient
-    of 1:
-      return serverOnly
-    of 2:
-      return clientOnly
-    else:
-      return unknown
 
 converter toManifestFile(json: JsonNode): ManifestFile =
   ## creates a ManifestFile from manifest json
@@ -96,7 +70,6 @@ converter toManifestFile(json: JsonNode): ManifestFile =
   else:
     result.metadata.name = json["__meta"]["name"].getStr()
     result.metadata.explicit = json["__meta"]["explicit"].getBool()
-    result.metadata.serverOrClient = json["__meta"]{"serverOrClient"}.getInt()
     result.metadata.dependencies = json["__meta"]["dependencies"].getElems().map((x) => x.getInt())
 
 converter toJson(file: ManifestFile): JsonNode {.used.} =
@@ -108,7 +81,6 @@ converter toJson(file: ManifestFile): JsonNode {.used.} =
     "__meta": {
       "name": file.metadata.name,
       "explicit": file.metadata.explicit,
-      "serverOrClient": file.metadata.serverOrClient,
       "dependencies": file.metadata.dependencies
     }
   }
