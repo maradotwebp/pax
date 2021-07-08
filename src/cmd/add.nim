@@ -24,6 +24,7 @@ proc addDependencies(manifest: var Manifest, file: ManifestFile,
       metadata = initManifestMetadata(
         name = cfMod.name,
         explicit = false,
+        installOn = "both",
         dependencies = cfModFile.dependencies
       )
       
@@ -118,6 +119,7 @@ proc paxAdd*(input: string, noDepends: bool, strategy: string): void =
     metadata = initManifestMetadata(
       name = cfMod.name,
       explicit = true,
+      installOn = "both",
       dependencies = cfModFile.dependencies
     )
   )
