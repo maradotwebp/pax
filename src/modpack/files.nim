@@ -12,6 +12,7 @@ type
     name*: string
     explicit*: bool
     installOn*: string
+    pinned*: bool
     dependencies*: seq[int]
 
   ManifestFile* = object
@@ -46,11 +47,12 @@ const
   manifestFile* = joinPath(packFolder, "manifest.json")
   outputFolder* = joinPath(projectFolder, ".out/")
 
-proc initManifestMetadata*(name: string, explicit: bool, installOn: string, dependencies: seq[int]): ManifestMetadata =
+proc initManifestMetadata*(name: string, explicit: bool, installOn: string, pinned: bool, dependencies: seq[int]): ManifestMetadata =
   ## create a new manifest metadata object.
   result.name = name
   result.explicit = explicit
   result.installOn = installOn
+  result.pinned = pinned
   result.dependencies = dependencies
 
 proc initManifestFile*(projectId: int, fileId: int, metadata: ManifestMetadata): ManifestFile =
@@ -72,8 +74,9 @@ converter toManifestFile(json: JsonNode): ManifestFile =
     result.metadata.dependencies = cfModFile.dependencies
   else:
     result.metadata.name = json["__meta"]["name"].getStr()
-    result.metadata.installOn = json["__meta"]["installOn"].getStr()
     result.metadata.explicit = json["__meta"]["explicit"].getBool()
+    result.metadata.installOn = json["__meta"]["installOn"].getStr()
+    result.metadata.pinned = json["__meta"]["pinned"].getBool()
     result.metadata.dependencies = json["__meta"]["dependencies"].getElems().map((x) => x.getInt())
 
 converter toJson(file: ManifestFile): JsonNode {.used.} =
@@ -86,6 +89,7 @@ converter toJson(file: ManifestFile): JsonNode {.used.} =
       "name": file.metadata.name,
       "explicit": file.metadata.explicit,
       "installOn": file.metadata.installOn,
+      "pinned": file.metadata.pinned,
       "dependencies": file.metadata.dependencies
     }
   }
