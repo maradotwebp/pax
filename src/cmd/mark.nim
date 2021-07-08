@@ -2,11 +2,11 @@ import asyncdispatch, asyncfutures, strutils, terminal, options, os
 import common
 import ../api/cf
 import ../cli/term, ../cli/prompt
-import ../modpack/files, ../modpack/install
+import ../modpack/files
 import ../util/flow
 
 proc paxMark*(name: string, mark: string): void =
-  ## mark a mod 
+  ## mark a mod
   requirePaxProject()
 
   var manifest = readManifestFromDisk()
@@ -28,6 +28,5 @@ proc paxMark*(name: string, mark: string): void =
   returnIfNot promptYN(("Are you sure you want to mark this mod as " & mark), default = true)
 
   echoInfo "Marked ", cfMod.name.cyanFg, " as ", mark
-  # manifest.updateMod(cfMod.projectId, cfModFile.get().fileId)
 
   manifest.writeToDisk()
