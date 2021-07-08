@@ -6,14 +6,15 @@ import ../modpack/files, ../modpack/install
 import ../util/flow
 
 proc paxMark*(name: string, mark: string): void =
-  ## mark a mod 
-  const possibleMarks = @["server","client","both","explicit","implicit","pinned","unpinned"]
+  const possibleMarks = @["server","client","both","explicit","implicit"]
   if not possibleMarks.contains(mark):
     echoError "mark must be one of:"
     for possible in possibleMarks:
       echo possible
     quit(1)
 
+
+  ## mark a mod 
   requirePaxProject()
 
   var manifest = readManifestFromDisk()
@@ -42,23 +43,13 @@ proc paxMark*(name: string, mark: string): void =
       name = cfMod.name,
       explicit = (mark == "explicit"),
       installOn = currentFileData.metadata.installOn,
-      pinned = currentFileData.metadata.pinned,
-      dependencies = currentFileData.metadata.dependencies
-    )
-  elif @["client","server","both"].contains(mark):
-    createdMetadata = initManifestMetadata(
-      name = cfMod.name,
-      explicit = currentFileData.metadata.explicit,
-      installOn = mark,
-      pinned = currentFileData.metadata.pinned,
       dependencies = currentFileData.metadata.dependencies
     )
   else:
     createdMetadata = initManifestMetadata(
       name = cfMod.name,
       explicit = currentFileData.metadata.explicit,
-      installOn = currentFileData.metadata.installOn,
-      pinned = (mark == "pinned"),
+      installOn = mark,
       dependencies = currentFileData.metadata.dependencies
     )
 
@@ -71,5 +62,6 @@ proc paxMark*(name: string, mark: string): void =
   manifest.installMod(modToInstall)
 
   echoInfo "Marked ", cfMod.name.cyanFg, " as ", mark
+  # manifest.updateMod(cfMod.projectId, cfModFile.get().fileId)
 
   manifest.writeToDisk()

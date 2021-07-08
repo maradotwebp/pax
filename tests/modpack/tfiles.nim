@@ -33,7 +33,6 @@ block: # manifest mods
         name = "test",
         explicit = true,
         installOn = "both",
-        pinned = false,
         dependencies = @[]
       )
     )
