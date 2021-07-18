@@ -13,10 +13,10 @@ proc paxVersion*(version: string, loader: string): void =
   var manifest = readManifestFromDisk()
   let loader = if loader == "": manifest.loader else: loader
 
-  let loaderId = waitFor(manifest.mcVersion.getMcModloaderId(loader))
+  let loaderId = waitFor(version.Version.getMcModloaderId(loader))
   if loaderId.isNone:
     echoError "This is either not a minecraft version, or no ", $loader, " version exists for this minecraft version."
-    quit(1)
+    return
 
   manifest.mcVersion = version.Version
   manifest.mcModloaderId = loaderId.get()

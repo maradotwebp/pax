@@ -58,3 +58,21 @@ block: # switch mc version & loader
   let manifest = readFile("./modpack/manifest.json").parseJson
   doAssert manifest["minecraft"]["version"].getStr() == "1.17.1"
   doAssert manifest["minecraft"]["modLoaders"][0]["id"].getStr().startsWith("fabric")
+
+block: # prevent invalid versions
+  removeDir("./modpack/")
+
+  createDir("./modpack")
+  writeFile("./modpack/manifest.json", manifestJson.pretty)
+  
+  paxVersion("1.12.2")
+  var manifest = readFile("./modpack/manifest.json").parseJson
+  doAssert manifest["minecraft"]["version"].getStr() == "1.12.2"
+
+  paxVersion("10.11.12")
+  manifest = readFile("./modpack/manifest.json").parseJson
+  doAssert manifest["minecraft"]["version"].getStr() == "1.12.2"
+
+  paxVersion("1.16.100")
+  manifest = readFile("./modpack/manifest.json").parseJson
+  doAssert manifest["minecraft"]["version"].getStr() == "1.12.2"
