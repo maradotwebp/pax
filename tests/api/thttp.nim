@@ -5,7 +5,9 @@ discard """
 import asyncdispatch, api/http
 
 block: # fetch
-  let googleHttpsReq = fetch("https://www.google.com")
-  let googleHttpReq = fetch("http://www.google.com")
   let exampleReq = fetch("https://example.com")
-  waitFor(googleHttpsReq and googleHttpReq and exampleReq)
+  discard waitFor(exampleReq)
+
+block: # post
+  let apiTestReq = post("https://httpbin.org/post", "{}")
+  discard waitFor(apiTestReq)
