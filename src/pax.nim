@@ -1,7 +1,7 @@
 import therapist
 import cli/clr, cli/prompt
 import cmd/add, cmd/expo, cmd/impo, cmd/init, cmd/list, cmd/remove, cmd/update,
-    cmd/upgrade, cmd/version
+    cmd/upgrade, cmd/version, cmd/mark
 
 let commonArgs = (
   strategy: newStringArg(@["-s", "--strategy"], choices = @["recommended",
@@ -43,6 +43,15 @@ let addCmd = (
 
 let removeCmd = (
   name: newStringArg(@["<name>"], help = "name of the mod to remove"),
+  strategy: commonArgs.strategy,
+  yes: commonArgs.yes,
+  noColor: commonArgs.noColor,
+  help: newHelpArg()
+)
+
+let markCmd = (
+  name: newStringArg(@["<name>"], help = "name of the mod to mark"),
+  mark: newStringArg(@["<mark>"], help = "marking"),
   strategy: commonArgs.strategy,
   yes: commonArgs.yes,
   noColor: commonArgs.noColor,
@@ -96,6 +105,7 @@ let spec = (
   add: newCommandArg(@["add"], addCmd, help = "add a new mod to the modpack"),
   remove: newCommandArg(@["remove"], removeCmd,
       help = "remove a mod from the modpack"),
+  mark: newCommandArg(@["mark"], markCmd, help = "mark a specific mod"),
   update: newCommandArg(@["update"], updateCmd, help = "update a specific mod"),
   upgrade: newCommandArg(@["upgrade"], upgradeCmd, help = "upgrade ALL mods"),
   version: newCommandArg(@["version"], versionCmd,
@@ -126,6 +136,8 @@ elif spec.add.seen:
       strategy = addCmd.strategy.value)
 elif spec.remove.seen:
   paxRemove(name = removeCmd.name.value, strategy = removeCmd.strategy.value)
+elif spec.mark.seen:
+  paxMark(name = markCmd.name.value, mark = markCmd.mark.value)
 elif spec.update.seen:
   paxUpdate(name = updateCmd.name.value, strategy = updateCmd.strategy.value)
 elif spec.upgrade.seen:
