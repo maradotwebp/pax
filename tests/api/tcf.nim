@@ -15,8 +15,12 @@ block: # fetch mod by id
   doAssert cfMod.name == "Biomes O' Plenty"
 
 block: # fetch mod by slug
-  let cfMod = waitFor(fetchMod("appleskin"))
+  var cfMod = waitFor(fetchMod("appleskin"))
   doAssert cfMod.projectId == 248787
+  cfMod = waitFor(fetchMod("dtbop"))
+  doAssert cfMod.projectId == 289529
+  cfMod = waitFor(fetchMod("dtphc"))
+  doAssert cfMod.projectId == 307560
 
 block: # fetch mod files
   let modFiles = waitFor(fetchModFiles(248787))

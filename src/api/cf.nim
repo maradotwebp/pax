@@ -74,8 +74,13 @@ proc fetchMod*(projectId: int): Future[CfMod] {.async.} =
 
 proc fetchMod*(slug: string): Future[CfMod] {.async.} =
   ## get the mod matching the `slug`
-  let cfMods = await fetchModsByQuery(slug)
-  return cfMods.filter((x) => x.websiteUrl.endsWith(slug))[0]
+  let query = "{ addons(slug: \"" & slug & "\") { id }}"
+  let reqBody = %* {
+    "query": query
+  }
+  let curseProxyInfo = await post("https://curse.nikky.moe/graphql", body = $reqBody)
+  let projectId = curseProxyInfo.parseJson["data"]["addons"][0]["id"].getInt()
+  return await fetchMod(projectId)
 
 proc fetchModFiles*(projectId: int): Future[seq[CfModFile]] {.async.} =
   ## get all mod files associated with the given `projectId`
