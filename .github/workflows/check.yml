@@ -1,9 +1,8 @@
-name: pr
+name: check
 
-on: pull_request
+on: [push, pull_request]
 
 env:
-  APP_NAME: 'pax'
   NIM_VERSION: 'stable'
 
 jobs:
