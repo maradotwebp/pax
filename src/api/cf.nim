@@ -7,7 +7,7 @@ type
     ## A mod release type.
     release = 1, beta = 2, alpha = 3
 
-  CfModFile* = object
+  CfModFile* = ref object
     ## A specific version of a curseforge mod.
     fileId*: int
     name*: string
@@ -16,7 +16,7 @@ type
     gameVersions*: seq[Version]
     dependencies*: seq[int]
 
-  CfMod* = object
+  CfMod* = ref object
     ## A curseforge mod. Contains multiple versions (CfModFile).
     projectId*: int
     name*: string
@@ -48,7 +48,7 @@ converter toCfModFiles(json: JsonNode): seq[CfModFile] =
   return json.getElems().map(toCfModFile)
 
 converter toCfMod(json: JsonNode): CfMod =
-  ## creates a mcmod object from forgesvc json
+  ## creates a CfMod from forgesvc json
   result.projectId = json["id"].getInt()
   result.name = json["name"].getStr()
   result.description = json["summary"].getStr()
@@ -64,7 +64,7 @@ converter toCfMod(json: JsonNode): CfMod =
     result.gameVersionLatestFiles.add((version: version, fileId: fileId))
 
 converter toCfMods(json: JsonNode): seq[CfMod] =
-  ## creates a sequence of mcmod objects from forgesvc json
+  ## creates a seq of CfMods from forgesvc json
   result = json.getElems().map(toCfMod)
 
 proc fetchModsByQuery*(query: string): Future[seq[CfMod]] {.async.} =
@@ -80,9 +80,8 @@ proc fetchMod*(projectId: int): Future[CfMod] {.async.} =
 
 proc fetchMod*(slug: string): Future[CfMod] {.async.} =
   ## get the mod matching the `slug`
-  let query = "{ addons(slug: \"" & slug & "\") { id }}"
   let reqBody = %* {
-    "query": query
+    "query": "{ addons(slug: \"" & slug & "\") { id }}"
   }
   let curseProxyInfo = await post("https://curse.nikky.moe/graphql", body = $reqBody)
   let projectId = curseProxyInfo.parseJson["data"]["addons"][0]["id"].getInt()

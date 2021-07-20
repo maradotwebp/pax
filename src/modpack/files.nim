@@ -7,21 +7,20 @@ import ../api/cf
 export term
 
 type
-  ManifestMetadata* = object
+  ManifestMetadata* = ref object
     ## Metadata for a given project in a manifest.json
     name*: string
     explicit*: bool
     dependencies*: seq[int]
 
-  ManifestFile* = object
+  ManifestFile* = ref object
     ## a file of a given project in a manifest.json.
     ## describes a specific version of a curseforge mod.
     projectId*: int
     fileId*: int
     metadata*: ManifestMetadata
     
-
-  Manifest* = object
+  Manifest* = ref object
     ## a project in a manifest.json.
     ## describes the modpack.
     name*: string
