@@ -1,6 +1,6 @@
 discard """"""
 
-import mc/version
+import modpack/version
 
 block: # equality
   doAssert "1.16.4".Version == "1.16.4".Version

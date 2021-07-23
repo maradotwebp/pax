@@ -1,9 +1,7 @@
-import asyncdispatch, asyncfutures, strutils, terminal, options, os
-import common
+import asyncdispatch, asyncfutures, options, os
 import ../api/metadata
 import ../cli/term
-import ../mc/version
-import ../modpack/files, ../modpack/loader
+import ../modpack/manifest, ../modpack/loader, ../modpack/version
 
 proc paxVersion*(version: string, loader: string): void =
   ## change the minecraft version (and set the recommended forge version for it)
