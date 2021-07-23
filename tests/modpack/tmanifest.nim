@@ -1,11 +1,12 @@
 discard """"""
 
-import mc/version, modpack/files, modpack/loader, random, os
+import random, os, json
+import modpack/loader, modpack/manifest, modpack/version
 
 randomize()
 
 block: # manifest loader
-  var m: Manifest
+  let m = Manifest()
   m.name = "testmodpack"
   m.author = "testauthor"
   m.version = "1.0.0"
@@ -18,7 +19,7 @@ block: # manifest loader
   doAssert m.loader == Loader.forge
 
 block: # manifest mods
-  var m: Manifest
+  var m = Manifest()
   m.name = "testmodpack"
   m.author = "testauthor"
   m.version = "1.0.0"
@@ -49,7 +50,7 @@ block: # manifest mods
   doAssert m.files.len == 0
 
 block: # manifest write / read from disk
-  var m: Manifest
+  let m = Manifest()
   m.name = "testmodpack"
   m.author = "testauthor"
   m.version = "1.0.0"
@@ -62,10 +63,10 @@ block: # manifest write / read from disk
 
   m.writeToDisk(path = mpath)
   let readM = readManifestFromDisk(path = mpath)
-  doAssert m == readM
+  doAssert m.toJson == readM.toJson
 
 block: # rejectInstalledMod
-  var m: Manifest
+  let m = Manifest()
   m.name = "testmodpack"
   m.author = "testauthor"
   m.version = "1.0.0"

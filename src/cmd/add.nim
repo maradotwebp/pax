@@ -3,28 +3,27 @@ import common
 import ../api/cf
 import ../cli/term, ../cli/prompt
 import ../util/flow
-import ../modpack/files, ../modpack/install
+import ../modpack/install, ../modpack/manifest, ../modpack/mods
 
-proc addDependencies(manifest: var Manifest, file: ManifestFile,
-    strategy: string): void =
+proc addDependencies(manifest: var Manifest, file: ManifestFile, strategy: string): void =
   ## Recursively add dependencies of a mod
   for id in file.metadata.dependencies:
-    let cfMod = waitFor(fetchMod(id))
+    let mcMod = waitFor(fetchMod(id))
     if manifest.isInstalled(id):
       continue
-    let cfModFiles = waitFor(fetchModFiles(id))
-    let selectedCfModFile = cfModFiles.selectModFile(manifest, strategy)
-    if selectedCfModFile.isNone:
+    let mcModFiles = waitFor(fetchModFiles(id))
+    let selectedMcModFile = mcModFiles.selectModFile(manifest, strategy)
+    if selectedMcModFile.isNone:
       echoError "Warning: unable to resolve dependencies."
-    let cfModFile = selectedCfModFile.get()
-    echoInfo "Installing ", cfMod.name.cyanFg, ".."
+    let mcModFile = selectedMcModFile.get()
+    echoInfo "Installing ", mcMod.name.cyanFg, ".."
     let modToInstall = initManifestFile(
       projectId = id,
-      fileId = cfModFile.fileId,
+      fileId = mcModFile.fileId,
       metadata = initManifestMetadata(
-        name = cfMod.name,
+        name = mcMod.name,
         explicit = false,
-        dependencies = cfModFile.dependencies
+        dependencies = mcModFile.dependencies
       )
       
     )
@@ -49,76 +48,74 @@ proc paxAdd*(input: string, noDepends: bool, strategy: string): void =
   var projectId: int
   var fileId: int
   var slug: string
-  var cfMod: CfMod
-  var cfModFile: CfModFile
+  var mcMod: McMod
+  var mcModFile: McModFile
 
-  if input.scanf("https://www.curseforge.com/minecraft/mc-mods/${strScan}/files/$i",
-      slug, fileId):
+  if input.scanf("https://www.curseforge.com/minecraft/mc-mods/${strScan}/files/$i", slug, fileId):
     ## Curseforge URL with slug & fileId
-    cfMod = waitFor(fetchMod(slug))
-    manifest.rejectInstalledMod(cfMod.projectId)
-    cfModFile = waitFor(fetchModFile(cfMod.projectId, fileId))
+    mcMod = waitFor(fetchMod(slug))
+    manifest.rejectInstalledMod(mcMod.projectId)
+    mcModFile = waitFor(fetchModFile(mcMod.projectId, fileId))
 
   elif input.scanf("https://www.curseforge.com/minecraft/mc-mods/${strScan}", slug):
     ## Curseforge URL with slug
-    cfMod = waitFor(fetchMod(slug))
-    manifest.rejectInstalledMod(cfMod.projectId)
-    let cfModFiles = waitFor(fetchModFiles(cfMod.projectId))
-    let selectedCfModFile = cfModFiles.selectModFile(manifest, strategy)
-    if selectedCfModFile.isNone:
+    mcMod = waitFor(fetchMod(slug))
+    manifest.rejectInstalledMod(mcMod.projectId)
+    let mcModFiles = waitFor(fetchModFiles(mcMod.projectId))
+    let selectedMcModFile = mcModFiles.selectModFile(manifest, strategy)
+    if selectedMcModFile.isNone:
       echoError "No compatible version found."
       quit(1)
-    cfModFile = selectedCfModFile.get()
+    mcModFile = selectedMcModFile.get()
 
   elif input.scanf("$i#$i", projectId, fileId):
     ## Input in <projectid>#<fileid> format
-    cfMod = waitFor(fetchMod(projectId))
-    manifest.rejectInstalledMod(cfMod.projectId)
-    cfModFile = waitFor(fetchModFile(projectId, fileId))
+    mcMod = waitFor(fetchMod(projectId))
+    manifest.rejectInstalledMod(mcMod.projectId)
+    mcModFile = waitFor(fetchModFile(projectId, fileId))
 
   elif input.scanf("$i", projectId):
     ## Input in <projectid> format
-    cfMod = waitFor(fetchMod(projectId))
-    manifest.rejectInstalledMod(cfMod.projectId)
-    let cfModFiles = waitFor(fetchModFiles(cfMod.projectId))
-    let selectedCfModFile = cfModFiles.selectModFile(manifest, strategy)
-    if selectedCfModFile.isNone:
+    mcMod = waitFor(fetchMod(projectId))
+    manifest.rejectInstalledMod(mcMod.projectId)
+    let mcModFiles = waitFor(fetchModFiles(mcMod.projectId))
+    let selectedMcModFile = mcModFiles.selectModFile(manifest, strategy)
+    if selectedMcModFile.isNone:
       echoError "No compatible version found."
       quit(1)
-    cfModFile = selectedCfModFile.get()
+    mcModFile = selectedMcModFile.get()
 
   else:
     ## Just search normally
-    let cfMods = waitFor(fetchModsByQuery(input))
-    let cfModOption = manifest.promptModChoice(cfMods, selectInstalled = false)
-    if cfModOption.isNone:
+    let mcMods = waitFor(fetchModsByQuery(input))
+    let mcModOption = manifest.promptModChoice(mcMods, selectInstalled = false)
+    if mcModOption.isNone:
       echoError "No mods found for your search."
       quit(1)
-    cfMod = cfModOption.get()
-    manifest.rejectInstalledMod(cfMod.projectId)
-    let cfModFiles = waitFor(fetchModFiles(cfMod.projectId))
-    let selectedCfModFile = cfModFiles.selectModFile(manifest, strategy)
-    if selectedCfModFile.isNone:
+    mcMod = mcModOption.get()
+    manifest.rejectInstalledMod(mcMod.projectId)
+    let mcModFiles = waitFor(fetchModFiles(mcMod.projectId))
+    let selectedMcModFile = mcModFiles.selectModFile(manifest, strategy)
+    if selectedMcModFile.isNone:
       echoError "No compatible version found."
       quit(1)
-    cfModFile = selectedCfModFile.get()
+    mcModFile = selectedMcModFile.get()
 
   echo ""
   echoRoot "SELECTED MOD".dim
-  echoMod(cfMod, moreInfo = true)
+  echoMod(mcMod, moreInfo = true)
   echo ""
 
-  returnIfNot promptYN("Are you sure you want to install this mod?",
-      default = true)
+  returnIfNot promptYN("Are you sure you want to install this mod?", default = true)
 
-  echoInfo "Installing ", cfMod.name.cyanFg, ".."
+  echoInfo "Installing ", mcMod.name.cyanFg, ".."
   let modToInstall = initManifestFile(
-    projectId = cfMod.projectId,
-    fileId = cfModFile.fileId,
+    projectId = mcMod.projectId,
+    fileId = mcModFile.fileId,
     metadata = initManifestMetadata(
-      name = cfMod.name,
+      name = mcMod.name,
       explicit = true,
-      dependencies = cfModFile.dependencies
+      dependencies = mcModFile.dependencies
     )
   )
   manifest.installMod(modToInstall)

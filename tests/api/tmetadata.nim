@@ -2,7 +2,9 @@ discard """
   cmd: "nim $target --hints:on -d:testing -d:ssl --nimblePath:tests/deps $options $file"
 """
 
-import asyncdispatch, api/metadata, mc/version, modpack/loader, strutils, options
+import asyncdispatch, strutils, options
+import api/metadata
+import modpack/loader, modpack/version
 
 block: # getMcModloaderId - Fabric
   doAssert waitFor(getMcModloaderId("1.12.2".Version, Loader.fabric)).isNone

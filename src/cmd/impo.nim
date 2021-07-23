@@ -1,7 +1,7 @@
 import os, zippy/ziparchives
-import common, init
-import ../cli/term
-import ../modpack/files
+import init
+import ../cli/clr, ../cli/term
+import ../modpack/manifest
 
 proc paxImport*(path: string, force: bool, skipGit: bool): void =
     ## import the modpack from .zip
@@ -25,7 +25,7 @@ proc paxImport*(path: string, force: bool, skipGit: bool): void =
 
     if not fileExists(manifestFile):
         echoError "Could not import .zip: manifest.json not found."
-        styledEcho indentPrefix, "Make sure your .zip file is a valid minecraft modpack in the curseforge modpack format."
+        echoClr indentPrefix, "Make sure your .zip file is a valid minecraft modpack in the curseforge modpack format."
         quit(1)
     
     let manifest = readManifestFromDisk()

@@ -1,27 +1,26 @@
 import algorithm, json, os, sequtils, sugar, asyncdispatch
 import loader
-import ../cli/clr, ../cli/term
-import ../mc/version
 import ../api/cf
+import ../cli/clr, ../cli/term
+import ../modpack/version
 
 export term
 
 type
-  ManifestMetadata* = object
+  ManifestMetadata* = ref object
     ## Metadata for a given project in a manifest.json
     name*: string
     explicit*: bool
     dependencies*: seq[int]
 
-  ManifestFile* = object
+  ManifestFile* = ref object
     ## a file of a given project in a manifest.json.
     ## describes a specific version of a curseforge mod.
     projectId*: int
     fileId*: int
     metadata*: ManifestMetadata
     
-
-  Manifest* = object
+  Manifest* = ref object
     ## a project in a manifest.json.
     ## describes the modpack.
     name*: string
@@ -47,26 +46,30 @@ const
 
 proc initManifestMetadata*(name: string, explicit: bool, dependencies: seq[int]): ManifestMetadata =
   ## create a new manifest metadata object.
+  result = ManifestMetadata()
   result.name = name
   result.explicit = explicit
   result.dependencies = dependencies
 
 proc initManifestFile*(projectId: int, fileId: int, metadata: ManifestMetadata): ManifestFile =
   ## create a new manifest fmod object.
+  result = ManifestFile()
   result.projectId = projectId
   result.fileId = fileId
   result.metadata = metadata
 
 converter toManifestFile(json: JsonNode): ManifestFile =
   ## creates a ManifestFile from manifest json
+  result = ManifestFile()
   result.projectId = json["projectID"].getInt()
   result.fileId = json["fileID"].getInt()
+  result.metadata = ManifestMetadata()
   if json{"__meta"} == nil:
-    let cfMod = waitFor(fetchMod(json["projectID"].getInt()))
-    let cfModFile = waitFor(fetchModFile(json["projectID"].getInt(), json["fileID"].getInt()))
-    result.metadata.name = cfMod.name
+    let mcMod = waitFor(fetchMod(json["projectID"].getInt()))
+    let mcModFile = waitFor(fetchModFile(json["projectID"].getInt(), json["fileID"].getInt()))
+    result.metadata.name = mcMod.name
     result.metadata.explicit = true
-    result.metadata.dependencies = cfModFile.dependencies
+    result.metadata.dependencies = mcModFile.dependencies
   else:
     result.metadata.name = json["__meta"]["name"].getStr()
     result.metadata.explicit = json["__meta"]["explicit"].getBool()
@@ -87,6 +90,7 @@ converter toJson(file: ManifestFile): JsonNode {.used.} =
 
 converter toManifest(json: JsonNode): Manifest =
   ## creates a Manifest from manifest json
+  result = Manifest()
   result.name = json["name"].getStr()
   result.author = json["author"].getStr()
   result.version = json["version"].getStr()
@@ -94,7 +98,7 @@ converter toManifest(json: JsonNode): Manifest =
   result.mcModloaderId = json["minecraft"]["modLoaders"][0]["id"].getStr()
   result.files = json["files"].getElems().map(toManifestFile)
 
-converter toJson(manifest: Manifest): JsonNode =
+converter toJson*(manifest: Manifest): JsonNode =
   ## creates the json for a manifest from `manifest`
   var manifest = manifest
   manifest.files.sort((x, y) => cmp(x.projectId, y.projectId))
@@ -122,8 +126,7 @@ proc isInstalled*(manifest: Manifest, projectId: int): bool =
 
 proc getDependents*(manifest: Manifest, projectId: int): seq[ManifestFile] =
   ## returns the dependents of the mod associated with projectId
-  return manifest.files.filter((file) => file.metadata.dependencies.any((dependency) =>
-      dependency == projectId))
+  return manifest.files.filter((file) => file.metadata.dependencies.any((d) => d == projectId))
 
 proc getFile*(manifest: Manifest, projectId: int): ManifestFile =
   ## returns the file with the provided `projectId`
@@ -161,8 +164,7 @@ template rejectPaxProject*: void =
   ## will error if the current folder is a pax project
   if isPaxProject:
     echoError "The current folder is already a pax project."
-    echoClr indentPrefix, "If you are sure you want to overwrite existing files, use the ",
-        "--force".redFg, " option"
+    echoClr indentPrefix, "If you are sure you want to overwrite existing files, use the ", "--force".redFg, " option"
     return
 
 template rejectInstalledMod*(manifest: Manifest, projectId: int): void =

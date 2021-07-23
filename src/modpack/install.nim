@@ -1,7 +1,6 @@
 import options, sequtils
-import files, loader, modinfo
-import ../api/cf
-import ../mc/version
+import manifest, modinfo, mods
+import ../modpack/loader, ../modpack/version
 
 type
   InstallStrategy* = enum
@@ -19,22 +18,22 @@ converter toInstallStrategy*(str: string): InstallStrategy =
     of "newest": return InstallStrategy.newest
     else: raise newException(ValueError, "cannot convert " & str & " to InstallStrategy")
 
-proc isRecommendedMod(file: CfModFile, modpackVersion: Version): bool {.used.} =
+proc isRecommendedMod(file: McModFile, modpackVersion: Version): bool {.used.} =
   ## returns true if `file` is compatible according to InstallStrategy.recommended.
   return modpackVersion in file.gameVersions
 
-proc isStableMod(file: CfModFile, modpackVersion: Version): bool {.used.} =
+proc isStableMod(file: McModFile, modpackVersion: Version): bool {.used.} =
   ## returns true if `file` is compatible according to InstallStrategy.stable.
-  return isRecommendedMod(file, modpackVersion) and file.releaseType == CfModFileReleaseType.release
+  return isRecommendedMod(file, modpackVersion) and file.releaseType == McModFileReleaseType.release
 
-proc isNewestMod(file: CfModFile, modpackVersion: Version): bool {.used.} =
+proc isNewestMod(file: McModFile, modpackVersion: Version): bool {.used.} =
   ## returns true if `file` is compatible according to InstallStrategy.newest.
   return modpackVersion.minor in file.gameVersions.map(minor)
 
-proc selectModFile*(cfModFiles: seq[CfModFile], manifest: Manifest, strategy: InstallStrategy): Option[CfModFile] = 
-  ## Select the best mod file out of `cfModFiles`, given the `manifest` and `strategy`.
-  var latestFile = none[CfModFile]()
-  for file in cfModFiles:
+proc selectModFile*(files: seq[McModFile], manifest: Manifest, strategy: InstallStrategy): Option[McModFile] = 
+  ## Select the best mod file out of `files`, given the `manifest` and `strategy`.
+  var latestFile = none[McModFile]()
+  for file in files:
     let onFabric = manifest.loader == Loader.fabric and file.isFabricMod
     let onForge = manifest.loader == Loader.forge and file.isForgeMod
     let onStable = strategy == InstallStrategy.stable and file.isStableMod(manifest.mcVersion)
@@ -47,8 +46,8 @@ proc selectModFile*(cfModFiles: seq[CfModFile], manifest: Manifest, strategy: In
   
   if latestFile.isNone:
     return case strategy:
-      of InstallStrategy.stable: selectModFile(cfModFiles, manifest, InstallStrategy.recommended)
-      of InstallStrategy.recommended: selectModFile(cfModFiles, manifest, InstallStrategy.newest)
+      of InstallStrategy.stable: selectModFile(files, manifest, InstallStrategy.recommended)
+      of InstallStrategy.recommended: selectModFile(files, manifest, InstallStrategy.newest)
       else: latestFile
 
   return latestFile

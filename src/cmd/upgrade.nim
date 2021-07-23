@@ -1,8 +1,7 @@
-import asyncdispatch, asyncfutures, sequtils, strutils, sugar, terminal, options, os
-import common
+import asyncdispatch, asyncfutures, sequtils, strutils, sugar, options, os
 import ../api/cf
 import ../cli/prompt, ../cli/term
-import ../modpack/files, ../modpack/install
+import ../modpack/manifest, ../modpack/install
 import ../util/flow
 
 proc paxUpgrade*(strategy: string): void =
@@ -15,23 +14,23 @@ proc paxUpgrade*(strategy: string): void =
 
   returnIfNot promptYN($fileCount & " mods will be updated to the " & $strategy & " version. Do you want to continue?", default = true)
 
-  let cfModRequests = manifest.files.map((x) => fetchMod(x.projectId))
-  let cfModFilesRequests = manifest.files.map((x) => fetchModFiles(x.projectId))
-  let cfMods = all(cfModRequests)
-  let cfModFiles = all(cfModFilesRequests)
+  let mcModRequests = manifest.files.map((x) => fetchMod(x.projectId))
+  let mcModFilesRequests = manifest.files.map((x) => fetchModFiles(x.projectId))
+  let mcMods = all(mcModRequests)
+  let mcModFiles = all(mcModFilesRequests)
 
   echoInfo "Loading mods.."
-  waitFor(cfMods and cfModFiles)
-  var modData = zip(cfMods.read(), cfModFiles.read())
+  waitFor(mcMods and mcModFiles)
+  var modData = zip(mcMods.read(), mcModFiles.read())
 
   for pairs in modData:
-    let (cfMod, cfModFiles) = pairs
-    let cfModFile = cfModFiles.selectModFile(manifest, strategy)
-    if cfModFile.isNone:
-      echoWarn cfMod.name.cyanFg, " does not have a compatible version. Skipping.."
+    let (mcMod, mcModFiles) = pairs
+    let mcModFile = mcModFiles.selectModFile(manifest, strategy)
+    if mcModFile.isNone:
+      echoWarn mcMod.name.cyanFg, " does not have a compatible version. Skipping.."
       continue
-    echoInfo "Updating ", cfMod.name.cyanFg, ".."
-    manifest.updateMod(cfMod.projectId, cfModFile.get().fileId)
+    echoInfo "Updating ", mcMod.name.cyanFg, ".."
+    manifest.updateMod(mcMod.projectId, mcModFile.get().fileId)
 
   echoDebug "Writing to manifest..." 
   manifest.writeToDisk()
