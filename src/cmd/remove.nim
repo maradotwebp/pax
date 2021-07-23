@@ -43,8 +43,7 @@ proc paxRemove*(name: string, strategy: string): void =
   echoMod(cfMod, moreInfo = true)
   echo ""
 
-  returnIfNot promptYN("Are you sure you want to remove this mod?",
-      default = true)
+  returnIfNot promptYN("Are you sure you want to remove this mod?", default = true)
 
   var dependents = manifest.getDependents(cfMod.projectId)
   if len(dependents) > 0:

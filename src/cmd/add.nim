@@ -5,8 +5,7 @@ import ../cli/term, ../cli/prompt
 import ../util/flow
 import ../modpack/files, ../modpack/install
 
-proc addDependencies(manifest: var Manifest, file: ManifestFile,
-    strategy: string): void =
+proc addDependencies(manifest: var Manifest, file: ManifestFile, strategy: string): void =
   ## Recursively add dependencies of a mod
   for id in file.metadata.dependencies:
     let cfMod = waitFor(fetchMod(id))
@@ -52,8 +51,7 @@ proc paxAdd*(input: string, noDepends: bool, strategy: string): void =
   var cfMod: CfMod
   var cfModFile: CfModFile
 
-  if input.scanf("https://www.curseforge.com/minecraft/mc-mods/${strScan}/files/$i",
-      slug, fileId):
+  if input.scanf("https://www.curseforge.com/minecraft/mc-mods/${strScan}/files/$i", slug, fileId):
     ## Curseforge URL with slug & fileId
     cfMod = waitFor(fetchMod(slug))
     manifest.rejectInstalledMod(cfMod.projectId)
@@ -108,8 +106,7 @@ proc paxAdd*(input: string, noDepends: bool, strategy: string): void =
   echoMod(cfMod, moreInfo = true)
   echo ""
 
-  returnIfNot promptYN("Are you sure you want to install this mod?",
-      default = true)
+  returnIfNot promptYN("Are you sure you want to install this mod?", default = true)
 
   echoInfo "Installing ", cfMod.name.cyanFg, ".."
   let modToInstall = initManifestFile(

@@ -121,8 +121,7 @@ proc isInstalled*(manifest: Manifest, projectId: int): bool =
 
 proc getDependents*(manifest: Manifest, projectId: int): seq[ManifestFile] =
   ## returns the dependents of the mod associated with projectId
-  return manifest.files.filter((file) => file.metadata.dependencies.any((dependency) =>
-      dependency == projectId))
+  return manifest.files.filter((file) => file.metadata.dependencies.any((d) => d == projectId))
 
 proc getFile*(manifest: Manifest, projectId: int): ManifestFile =
   ## returns the file with the provided `projectId`
@@ -160,8 +159,7 @@ template rejectPaxProject*: void =
   ## will error if the current folder is a pax project
   if isPaxProject:
     echoError "The current folder is already a pax project."
-    echoClr indentPrefix, "If you are sure you want to overwrite existing files, use the ",
-        "--force".redFg, " option"
+    echoClr indentPrefix, "If you are sure you want to overwrite existing files, use the ", "--force".redFg, " option"
     return
 
 template rejectInstalledMod*(manifest: Manifest, projectId: int): void =
