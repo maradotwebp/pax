@@ -4,7 +4,7 @@ import cmd/add, cmd/expo, cmd/impo, cmd/init, cmd/list, cmd/remove, cmd/update,
     cmd/upgrade, cmd/version
 
 let commonArgs = (
-  strategy: newStringArg(@["-s", "--strategy"], choices = @["recommended",
+  strategy: newStringArg(@["-s", "--strategy"], choices = @["stable", "recommended",
       "newest"], defaultVal = "recommended",
       help = "how pax determines the version to install"),
   yes: newCountArg(@["-y"], help = "accept all interactive prompts"),
