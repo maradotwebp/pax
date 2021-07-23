@@ -2,7 +2,8 @@ discard """
   cmd: "nim $target --hints:on -d:testing -d:ssl --nimblePath:tests/deps $options $file"
 """
 
-import asyncdispatch, api/cf, sequtils, sugar
+import asyncdispatch, sequtils, sugar
+import api/cf
 
 block: # fetch by query
   let mods = waitFor(fetchModsByQuery("jei"))
@@ -10,17 +11,17 @@ block: # fetch by query
   doAssert mods[0].name == "Just Enough Items (JEI)"
 
 block: # fetch mod by id
-  let cfMod = waitFor(fetchMod(220318))
-  doAssert cfMod.projectId == 220318
-  doAssert cfMod.name == "Biomes O' Plenty"
+  let mcMod = waitFor(fetchMod(220318))
+  doAssert mcMod.projectId == 220318
+  doAssert mcMod.name == "Biomes O' Plenty"
 
 block: # fetch mod by slug
-  var cfMod = waitFor(fetchMod("appleskin"))
-  doAssert cfMod.projectId == 248787
-  cfMod = waitFor(fetchMod("dtbop"))
-  doAssert cfMod.projectId == 289529
-  cfMod = waitFor(fetchMod("dtphc"))
-  doAssert cfMod.projectId == 307560
+  var mcMod = waitFor(fetchMod("appleskin"))
+  doAssert mcMod.projectId == 248787
+  mcMod = waitFor(fetchMod("dtbop"))
+  doAssert mcMod.projectId == 289529
+  mcMod = waitFor(fetchMod("dtphc"))
+  doAssert mcMod.projectId == 307560
 
 block: # fetch mod files
   let modFiles = waitFor(fetchModFiles(248787))

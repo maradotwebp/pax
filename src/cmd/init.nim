@@ -1,10 +1,8 @@
-import asyncdispatch, options, os, osproc, strutils, terminal
-import common
+import asyncdispatch, options, os, osproc
 import ../api/metadata
 import ../cli/prompt, ../cli/term
 import ../util/flow
-import ../mc/version
-import ../modpack/files, ../modpack/loader
+import ../modpack/manifest, ../modpack/loader, ../modpack/version
 
 proc paxInitManifest(): void =
   ## initialize the modpack files (modpack folder structure & `manifest.json`)

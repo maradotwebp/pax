@@ -1,7 +1,6 @@
 import os, zippy/ziparchives
-import common
 import ../cli/term
-import ../modpack/files
+import ../modpack/manifest
 
 proc paxExport*: void =
   ## export the modpack to .zip

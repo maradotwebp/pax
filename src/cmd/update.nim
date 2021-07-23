@@ -1,8 +1,8 @@
-import asyncdispatch, asyncfutures, strutils, terminal, options, os
+import asyncdispatch, asyncfutures, options, os
 import common
 import ../api/cf
 import ../cli/prompt, ../cli/term
-import ../modpack/files, ../modpack/install
+import ../modpack/install, ../modpack/manifest
 import ../util/flow
 
 proc paxUpdate*(name: string, strategy: string): void =
@@ -13,31 +13,31 @@ proc paxUpdate*(name: string, strategy: string): void =
   var manifest = readManifestFromDisk()
 
   echoDebug "Loading mods.."
-  let cfMods = waitFor(fetchModsByQuery(name))
+  let mcMods = waitFor(fetchModsByQuery(name))
 
   echoDebug "Searching for mod.."
-  let cfModOption = manifest.promptModChoice(cfMods, selectInstalled = true)
-  if cfModOption.isNone:
+  let mcModOption = manifest.promptModChoice(mcMods, selectInstalled = true)
+  if mcModOption.isNone:
     echoError "No installed mods found for your search."
     quit(1)
-  let cfMod = cfModOption.get()
+  let mcMod = mcModOption.get()
 
   echo ""
   echoRoot "SELECTED MOD".dim
-  echoMod(cfMod, moreInfo = true)
+  echoMod(mcMod, moreInfo = true)
   echo ""
 
   returnIfNot promptYN("Are you sure you want to update this mod?", default = true)
 
   echoDebug "Retrieving mod versions.."
-  let cfModFiles = waitFor(fetchModFiles(cfMod.projectId))
+  let mcModFiles = waitFor(fetchModFiles(mcMod.projectId))
 
-  let cfModFile = cfModFiles.selectModFile(manifest, strategy)
-  if cfModFile.isNone:
+  let mcModFile = mcModFiles.selectModFile(manifest, strategy)
+  if mcModFile.isNone:
     echoError "No compatible version found."
     quit(1)
-  echoInfo "Updating ", cfMod.name.cyanFg, ".."
-  manifest.updateMod(cfMod.projectId, cfModFile.get().fileId)
+  echoInfo "Updating ", mcMod.name.cyanFg, ".."
+  manifest.updateMod(mcMod.projectId, mcModFile.get().fileId)
 
   echoDebug("Writing to manifest...")
   manifest.writeToDisk()

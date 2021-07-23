@@ -1,7 +1,6 @@
 import asyncdispatch, json, options, strutils, sugar
 import http
-import ../mc/version
-import ../modpack/loader
+import ../modpack/version, ../modpack/loader
 
 proc getFabricLoaderVersion(mcVersion: Version): Future[Option[string]] {.async.} =
   ## get the fabric loader version fitting for the given `mcVersion`

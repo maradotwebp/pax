@@ -1,8 +1,8 @@
 import algorithm, json, os, sequtils, sugar, asyncdispatch
 import loader
-import ../cli/clr, ../cli/term
-import ../mc/version
 import ../api/cf
+import ../cli/clr, ../cli/term
+import ../modpack/version
 
 export term
 
@@ -46,26 +46,30 @@ const
 
 proc initManifestMetadata*(name: string, explicit: bool, dependencies: seq[int]): ManifestMetadata =
   ## create a new manifest metadata object.
+  result = ManifestMetadata()
   result.name = name
   result.explicit = explicit
   result.dependencies = dependencies
 
 proc initManifestFile*(projectId: int, fileId: int, metadata: ManifestMetadata): ManifestFile =
   ## create a new manifest fmod object.
+  result = ManifestFile()
   result.projectId = projectId
   result.fileId = fileId
   result.metadata = metadata
 
 converter toManifestFile(json: JsonNode): ManifestFile =
   ## creates a ManifestFile from manifest json
+  result = ManifestFile()
   result.projectId = json["projectID"].getInt()
   result.fileId = json["fileID"].getInt()
+  result.metadata = ManifestMetadata()
   if json{"__meta"} == nil:
-    let cfMod = waitFor(fetchMod(json["projectID"].getInt()))
-    let cfModFile = waitFor(fetchModFile(json["projectID"].getInt(), json["fileID"].getInt()))
-    result.metadata.name = cfMod.name
+    let mcMod = waitFor(fetchMod(json["projectID"].getInt()))
+    let mcModFile = waitFor(fetchModFile(json["projectID"].getInt(), json["fileID"].getInt()))
+    result.metadata.name = mcMod.name
     result.metadata.explicit = true
-    result.metadata.dependencies = cfModFile.dependencies
+    result.metadata.dependencies = mcModFile.dependencies
   else:
     result.metadata.name = json["__meta"]["name"].getStr()
     result.metadata.explicit = json["__meta"]["explicit"].getBool()
@@ -86,6 +90,7 @@ converter toJson(file: ManifestFile): JsonNode {.used.} =
 
 converter toManifest(json: JsonNode): Manifest =
   ## creates a Manifest from manifest json
+  result = Manifest()
   result.name = json["name"].getStr()
   result.author = json["author"].getStr()
   result.version = json["version"].getStr()
@@ -93,7 +98,7 @@ converter toManifest(json: JsonNode): Manifest =
   result.mcModloaderId = json["minecraft"]["modLoaders"][0]["id"].getStr()
   result.files = json["files"].getElems().map(toManifestFile)
 
-converter toJson(manifest: Manifest): JsonNode =
+converter toJson*(manifest: Manifest): JsonNode =
   ## creates the json for a manifest from `manifest`
   var manifest = manifest
   manifest.files.sort((x, y) => cmp(x.projectId, y.projectId))

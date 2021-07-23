@@ -1,6 +1,7 @@
 discard """"""
 
-import api/cf, mc/version, modpack/files, modpack/install, modpack/loader, options, sequtils, sugar
+import options, sequtils, sugar
+import modpack/install, modpack/loader, modpack/manifest, modpack/mods, modpack/version
 
 block: # InstallStrategy
   doAssert "stable" == InstallStrategy.stable
@@ -10,12 +11,14 @@ block: # InstallStrategy
     discard "abcdef".toInstallStrategy
 
 proc initManifest(loader: Loader): Manifest =
+  result = Manifest()
   result.name = "testmodpackname"
   result.author = "testmodpackauthor"
   result.version = "1.0.0"
   result.mcModloaderId = $loader & "-0.11.0"
 
-proc initCfModFile(fileId: int, name: string, gameVersions: seq[string], releaseType: CfModFileReleaseType): CfModFile =
+proc initMcModFile(fileId: int, name: string, gameVersions: seq[string], releaseType: McModFileReleaseType): McModFile =
+  result = McModFile()
   result.fileId = fileId
   result.name = name
   result.releaseType = releaseType
@@ -25,9 +28,9 @@ proc initCfModFile(fileId: int, name: string, gameVersions: seq[string], release
 block: # select out of specified forge mods
   var m = initManifest(loader.forge)
   let mods = @[
-    initCfModFile(300, "jei-1.0.2.jar", @["1.16.1", "1.16.2", "Forge"], CfModFileReleaseType.beta),
-    initCfModFile(200, "jei-1.0.1.jar", @["1.16", "1.16.1", "Forge"], CfModFileReleaseType.release),
-    initCfModFile(100, "jei-1.0.0.jar", @["1.16", "Forge"], CfModFileReleaseType.alpha)
+    initMcModFile(300, "jei-1.0.2.jar", @["1.16.1", "1.16.2", "Forge"], McModFileReleaseType.beta),
+    initMcModFile(200, "jei-1.0.1.jar", @["1.16", "1.16.1", "Forge"], McModFileReleaseType.release),
+    initMcModFile(100, "jei-1.0.0.jar", @["1.16", "Forge"], McModFileReleaseType.alpha)
   ]
 
   m.mcVersion = "1.12".Version
@@ -53,9 +56,9 @@ block: # select out of specified forge mods
 block: # select out of implied forge mods
   var m = initManifest(loader.forge)
   let mods = @[
-    initCfModFile(300, "jei-1.0.2.jar", @["1.16.1", "1.16.2"], CfModFileReleaseType.beta),
-    initCfModFile(200, "jei-1.0.1.jar", @["1.16", "1.16.1", "Forge"], CfModFileReleaseType.alpha),
-    initCfModFile(100, "jei-FORGE-1.0.0.jar", @["1.16"], CfModFileReleaseType.release)
+    initMcModFile(300, "jei-1.0.2.jar", @["1.16.1", "1.16.2"], McModFileReleaseType.beta),
+    initMcModFile(200, "jei-1.0.1.jar", @["1.16", "1.16.1", "Forge"], McModFileReleaseType.alpha),
+    initMcModFile(100, "jei-FORGE-1.0.0.jar", @["1.16"], McModFileReleaseType.release)
   ]
 
   m.mcVersion = "1.12".Version
@@ -81,9 +84,9 @@ block: # select out of implied forge mods
 block: # select out of specified fabric mods
   var m = initManifest(loader.fabric)
   let mods = @[
-    initCfModFile(301, "rei-1.0.2.jar", @["1.14.1", "1.14.4", "Fabric"], CfModFileReleaseType.release),
-    initCfModFile(201, "rei-1.0.1.jar", @["1.14", "1.14.1", "Fabric"], CfModFileReleaseType.release),
-    initCfModFile(101, "rei-1.0.0.jar", @["1.14", "Fabric"], CfModFileReleaseType.beta)
+    initMcModFile(301, "rei-1.0.2.jar", @["1.14.1", "1.14.4", "Fabric"], McModFileReleaseType.release),
+    initMcModFile(201, "rei-1.0.1.jar", @["1.14", "1.14.1", "Fabric"], McModFileReleaseType.release),
+    initMcModFile(101, "rei-1.0.0.jar", @["1.14", "Fabric"], McModFileReleaseType.beta)
   ]
 
   m.mcVersion = "1.12".Version
@@ -109,9 +112,9 @@ block: # select out of specified fabric mods
 block: # select out of implied fabric mods
   var m = initManifest(loader.fabric)
   let mods = @[
-    initCfModFile(301, "rei-1.0.2-fabric.jar", @["1.14.1", "1.14.4"], CfModFileReleaseType.alpha),
-    initCfModFile(201, "rei-1.0.1-fabric.jar", @["1.14", "1.14.1"], CfModFileReleaseType.beta),
-    initCfModFile(101, "rei-1.0.0-fabric.jar", @["1.14", "Fabric"], CfModFileReleaseType.release)
+    initMcModFile(301, "rei-1.0.2-fabric.jar", @["1.14.1", "1.14.4"], McModFileReleaseType.alpha),
+    initMcModFile(201, "rei-1.0.1-fabric.jar", @["1.14", "1.14.1"], McModFileReleaseType.beta),
+    initMcModFile(101, "rei-1.0.0-fabric.jar", @["1.14", "Fabric"], McModFileReleaseType.release)
   ]
 
   m.mcVersion = "1.12".Version
@@ -136,14 +139,14 @@ block: # select out of implied fabric mods
 
 block: # select out of mixed mods
   let mods = @[
-    initCfModFile(801, "abc-1.3.2-fabric.jar", @["1.16.1", "1.16.2"], CfModFileReleaseType.release),
-    initCfModFile(701, "abc-1.3.2-FORGE.jar", @["1.16.1", "1.16.2"], CfModFileReleaseType.release),
-    initCfModFile(601, "abc-1.2.2.jar", @["1.16", "1.16.1", "Forge"], CfModFileReleaseType.alpha),
-    initCfModFile(501, "abc-1.2.1.jar", @["1.16.1", "Fabric"], CfModFileReleaseType.alpha),
-    initCfModFile(401, "abc-1.2.1.jar", @["1.16", "1.16.1", "Forge"], CfModFileReleaseType.release),
-    initCfModFile(301, "abc-1.2.0-FABRIC.jar", @["1.16"], CfModFileReleaseType.release),
-    initCfModFile(201, "abc-1.0.1.jar", @["1.14.4"], CfModFileReleaseType.beta),
-    initCfModFile(101, "abc-1.0.0.jar", @["1.14", "1.14.1"], CfModFileReleaseType.alpha),
+    initMcModFile(801, "abc-1.3.2-fabric.jar", @["1.16.1", "1.16.2"], McModFileReleaseType.release),
+    initMcModFile(701, "abc-1.3.2-FORGE.jar", @["1.16.1", "1.16.2"], McModFileReleaseType.release),
+    initMcModFile(601, "abc-1.2.2.jar", @["1.16", "1.16.1", "Forge"], McModFileReleaseType.alpha),
+    initMcModFile(501, "abc-1.2.1.jar", @["1.16.1", "Fabric"], McModFileReleaseType.alpha),
+    initMcModFile(401, "abc-1.2.1.jar", @["1.16", "1.16.1", "Forge"], McModFileReleaseType.release),
+    initMcModFile(301, "abc-1.2.0-FABRIC.jar", @["1.16"], McModFileReleaseType.release),
+    initMcModFile(201, "abc-1.0.1.jar", @["1.14.4"], McModFileReleaseType.beta),
+    initMcModFile(101, "abc-1.0.0.jar", @["1.14", "1.14.1"], McModFileReleaseType.alpha),
   ]
 
   # Set loader to forge

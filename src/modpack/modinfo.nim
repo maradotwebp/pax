@@ -1,7 +1,6 @@
-import regex, sequtils, strutils, sugar
-import ../api/cf
+import sequtils, sugar
 import ../cli/clr
-import ../mc/version
+import ../modpack/mods, ../modpack/version
 
 type
   Compability* = enum
@@ -24,7 +23,7 @@ const
   ## icon for freshness
   freshnessIcon = "↑"
 
-proc getCompability*(file: CfModFile, modpackVersion: Version): Compability =
+proc getCompability*(file: McModFile, modpackVersion: Version): Compability =
   ## get compability of a file
   if modpackVersion in file.gameVersions: return Compability.full
   if modpackVersion.minor in file.gameVersions.proper.map(minor): return Compability.major
@@ -44,9 +43,9 @@ proc getMessage*(c: Compability): string =
     of Compability.major: "The installed mod only matches the major version as the modpack. Issues may arise."
     of Compability.none: "The installed mod is incompatible with the modpack's minecraft version."
 
-proc getFreshness*(file: CfModFile, modpackVersion: Version, cfMod: CfMod): Freshness =
+proc getFreshness*(file: McModFile, modpackVersion: Version, mcMod: McMod): Freshness =
   ## get freshness of a file
-  let latestFiles = cfMod.gameVersionLatestFiles
+  let latestFiles = mcMod.gameVersionLatestFiles
   let modpackVersionFiles = latestFiles.filter((x) => x.version == modpackVersion)
   if modpackVersionFiles.len == 1:
     if modpackVersionFiles[0].fileId == file.fileId:
@@ -68,21 +67,3 @@ proc getMessage*(f: Freshness): string =
     of Freshness.newest: "No mod updates available."
     of Freshness.newestForAVersion: "Your installed version is newer than the recommended version. Issues may arise."
     of Freshness.old: "There is a newer version of this mod available."
-
-proc isFabricMod*(file: CfModFile): bool =
-  ## returns true if `file` is a fabric mod.
-  if "Fabric".Version in file.gameVersions:
-    return true
-  elif file.name.toLower.match(re".*\Wfabric\W.*"):
-    return true
-  return false
-
-proc isForgeMod*(file: CfModFile): bool =
-  ## returns true if `file` is a forge mod.
-  if file.name.toLower.match(re".*\Wfabric\W.*"):
-    return false
-  if not ("Fabric".Version in file.gameVersions and not ("Forge".Version in file.gameVersions)):
-    return true
-  elif file.name.toLower.match(re".*\Wforge\W.*"):
-    return true
-  return false
