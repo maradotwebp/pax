@@ -3,10 +3,15 @@ import http
 import ../mc/version
 
 type
+  CfModFileReleaseType* = enum
+    ## A mod release type.
+    release = 1, beta = 2, alpha = 3
+
   CfModFile* = object
     ## A specific version of a curseforge mod.
     fileId*: int
     name*: string
+    releaseType*: CfModFileReleaseType
     downloadUrl*: string
     gameVersions*: seq[Version]
     dependencies*: seq[int]
@@ -31,6 +36,7 @@ converter toCfModFile(json: JsonNode): CfModFile =
   ## creates a CfModFile from forgesvc json
   result.fileId = json["id"].getInt()
   result.name = json["displayName"].getStr()
+  result.releaseType = json["releaseType"].getInt().CfModFileReleaseType
   result.downloadUrl = json["downloadUrl"].getStr()
   result.gameVersions = json["gameVersion"].getElems().map((x) => x.getStr().Version)
   result.dependencies = collect(newSeq):
