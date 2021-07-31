@@ -2,7 +2,7 @@ import os, zippy/ziparchives
 import ../cli/term
 import ../modpack/manifest
 
-proc paxExport*: void =
+proc paxExport*(path: string): void =
   ## export the modpack to .zip
   requirePaxProject()
 
@@ -11,7 +11,12 @@ proc paxExport*: void =
 
   echoDebug "Exporting modpack/ folder.."
   createDir(outputFolder)
-  let zipPath = joinPath(outputFolder, manifest.name & ".zip")
+  let zipPath = if path != "":
+    let (dir, _, _) = splitFile(path)
+    createDir(dir)
+    path
+  else:
+    joinPath(outputFolder, manifest.name & ".zip")
   packFolder.createZipArchive(zipPath)
 
   echoInfo "Pack exported to ", zipPath.greenFg

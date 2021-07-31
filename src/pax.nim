@@ -113,6 +113,11 @@ let importCmd = (
 )
 
 let exportCmd = (
+  path: newStringArg(@["<path>"],
+    help = "path to output file",
+    optional = true,
+    helpvar = "./.out/<modpackname>.zip"
+  ),
   yes: commonArgs.yes,
   noColor: commonArgs.noColor,
   help: newHelpArg()
@@ -193,6 +198,6 @@ elif spec.impo.seen:
   paxImport(path = importCmd.path.value, force = importCmd.force.seen,
       skipGit = importCmd.skipGit.seen)
 elif spec.expo.seen:
-  paxExport()
+  paxExport(path = exportCmd.path.value)
 else:
   echo spec.render_help()
