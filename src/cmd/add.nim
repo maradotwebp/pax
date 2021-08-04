@@ -61,6 +61,7 @@ proc paxAdd*(input: string, noDepends: bool, strategy: string): void =
     ## Curseforge URL with slug
     mcMod = waitFor(fetchMod(slug))
     manifest.rejectInstalledMod(mcMod.projectId)
+    echoDebug "Found mod ", mcMod.name.cyanFg, "."
     let mcModFiles = waitFor(fetchModFiles(mcMod.projectId))
     let selectedMcModFile = mcModFiles.selectModFile(manifest, strategy)
     if selectedMcModFile.isNone:
@@ -72,12 +73,14 @@ proc paxAdd*(input: string, noDepends: bool, strategy: string): void =
     ## Input in <projectid>#<fileid> format
     mcMod = waitFor(fetchMod(projectId))
     manifest.rejectInstalledMod(mcMod.projectId)
+    echoDebug "Found mod ", mcMod.name.cyanFg, "."
     mcModFile = waitFor(fetchModFile(projectId, fileId))
 
   elif input.scanf("$i", projectId):
     ## Input in <projectid> format
     mcMod = waitFor(fetchMod(projectId))
     manifest.rejectInstalledMod(mcMod.projectId)
+    echoDebug "Found mod ", mcMod.name.cyanFg, "."
     let mcModFiles = waitFor(fetchModFiles(mcMod.projectId))
     let selectedMcModFile = mcModFiles.selectModFile(manifest, strategy)
     if selectedMcModFile.isNone:
@@ -94,6 +97,7 @@ proc paxAdd*(input: string, noDepends: bool, strategy: string): void =
       quit(1)
     mcMod = mcModOption.get()
     manifest.rejectInstalledMod(mcMod.projectId)
+    echoDebug "Found mod ", mcMod.name.cyanFg, "."
     let mcModFiles = waitFor(fetchModFiles(mcMod.projectId))
     let selectedMcModFile = mcModFiles.selectModFile(manifest, strategy)
     if selectedMcModFile.isNone:
