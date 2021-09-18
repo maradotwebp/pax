@@ -72,8 +72,8 @@ converter toManifestFile(json: JsonNode): ManifestFile =
     result.metadata.dependencies = mcModFile.dependencies
   else:
     result.metadata.name = json["__meta"]["name"].getStr()
-    result.metadata.explicit = json["__meta"]["explicit"].getBool()
-    result.metadata.dependencies = json["__meta"]["dependencies"].getElems().map((x) => x.getInt())
+    result.metadata.explicit = json["__meta"]{"explicit"}.getBool(false)
+    result.metadata.dependencies = json["__meta"]{"dependencies"}.getElems(@[]).map((x) => x.getInt())
 
 converter toJson(file: ManifestFile): JsonNode {.used.} =
   ## creates the json for a manifest file `file`
@@ -82,11 +82,16 @@ converter toJson(file: ManifestFile): JsonNode {.used.} =
     "fileID": file.fileId,
     "required": true,
     "__meta": {
-      "name": file.metadata.name,
-      "explicit": file.metadata.explicit,
-      "dependencies": file.metadata.dependencies
+      "name": file.metadata.name
     }
   }
+  if not file.metadata.explicit:
+    result["__meta"]["explicit"] = newJBool(false)
+  if file.metadata.dependencies.len > 0:
+    let dependencyJsonArray = newJArray()
+    for d in file.metadata.dependencies:
+      dependencyJsonArray.add(newJInt(d))
+    result["__meta"]["dependencies"] = dependencyJsonArray
 
 converter toManifest(json: JsonNode): Manifest =
   ## creates a Manifest from manifest json
