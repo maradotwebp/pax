@@ -8,24 +8,25 @@ import ../modpack/install, ../modpack/manifest, ../modpack/mods
 proc addDependencies(manifest: var Manifest, file: ManifestFile, strategy: string): void =
   ## Recursively add dependencies of a mod
   for id in file.metadata.dependencies:
-    let mcMod = waitFor(fetchMod(id))
     if manifest.isInstalled(id):
       continue
-    let mcModFiles = waitFor(fetchModFiles(id))
-    let selectedMcModFile = mcModFiles.selectModFile(manifest, strategy)
+    let mcMod = fetchMod(id)
+    let mcModFiles = fetchModFiles(id)
+    waitFor(mcMod and mcModFiles)
+    let selectedMcModFile = mcModFiles.read().selectModFile(manifest, strategy)
     if selectedMcModFile.isNone:
       echoError "Warning: unable to resolve dependencies."
+      quit(1)
     let mcModFile = selectedMcModFile.get()
-    echoInfo "Installing ", mcMod.name.cyanFg, ".."
+    echoInfo "Installing ", mcMod.read().name.cyanFg, ".."
     let modToInstall = initManifestFile(
       projectId = id,
       fileId = mcModFile.fileId,
       metadata = initManifestMetadata(
-        name = mcMod.name,
+        name = mcMod.read().name,
         explicit = false,
         dependencies = mcModFile.dependencies
       )
-      
     )
     manifest.installMod(modToInstall)
     addDependencies(manifest, modToinstall, strategy)
