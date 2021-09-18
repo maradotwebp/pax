@@ -87,6 +87,7 @@ block: # export .zip to custom location
   writeFile("./modpack/manifest.json", manifestJson.pretty)
   paxExport(path = "./completely-custom-out-dir/somewhere/here.zip")
   defer: removeDir("./completely-custom-out-dir/somewhere/")
+  defer: removeDir("./completely-custom-out-dir/")
 
   doAssert fileExists("./completely-custom-out-dir/somewhere/here.zip")
 
