@@ -40,22 +40,22 @@ Information about how to use PAX is available on the [wiki](https://github.com/f
 
 | Feature | PAX | Curseforge Launcher | GDLauncher | MultiMC |
 | ------- | --- | ------------------- | ---------- | ------- |
-| Creating a modpack | 👍 | 👍 | 👍 | 👍 |
-| Support for Fabric modpacks | 👍 | 👍 | 👍 | 👍 |
-| Adding/Removing mods | 👍 | 👍 | 👍 | 👍 |
-| Viewing installed mods | 👍 | 👍 | 👍 | 👍 |
-| Updating installed mods | 👍 | 👍 | 👍 | ❌ |
-| Loader compability information | 👍 | ❌ | 👍 | ❌ |
-| Mod compability information | 👍 | ❌ | ❌ | ❌ |
-| Mod update availability information | 👍 | 👍 | 👍 | ❌ |
-| Export to `.zip` | 👍 | 👍 | 👍 | 👍 |
-| Export to Curseforge-compatible `.zip` | 👍 | 👍 | 👍 | ❌ |
-| Open Source | 👍 | ❌ | 👍 | 👍 |
-| Multiple people working on one modpack | 👍 | ☹️ | ☹️ | ☹️ |
-| Concurrent mod updates | 👍 | ❌ | ❌ | ❌ | 
-| Version control support | 👍 | ❌ | ❌ | ❌ |
-| CI/CD support | 👍 | ❌ | ❌ | ❌ |
-| Project/Minecraft Instance Sync | W.I.P | ❌ | ❌ | ❌ |
+| Creating a modpack | ✅ | ✅ | ✅ | ✅ |
+| Support for Fabric modpacks | ✅ | ✅ | ✅ | ✅ |
+| Adding/Removing mods | ✅ | ✅ | ✅ | ✅ |
+| Viewing installed mods | ✅ | ✅ | ✅ | ✅ |
+| Updating installed mods | ✅ | ✅ | ✅ | ❌ |
+| Loader compability information | ✅ | ❌ | ✅ | ❌ |
+| Mod compability information | ✅ | ❌ | ❌ | ❌ |
+| Mod update availability information | ✅ | ✅ | ✅ | ❌ |
+| Export to `.zip` | ✅ | ✅ | ✅ | ✅ |
+| Export to Curseforge-compatible `.zip` | ✅ | ✅ | ✅ | ❌ |
+| Open Source | ✅ | ❌ | ✅ | ✅ |
+| Multiple people working on one modpack | ✅ | 🙁 | 🙁 | 🙁 |
+| Concurrent mod updates | ✅ | ❌ | ❌ | ❌ | 
+| Version control support | ✅ | ❌ | ❌ | ❌ |
+| CI/CD support | ✅ | ❌ | ❌ | ❌ |
+| Project/Minecraft Instance Sync | 🚧 | ❌ | ❌ | ❌ |
 
 ---
 
