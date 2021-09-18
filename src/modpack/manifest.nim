@@ -73,7 +73,7 @@ proc toManifestFile(json: JsonNode): Future[ManifestFile] {.async.} =
     result.metadata.dependencies = mcModFile.read().dependencies
   else:
     result.metadata.name = json["__meta"]["name"].getStr()
-    result.metadata.explicit = json["__meta"]{"explicit"}.getBool(false)
+    result.metadata.explicit = json["__meta"]{"explicit"}.getBool(true)
     result.metadata.dependencies = json["__meta"]{"dependencies"}.getElems(@[]).map((x) => x.getInt())
 
 converter toJson(file: ManifestFile): JsonNode {.used.} =

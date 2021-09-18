@@ -59,6 +59,7 @@ let addCmd = (
 
 let removeCmd = (
   name: newStringArg(@["<name>"],
+    multi = true,
     help = "name of the mod to remove"
   ),
   strategy: commonArgs.strategy,
@@ -69,6 +70,7 @@ let removeCmd = (
 
 let updateCmd = (
   name: newStringArg(@["<name>"],
+    multi = true,
     help = "name of the mod to update"
   ),
   strategy: commonArgs.strategy,
