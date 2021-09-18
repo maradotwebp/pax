@@ -58,22 +58,23 @@ proc initManifestFile*(projectId: int, fileId: int, metadata: ManifestMetadata):
   result.fileId = fileId
   result.metadata = metadata
 
-converter toManifestFile(json: JsonNode): ManifestFile =
+proc toManifestFile(json: JsonNode): Future[ManifestFile] {.async.} =
   ## creates a ManifestFile from manifest json
   result = ManifestFile()
   result.projectId = json["projectID"].getInt()
   result.fileId = json["fileID"].getInt()
   result.metadata = ManifestMetadata()
   if json{"__meta"} == nil:
-    let mcMod = waitFor(fetchMod(json["projectID"].getInt()))
-    let mcModFile = waitFor(fetchModFile(json["projectID"].getInt(), json["fileID"].getInt()))
-    result.metadata.name = mcMod.name
+    let mcMod = fetchMod(result.projectId)
+    let mcModFile = fetchModFile(result.projectId, result.fileId)
+    await mcMod and mcModFile
+    result.metadata.name = mcMod.read().name
     result.metadata.explicit = true
-    result.metadata.dependencies = mcModFile.dependencies
+    result.metadata.dependencies = mcModFile.read().dependencies
   else:
     result.metadata.name = json["__meta"]["name"].getStr()
-    result.metadata.explicit = json["__meta"]["explicit"].getBool()
-    result.metadata.dependencies = json["__meta"]["dependencies"].getElems().map((x) => x.getInt())
+    result.metadata.explicit = json["__meta"]{"explicit"}.getBool(false)
+    result.metadata.dependencies = json["__meta"]{"dependencies"}.getElems(@[]).map((x) => x.getInt())
 
 converter toJson(file: ManifestFile): JsonNode {.used.} =
   ## creates the json for a manifest file `file`
@@ -82,11 +83,16 @@ converter toJson(file: ManifestFile): JsonNode {.used.} =
     "fileID": file.fileId,
     "required": true,
     "__meta": {
-      "name": file.metadata.name,
-      "explicit": file.metadata.explicit,
-      "dependencies": file.metadata.dependencies
+      "name": file.metadata.name
     }
   }
+  if not file.metadata.explicit:
+    result["__meta"]["explicit"] = newJBool(false)
+  if file.metadata.dependencies.len > 0:
+    let dependencyJsonArray = newJArray()
+    for d in file.metadata.dependencies:
+      dependencyJsonArray.add(newJInt(d))
+    result["__meta"]["dependencies"] = dependencyJsonArray
 
 converter toManifest(json: JsonNode): Manifest =
   ## creates a Manifest from manifest json
@@ -96,7 +102,9 @@ converter toManifest(json: JsonNode): Manifest =
   result.version = json["version"].getStr()
   result.mcVersion = json["minecraft"]["version"].getStr().Version
   result.mcModloaderId = json["minecraft"]["modLoaders"][0]["id"].getStr()
-  result.files = json["files"].getElems().map(toManifestFile)
+  let fileElemRequests = json["files"].getElems().map(toManifestFile)
+  let files = waitFor(all(fileElemRequests))
+  result.files = files
 
 converter toJson*(manifest: Manifest): JsonNode =
   ## creates the json for a manifest from `manifest`
