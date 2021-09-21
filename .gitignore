@@ -1,3 +1,9 @@
+## Unix & Windows executables ##
+*
+!**/
+!*.*
+*.exe
+
 ### Nim ###
 nimcache/
 nimblecache/
@@ -10,5 +16,5 @@ pax.exe
 .out/
 /modpack/
 /testresults/
-/tests/**/t*
-!/tests/**/t*.nim
+/outputExpected.txt
+/outputGotten.txt

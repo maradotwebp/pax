@@ -1,21 +1,23 @@
-import strutils
+## Exports `Loader` which specifies the modloader type for a given modpack.
+## 
+## Pax currently has support for the Fabric & Forge modloaders and assumes that mods that work on one modloader
+## do not work on another.
+
+import strformat, strutils
 
 type
   Loader* = enum
-    ## the loader used for a modpack.
-    ## mods may be compatible with one or both of them.
-    fabric, forge
+    Fabric, Forge
 
 converter toLoader*(str: string): Loader =
-  ## get the loader from `str`
+  ## cast a string to a Loader.
   let str = str.toLower
-  if str.contains("forge"):
-    return Loader.forge
-  elif str.contains("fabric"):
-    return Loader.fabric
-  else:
-    raise newException(ValueError, "incorrect loader string")
+  return
+    if str.contains("forge"): Loader.Forge
+    elif str.contains("fabric"): Loader.Fabric
+    else: raise newException(ValueError, fmt"'{str}' is not a loader")
 
-converter toString*(loader: Loader): string =
-  ## get a string from `loader`
-  return $loader
+proc `$`*(loader: Loader): string =
+  return case loader:
+    of Loader.Forge: "forge"
+    of Loader.Fabric: "fabric"

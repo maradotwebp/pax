@@ -1,13 +1,24 @@
-discard """
-  cmd: "nim $target --hints:on -d:testing -d:ssl --nimblePath:tests/deps $options $file"
-"""
+import asyncdispatch
+import api/http
 
-import asyncdispatch, api/http
+block: # get with successful response
+  discard waitFor(get("http://httpbin.org/get".Url))
 
-block: # fetch
-  let exampleReq = fetch("https://example.com")
-  discard waitFor(exampleReq)
+block: # get with non-existing website
+  doAssertRaises(OSError):
+    discard waitFor(get("http://non-existing-website.web".Url))
 
-block: # post
-  let apiTestReq = post("https://httpbin.org/post", "{}")
-  discard waitFor(apiTestReq)
+block: # get on endpoint that does not support get
+  doAssertRaises(HttpRequestError):
+    discard waitFor(get("http://httpbin.org/post".Url))
+
+block: # post with successful response
+  discard waitFor(post("http://httpbin.org/post".Url))
+
+block: # post with non-existing website
+  doAssertRaises(OSError):
+    discard waitFor(post("http://non-existing-website.web".Url))
+
+block: # post on endpoint that does not support get
+  doAssertRaises(HttpRequestError):
+    discard waitFor(post("http://httpbin.org/get".Url))

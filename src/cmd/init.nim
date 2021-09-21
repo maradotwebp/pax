@@ -1,8 +1,8 @@
 import asyncdispatch, options, os, osproc
 import ../api/metadata
-import ../cli/prompt, ../cli/term
-import ../util/flow
 import ../modpack/manifest, ../modpack/loader, ../modpack/version
+import ../term/log, ../term/prompt
+import ../util/flow
 
 proc paxInitManifest(): void =
   ## initialize the modpack files (modpack folder structure & `manifest.json`)
@@ -14,12 +14,12 @@ proc paxInitManifest(): void =
   manifest.mcVersion = Version(prompt(indentPrefix & "Minecraft version", default = "1.16.5"))
 
   let loader = prompt(indentPrefix & "Loader", choices = @["forge", "fabric"], default = "forge").toLoader
-  let loaderId = waitFor(manifest.mcVersion.getMcModloaderId(loader))
+  let loaderId = waitFor(manifest.mcVersion.getModloaderId(loader))
   if loaderId.isNone:
     echoError "This is either not a minecraft version, or no ", $loader, " version exists for this minecraft version."
     quit(1)
   manifest.mcModloaderId = loaderId.get()
-  echoDebug "Installed ", $loader, " version ", manifest.mcModloaderId.greenFg
+  echoDebug "Installed ", $loader, " version ", manifest.mcModloaderId.fgGreen
 
   echoInfo "Creating manifest.."
   removeDir(packFolder)

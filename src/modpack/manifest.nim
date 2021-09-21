@@ -1,10 +1,16 @@
-import algorithm, json, os, sequtils, sugar, asyncdispatch
-import loader
-import ../api/cf
-import ../cli/clr, ../cli/term
-import ../modpack/version
+## Defines methods for interacting with a curseforge manifest file.
+## 
+## In the CF modpack format, modpack information & mods/resourcepacks are tracked within
+## a specific file known as the `manifest.json`. Each addon is tracked with a given projectid (identifies the addon)
+## and a file id (identifies the version of the addon.)
 
-export term
+import algorithm, asyncdispatch, json, options, os, sequtils, strformat, sugar
+import loader
+import ../api/cfclient, ../api/cfcore
+import ../modpack/version
+import ../term/color, ../term/log
+export color
+export log
 
 type
   ManifestMetadata* = ref object
@@ -32,17 +38,17 @@ type
 
 const
   projectFolder* = "./"
-  gitIgnoreFile* = joinPath(projectFolder, ".gitignore")
+  gitIgnoreFile* = projectFolder / ".gitignore"
   gitIgnoreContent* = staticRead("templates/.gitignore")
-  githubCiFolder* = joinPath(projectFolder, ".github/workflows")
-  githubCiFile* = joinPath(githubCiFolder, "main.yml")
+  githubCiFolder* = projectFolder / ".github/workflows"
+  githubCiFile* = githubCiFolder / "main.yml"
   githubCiContent* = staticRead("templates/main.yml")
-  packFolder* = joinPath(projectFolder, "modpack/")
-  tempPackFolder* = joinPath(projectFolder, "temppack/")
-  overridesFolder* = joinPath(packFolder, "overrides/")
-  paxFile* = joinPath(overridesFolder, ".pax")
-  manifestFile* = joinPath(packFolder, "manifest.json")
-  outputFolder* = joinPath(projectFolder, ".out/")
+  packFolder* = projectFolder / "modpack/"
+  tempPackFolder* = projectFolder / "temppack/"
+  overridesFolder* = packFolder / "overrides/"
+  paxFile* = overridesFolder / ".pax"
+  manifestFile* = packFolder / "manifest.json"
+  outputFolder* = projectFolder / ".out/"
 
 proc initManifestMetadata*(name: string, explicit: bool, dependencies: seq[int]): ManifestMetadata =
   ## create a new manifest metadata object.
@@ -65,12 +71,17 @@ proc toManifestFile(json: JsonNode): Future[ManifestFile] {.async.} =
   result.fileId = json["fileID"].getInt()
   result.metadata = ManifestMetadata()
   if json{"__meta"} == nil:
-    let mcMod = fetchMod(result.projectId)
-    let mcModFile = fetchModFile(result.projectId, result.fileId)
-    await mcMod and mcModFile
-    result.metadata.name = mcMod.read().name
+    let addon = fetchAddon(result.projectId)
+    let addonFile = fetchAddonFile(result.projectId, result.fileId)
+    await addon and addonFile
+    if addon.read().isNone() or addonFile.read().isNone():
+      raise newException(
+        ValueError,
+        fmt"projectID {result.projectId} & fileID {result.fileId} are not correct!"
+      )
+    result.metadata.name = addon.read().get().name
     result.metadata.explicit = true
-    result.metadata.dependencies = mcModFile.read().dependencies
+    result.metadata.dependencies = addonFile.read().get().dependencies
   else:
     result.metadata.name = json["__meta"]["name"].getStr()
     result.metadata.explicit = json["__meta"]{"explicit"}.getBool(true)
@@ -140,22 +151,22 @@ proc getFile*(manifest: Manifest, projectId: int): ManifestFile =
   ## returns the file with the provided `projectId`
   return manifest.files.filter((x) => x.projectId == projectId)[0]
 
-proc installMod*(manifest: var Manifest, file: ManifestFile): void =
-  ## install a mod with a given ManifestFile
+proc installAddon*(manifest: var Manifest, file: ManifestFile): void =
+  ## install an addon with a given ManifestFile
   manifest.files = manifest.files & file
 
-proc removeMod*(manifest: var Manifest, projectId: int): ManifestFile =
+proc removeAddon*(manifest: var Manifest, projectId: int): ManifestFile =
   ## remove a mod from the project with the given `projectId`, returns removed mod.
   for i, file in manifest.files:
     if file.projectId == projectId:
       manifest.files.delete(i, i)
       return file
 
-proc updateMod*(manifest: var Manifest, projectId: int, fileId: int): void =
+proc updateAddon*(manifest: var Manifest, projectId: int, fileId: int): void =
   ## update a mod with the given `projectId` to the given `fileId`
-  var modToUpdate = removeMod(manifest, projectId)
+  var modToUpdate = removeAddon(manifest, projectId)
   modToUpdate.fileId = fileId
-  installMod(manifest, modToUpdate)
+  installAddon(manifest, modToUpdate)
 
 template isPaxProject*: bool =
   ## returns true if the current folder is a pax project folder
@@ -165,17 +176,17 @@ template requirePaxProject*: void =
   ## will error if the current folder isn't a pax project
   if not isPaxProject():
     echoError "The current folder isn't a pax project."
-    echoClr indentPrefix, "To initialize a pax project, enter ".redFg, "pax init"
+    echoClr indentPrefix, "To initialize a pax project, enter ".fgRed, "pax init"
     return
 
 template rejectPaxProject*: void =
   ## will error if the current folder is a pax project
   if isPaxProject:
     echoError "The current folder is already a pax project."
-    echoClr indentPrefix, "If you are sure you want to overwrite existing files, use the ", "--force".redFg, " option"
+    echoClr indentPrefix, "If you are sure you want to overwrite existing files, use the ", "--force".fgRed, " option"
     return
 
-template rejectInstalledMod*(manifest: Manifest, projectId: int): void =
+template rejectInstalledAddon*(manifest: Manifest, projectId: int): void =
   ## will error if the mod with the given projectis is already installed.
   if manifest.isInstalled(projectId):
     echoError "This mod is already installed."

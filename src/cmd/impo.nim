@@ -1,7 +1,7 @@
 import os, zippy/ziparchives
 import init
-import ../cli/clr, ../cli/term
 import ../modpack/manifest
+import ../term/log
 
 proc paxImport*(path: string, force: bool, skipGit: bool): void =
     ## import the modpack from .zip
@@ -37,4 +37,4 @@ proc paxImport*(path: string, force: bool, skipGit: bool): void =
     if not skipGit:
         paxInitGit()
 
-    echoInfo (name & ext).greenFg, " imported."
+    echoInfo (name & ext).fgGreen, " imported."

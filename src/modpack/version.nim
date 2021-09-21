@@ -1,26 +1,31 @@
-import hashes, sequtils, strutils
+## Defines several common functions for working with minecraft versions, such as
+## equality checking & comparisons to check whether a version is older or newer than another one.
+
+import hashes, sequtils, strutils, sugar
 
 type
-  ## A minecraft version (1.12.2, 1.16.4, 1.14.1, ...)
+  ## A minecraft version (1.11, 1.12.2, 1.16.4, 1.14.1, ...)
+  ## in $major.$minor or $major.$minor.$patch form.
   ## May contain alternative-style versions (1.16-Snapshot)
+  ## or the values "Forge" or "Fabric".
   Version* = distinct string
 
 proc `$`*(v: Version): string {.borrow.}
+proc `==`*(v1: Version, v2: Version): bool {.borrow.}
+proc hash*(x: Version): Hash = hash($x)
 
-proc minor*(v: Version): string =
+proc minor*(v: Version): Version =
   ## get the minor part of a version. "1.16.4" -> "1.14"
   ## will return the string if it doesn't match semver
   let parts = ($v).split('.')
-  # if it's a snapshot string "1.16-Snapshot", just remove "-Snapshot" to get "1.16"
-  if parts.len > 1 and parts[1].contains("-Snapshot"): return parts[0] & "." & parts[1].replace("-Snapshot")
-  # probably some other format, better return directly
-  if parts.len != 3: return $v
+  # if it's a snapshot string (for example "1.16-Snapshot"), just remove "-Snapshot" to get "1.16"
+  if parts.len > 1 and parts[1].contains("-Snapshot"): return Version(parts[0] & "." & parts[1].replace("-Snapshot"))
+  # if it's $major.$minor already, nice, return directly
+  if parts.len == 2: return v
+  # if not $major.$minor.$patch, probably some other format, better return directly
+  if parts.len != 3: return v
   # if format's good, just join the first 2 parts
-  return parts[0] & "." & parts[1]
-
-proc `==`*(v1: Version, v2: Version): bool {.borrow.}
-
-proc hash*(x: Version): Hash = ($x).hash
+  return Version(parts[0] & "." & parts[1])
 
 proc `>`*(v1: Version, v2: Version): bool =
   ## compares two versions
@@ -44,5 +49,5 @@ proc `>=`*(v1: Version, v2: Version): bool = v1 > v2 or v1 == v2
 proc `<=`*(v1: Version, v2: Version): bool = v1 < v2 or v1 == v2
 
 proc proper*(v: seq[Version]): seq[Version] =
-  ## only return proper versions
-  return v.filter(proc(x: Version): bool = x != "Forge".Version and x != "Fabric".Version)
+  ## filter out "Forge" and "Fabric" values
+  return v.filter((x) => x != "Forge".Version and x != "Fabric".Version)
