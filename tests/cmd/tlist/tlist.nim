@@ -2,16 +2,16 @@ discard """
   cmd: "nim $target --hints:on -d:testing -d:ssl --nimblePath:tests/deps $options $file"
   joinable: false
   batchable: false
-  output: '''
-[:] Loading files from manifest..
-[-] Loading mods..
+  outputsub: '''
 [Δ] ALL MODS (1)
  └─ •↑ Just Enough Items (JEI) - https://www.curseforge.com/minecraft/mc-mods/jei/files/3383205
   '''
 """
 
 import json, os
-import cmd/list
+import cmd/list, term/color
+
+terminalColorEnabledSetting = false
 
 block:
   removeDir("./modpack/")

@@ -16,5 +16,6 @@ pax.exe
 .out/
 /modpack/
 /testresults/
+/tests/megatest.nim
 /outputExpected.txt
 /outputGotten.txt
