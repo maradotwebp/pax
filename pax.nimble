@@ -11,7 +11,7 @@ bin           = @["pax"]
 
 # Dependencies
 
-requires "nim >= 1.4.8"
+requires "nim >= 1.4.6"
 requires "regex >= 0.19.0"
 requires "therapist >= 0.2.0"
 requires "zippy >= 0.6.2"
