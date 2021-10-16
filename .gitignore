@@ -4,6 +4,10 @@
 !*.*
 *.exe
 
+### Nix ###
+.envrc
+shell.nix
+
 ### Nim ###
 nimcache/
 nimblecache/
