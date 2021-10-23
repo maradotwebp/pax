@@ -26,6 +26,10 @@ proc paxUpgrade*(strategy: string): void =
   for pairs in modData:
     let (mcMod, mcModFiles) = pairs
     let mcModFile = mcModFiles.selectAddonFile(manifest, strategy)
+    let manifestFile = manifest.getFile(mcMod.get().projectId)
+    if manifestFile.metadata.pinned:
+      echoWarn mcMod.get().name.fgCyan, " is pinned. Skipping.."
+      continue
     if mcModFile.isNone:
       echoWarn mcMod.get().name.fgCyan, " does not have a compatible version. Skipping.."
       continue

@@ -29,6 +29,11 @@ proc paxUpdate*(name: string, strategy: string): void =
 
   returnIfNot promptYN("Are you sure you want to update this mod?", default = true)
 
+  let manifestFile = manifest.getFile(mcMod.projectId)
+  if manifestFile.metadata.pinned:
+    echoError "Cannot update mod - ", mcMod.name.fgCyan, " is pinned."
+    return
+
   echoDebug "Retrieving mod versions.."
   let mcModFiles = waitFor(fetchAddonFiles(mcMod.projectId))
 

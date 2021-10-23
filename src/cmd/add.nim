@@ -25,6 +25,7 @@ proc addDependencies(manifest: var Manifest, file: ManifestFile, strategy: strin
       metadata = initManifestMetadata(
         name = mcMod.read().get().name,
         explicit = false,
+        pinned = false,
         dependencies = mcModFile.dependencies
       )
     )
@@ -144,6 +145,7 @@ proc paxAdd*(input: string, noDepends: bool, strategy: string): void =
     metadata = initManifestMetadata(
       name = mcMod.name,
       explicit = true,
+      pinned = false,
       dependencies = mcModFile.dependencies
     )
   )

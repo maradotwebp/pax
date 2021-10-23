@@ -17,6 +17,7 @@ type
     ## Metadata for a given project in a manifest.json
     name*: string
     explicit*: bool
+    pinned*: bool
     dependencies*: seq[int]
 
   ManifestFile* = ref object
@@ -50,11 +51,12 @@ const
   manifestFile* = packFolder / "manifest.json"
   outputFolder* = projectFolder / ".out/"
 
-proc initManifestMetadata*(name: string, explicit: bool, dependencies: seq[int]): ManifestMetadata =
+proc initManifestMetadata*(name: string, explicit: bool, pinned: bool, dependencies: seq[int]): ManifestMetadata =
   ## create a new manifest metadata object.
   result = ManifestMetadata()
   result.name = name
   result.explicit = explicit
+  result.pinned = pinned
   result.dependencies = dependencies
 
 proc initManifestFile*(projectId: int, fileId: int, metadata: ManifestMetadata): ManifestFile =
@@ -81,10 +83,12 @@ proc toManifestFile(json: JsonNode): Future[ManifestFile] {.async.} =
       )
     result.metadata.name = addon.read().get().name
     result.metadata.explicit = true
+    result.metadata.pinned = false
     result.metadata.dependencies = addonFile.read().get().dependencies
   else:
     result.metadata.name = json["__meta"]["name"].getStr()
     result.metadata.explicit = json["__meta"]{"explicit"}.getBool(true)
+    result.metadata.pinned = json["__meta"]{"pinned"}.getBool(false)
     result.metadata.dependencies = json["__meta"]{"dependencies"}.getElems(@[]).map((x) => x.getInt())
 
 converter toJson(file: ManifestFile): JsonNode {.used.} =
@@ -99,6 +103,8 @@ converter toJson(file: ManifestFile): JsonNode {.used.} =
   }
   if not file.metadata.explicit:
     result["__meta"]["explicit"] = newJBool(false)
+  if file.metadata.pinned:
+    result["__meta"]["pinned"] = newJBool(true)
   if file.metadata.dependencies.len > 0:
     let dependencyJsonArray = newJArray()
     for d in file.metadata.dependencies:
@@ -161,6 +167,11 @@ proc removeAddon*(manifest: var Manifest, projectId: int): ManifestFile =
     if file.projectId == projectId:
       manifest.files.delete(i, i)
       return file
+
+proc updateAddon*(manifest: var Manifest, file: ManifestFile): void =
+  ## update a mod with the given `file`
+  discard removeAddon(manifest, file.projectId)
+  installAddon(manifest, file)
 
 proc updateAddon*(manifest: var Manifest, projectId: int, fileId: int): void =
   ## update a mod with the given `projectId` to the given `fileId`
