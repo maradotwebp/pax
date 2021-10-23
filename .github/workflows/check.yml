@@ -1,6 +1,6 @@
 name: check
 
-on: [push, pull_request]
+on: [pull_request]
 
 env:
   NIM_VERSION: '1.4.6'
