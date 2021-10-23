@@ -1,5 +1,11 @@
+## Helper methods to select a version from a mod to install.
+## 
+## Users of Pax can choose between three different strategies which decide how the "best" version
+## of a mod to install is selected.
+
 import options, sequtils
-import manifest, modinfo, mods
+import manifest
+import ../api/cfcore
 import ../modpack/loader, ../modpack/version
 
 type
@@ -8,37 +14,37 @@ type
     ## stable = stable release (e.g. not alpha/beta) version compatible with the modpack version
     ## recommended = newest version which is compatible with the modpack version.
     ## newest = newest version which is compatible with the minor modpack version.
-    stable, recommended, newest
+    Stable, Recommended, Newest
 
 converter toInstallStrategy*(str: string): InstallStrategy =
   ## Convert `str` to an InstallStrategy.
   case str:
-    of "stable": return InstallStrategy.stable
-    of "recommended": return InstallStrategy.recommended
-    of "newest": return InstallStrategy.newest
+    of "stable": return InstallStrategy.Stable
+    of "recommended": return InstallStrategy.Recommended
+    of "newest": return InstallStrategy.Newest
     else: raise newException(ValueError, "cannot convert " & str & " to InstallStrategy")
 
-proc isRecommendedMod(file: McModFile, modpackVersion: Version): bool {.used.} =
+proc isRecommended(file: CfAddonFile, modpackVersion: Version): bool =
   ## returns true if `file` is compatible according to InstallStrategy.recommended.
   return modpackVersion in file.gameVersions
 
-proc isStableMod(file: McModFile, modpackVersion: Version): bool {.used.} =
+proc isStable(file: CfAddonFile, modpackVersion: Version): bool =
   ## returns true if `file` is compatible according to InstallStrategy.stable.
-  return isRecommendedMod(file, modpackVersion) and file.releaseType == McModFileReleaseType.release
+  return isRecommended(file, modpackVersion) and file.releaseType == CfAddonFileReleaseType.Release
 
-proc isNewestMod(file: McModFile, modpackVersion: Version): bool {.used.} =
+proc isNewest(file: CfAddonFile, modpackVersion: Version): bool =
   ## returns true if `file` is compatible according to InstallStrategy.newest.
   return modpackVersion.minor in file.gameVersions.map(minor)
 
-proc selectModFile*(files: seq[McModFile], manifest: Manifest, strategy: InstallStrategy): Option[McModFile] = 
+proc selectAddonFile*(files: seq[CfAddonFile], manifest: Manifest, strategy: InstallStrategy): Option[CfAddonFile] = 
   ## Select the best mod file out of `files`, given the `manifest` and `strategy`.
-  var latestFile = none[McModFile]()
+  var latestFile = none[CfAddonFile]()
   for file in files:
-    let onFabric = manifest.loader == Loader.fabric and file.isFabricMod
-    let onForge = manifest.loader == Loader.forge and file.isForgeMod
-    let onStable = strategy == InstallStrategy.stable and file.isStableMod(manifest.mcVersion)
-    let onRecommended = strategy == InstallStrategy.recommended and file.isRecommendedMod(manifest.mcVersion)
-    let onNewest = strategy == InstallStrategy.newest and file.isNewestMod(manifest.mcVersion)
+    let onFabric = manifest.loader == Loader.Fabric and file.isFabricCompatible
+    let onForge = manifest.loader == Loader.Forge and file.isForgeCompatible
+    let onStable = strategy == InstallStrategy.Stable and file.isStable(manifest.mcVersion)
+    let onRecommended = strategy == InstallStrategy.Recommended and file.isRecommended(manifest.mcVersion)
+    let onNewest = strategy == InstallStrategy.Newest and file.isNewest(manifest.mcVersion)
     if latestFile.isNone or latestFile.get().fileId < file.fileId:
       if onFabric or onForge:
         if onStable or onRecommended or onNewest:
@@ -46,8 +52,8 @@ proc selectModFile*(files: seq[McModFile], manifest: Manifest, strategy: Install
   
   if latestFile.isNone:
     return case strategy:
-      of InstallStrategy.stable: selectModFile(files, manifest, InstallStrategy.recommended)
-      of InstallStrategy.recommended: selectModFile(files, manifest, InstallStrategy.newest)
+      of InstallStrategy.Stable: selectAddonFile(files, manifest, InstallStrategy.Recommended)
+      of InstallStrategy.Recommended: selectAddonFile(files, manifest, InstallStrategy.Newest)
       else: latestFile
 
   return latestFile

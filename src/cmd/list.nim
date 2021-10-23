@@ -1,8 +1,8 @@
-import algorithm, asyncdispatch, asyncfutures, sequtils, strutils, os, sugar
+import algorithm, asyncdispatch, asyncfutures, sequtils, strutils, options, os, sugar
 import common
-import ../api/cf
-import ../cli/term
+import ../api/cfclient, ../api/cfcore
 import ../modpack/manifest, ../modpack/modinfo
+import ../term/log
 
 proc paxList*(status: bool, info: bool): void =
   ## list installed mods & their current versions
@@ -12,24 +12,25 @@ proc paxList*(status: bool, info: bool): void =
   let manifest = readManifestFromDisk()
 
   let fileCount = manifest.files.len
-  let mcModRequests = manifest.files.map((x) => fetchMod(x.projectId))
-  let mcModFileRequests = manifest.files.map((x) => fetchModFile(x.projectId, x.fileId))
+  let mcModRequests = manifest.files.map((x) => fetchAddon(x.projectId))
+  let mcModFileRequests = manifest.files.map((x) => fetchAddonFile(x.projectId, x.fileId))
   let mcMods = all(mcModRequests)
   let mcModFiles = all(mcModFileRequests)
 
   echoInfo "Loading mods.."
   waitFor(mcMods and mcModFiles)
-  var modData = zip(mcMods.read(), mcModFiles.read())
+  let modDataOptions = zip(mcMods.read(), mcModFiles.read())
+  var modData = modDataOptions.map((x) => (x[0].get(), x[1].get()))
   modData = modData.sorted((x,y) => cmp(x[0].name, y[0].name))
 
-  echoRoot "ALL MODS ".magentaFg, ("(" & $fileCount & ")").dim
+  echoRoot "ALL MODS ".fgMagenta, ("(" & $fileCount & ")").dim
   for index, pairs in modData:
     let (mcMod, mcModFile) = pairs
     let fileUrl = mcMod.websiteUrl & "/files/" & $mcModFile.fileId
     let compability = mcModFile.getCompability(manifest.mcVersion)
     let freshness = mcModFile.getFreshness(manifest.mcVersion, mcMod)
     let prefix = compability.getIcon() & freshness.getIcon()
-    echoMod(mcMod, prefix = prefix, url = fileUrl.dim, moreInfo = info)
+    echoAddon(mcMod, prefix = prefix, url = fileUrl.dim, moreInfo = info)
     if status and info:
       echoClr "------------------------------".indent(7).dim
     if status:

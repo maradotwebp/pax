@@ -1,6 +1,6 @@
 import os, zippy/ziparchives
-import ../cli/term
 import ../modpack/manifest
+import ../term/log
 
 proc paxExport*(path: string): void =
   ## export the modpack to .zip
@@ -19,4 +19,4 @@ proc paxExport*(path: string): void =
     joinPath(outputFolder, manifest.name & ".zip")
   packFolder.createZipArchive(zipPath)
 
-  echoInfo "Pack exported to ", zipPath.greenFg
+  echoInfo "Pack exported to ", zipPath.fgGreen

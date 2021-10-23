@@ -3,7 +3,7 @@ name: check
 on: [push, pull_request]
 
 env:
-  NIM_VERSION: 'stable'
+  NIM_VERSION: '1.4.6'
 
 jobs:
   build:

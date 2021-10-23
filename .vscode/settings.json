@@ -1,7 +1,14 @@
 {
-    "editor.tabSize": 2,
-    "files.exclude": {
-        "nimcache/": true,
-        "testresults/": true
-    }
+  "editor.tabSize": 2,
+  "files.exclude": {
+    "**/.git": true,
+    "**/.svn": true,
+    "**/.hg": true,
+    "**/CVS": true,
+    "**/.DS_Store": true,
+    "**/Thumbs.db": true,
+    "nimcache/": true,
+    "testresults/": true
+  },
+  "nim.nimprettyIndent": 2
 }

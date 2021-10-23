@@ -1,7 +1,7 @@
 import asyncdispatch, asyncfutures, sequtils, strutils, sugar, options, os
-import ../api/cf
-import ../cli/prompt, ../cli/term
+import ../api/cfclient, ../api/cfcore
 import ../modpack/manifest, ../modpack/install
+import ../term/log, ../term/prompt
 import ../util/flow
 
 proc paxUpgrade*(strategy: string): void =
@@ -14,8 +14,8 @@ proc paxUpgrade*(strategy: string): void =
 
   returnIfNot promptYN($fileCount & " mods will be updated to the " & $strategy & " version. Do you want to continue?", default = true)
 
-  let mcModRequests = manifest.files.map((x) => fetchMod(x.projectId))
-  let mcModFilesRequests = manifest.files.map((x) => fetchModFiles(x.projectId))
+  let mcModRequests = manifest.files.map((x) => fetchAddon(x.projectId))
+  let mcModFilesRequests = manifest.files.map((x) => fetchAddonFiles(x.projectId))
   let mcMods = all(mcModRequests)
   let mcModFiles = all(mcModFilesRequests)
 
@@ -25,12 +25,16 @@ proc paxUpgrade*(strategy: string): void =
 
   for pairs in modData:
     let (mcMod, mcModFiles) = pairs
-    let mcModFile = mcModFiles.selectModFile(manifest, strategy)
-    if mcModFile.isNone:
-      echoWarn mcMod.name.cyanFg, " does not have a compatible version. Skipping.."
+    let mcModFile = mcModFiles.selectAddonFile(manifest, strategy)
+    let manifestFile = manifest.getFile(mcMod.get().projectId)
+    if manifestFile.metadata.pinned:
+      echoWarn mcMod.get().name.fgCyan, " is pinned. Skipping.."
       continue
-    echoInfo "Updating ", mcMod.name.cyanFg, ".."
-    manifest.updateMod(mcMod.projectId, mcModFile.get().fileId)
+    if mcModFile.isNone:
+      echoWarn mcMod.get().name.fgCyan, " does not have a compatible version. Skipping.."
+      continue
+    echoInfo "Updating ", mcMod.get().name.fgCyan, ".."
+    manifest.updateAddon(mcMod.get().projectId, mcModFile.get().fileId)
 
   echoDebug "Writing to manifest..." 
   manifest.writeToDisk()

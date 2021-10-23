@@ -1,6 +1,6 @@
 import therapist
-import cli/clr, cli/prompt
-import cmd/add, cmd/expo, cmd/impo, cmd/init, cmd/list, cmd/remove, cmd/update, cmd/upgrade, cmd/version
+import cmd/add, cmd/expo, cmd/impo, cmd/init, cmd/list, cmd/pin, cmd/remove, cmd/update, cmd/upgrade, cmd/version
+import term/color, term/prompt
 
 let commonArgs = (
   strategy: newStringArg(@["-s", "--strategy"],
@@ -63,6 +63,16 @@ let removeCmd = (
     help = "name of the mod to remove"
   ),
   strategy: commonArgs.strategy,
+  yes: commonArgs.yes,
+  noColor: commonArgs.noColor,
+  help: newHelpArg()
+)
+
+let pinCmd = (
+  name: newStringArg(@["<name>"],
+    multi = true,
+    help = "name of the mod to pin"
+  ),
   yes: commonArgs.yes,
   noColor: commonArgs.noColor,
   help: newHelpArg()
@@ -142,6 +152,10 @@ let spec = (
     removeCmd,
     help = "remove a mod from the modpack"
   ),
+  pin: newCommandArg(@["pin"],
+    pinCmd,
+    help = "pin/unpin a mod to its current version"
+  ),
   update: newCommandArg(@["update"],
     updateCmd,
     help = "update a specific mod"
@@ -186,6 +200,8 @@ elif spec.add.seen:
       strategy = addCmd.strategy.value)
 elif spec.remove.seen:
   paxRemove(name = removeCmd.name.value, strategy = removeCmd.strategy.value)
+elif spec.pin.seen:
+  paxPin(name = pinCmd.name.value)
 elif spec.update.seen:
   paxUpdate(name = updateCmd.name.value, strategy = updateCmd.strategy.value)
 elif spec.upgrade.seen:

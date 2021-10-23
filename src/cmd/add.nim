@@ -1,34 +1,35 @@
 import asyncdispatch, options, strscans
 import common
-import ../api/cf
-import ../cli/term, ../cli/prompt
+import ../api/cfclient, ../api/cfcore
+import ../modpack/install, ../modpack/manifest
+import ../term/log, ../term/prompt
 import ../util/flow
-import ../modpack/install, ../modpack/manifest, ../modpack/mods
 
 proc addDependencies(manifest: var Manifest, file: ManifestFile, strategy: string): void =
   ## Recursively add dependencies of a mod
   for id in file.metadata.dependencies:
     if manifest.isInstalled(id):
       continue
-    let mcMod = fetchMod(id)
-    let mcModFiles = fetchModFiles(id)
+    let mcMod = fetchAddon(id)
+    let mcModFiles = fetchAddonFiles(id)
     waitFor(mcMod and mcModFiles)
-    let selectedMcModFile = mcModFiles.read().selectModFile(manifest, strategy)
-    if selectedMcModFile.isNone:
+    let selectedMcModFile = mcModFiles.read().selectAddonFile(manifest, strategy)
+    if mcMod.read().isNone or selectedMcModFile.isNone:
       echoError "Warning: unable to resolve dependencies."
       quit(1)
     let mcModFile = selectedMcModFile.get()
-    echoInfo "Installing ", mcMod.read().name.cyanFg, ".."
+    echoInfo "Installing ", mcMod.read().get().name.fgCyan, ".."
     let modToInstall = initManifestFile(
       projectId = id,
       fileId = mcModFile.fileId,
       metadata = initManifestMetadata(
-        name = mcMod.read().name,
+        name = mcMod.read().get().name,
         explicit = false,
+        pinned = false,
         dependencies = mcModFile.dependencies
       )
     )
-    manifest.installMod(modToInstall)
+    manifest.installAddon(modToInstall)
     addDependencies(manifest, modToinstall, strategy)
 
 proc strScan(input: string, strVal: var string, start: int): int =
@@ -49,22 +50,34 @@ proc paxAdd*(input: string, noDepends: bool, strategy: string): void =
   var projectId: int
   var fileId: int
   var slug: string
-  var mcMod: McMod
-  var mcModFile: McModFile
+  var mcMod: CfAddon
+  var mcModFile: CfAddonFile
 
   if input.scanf("https://www.curseforge.com/minecraft/mc-mods/${strScan}/files/$i", slug, fileId):
     ## Curseforge URL with slug & fileId
-    mcMod = waitFor(fetchMod(slug))
-    manifest.rejectInstalledMod(mcMod.projectId)
-    mcModFile = waitFor(fetchModFile(mcMod.projectId, fileId))
+    let mcModOption = waitFor(fetchAddon(slug))
+    if mcModOption.isNone:
+      echoError "This url is not correct."
+      quit(1)
+    mcMod = mcModOption.get()
+    manifest.rejectInstalledAddon(mcMod.projectId)
+    let mcModFileOption = waitFor(fetchAddonFile(mcMod.projectId, fileId))
+    if mcModOption.isNone:
+      echoError "This url is not correct."
+      quit(1)
+    mcModFile = mcModFileOption.get()
 
   elif input.scanf("https://www.curseforge.com/minecraft/mc-mods/${strScan}", slug):
     ## Curseforge URL with slug
-    mcMod = waitFor(fetchMod(slug))
-    manifest.rejectInstalledMod(mcMod.projectId)
-    echoDebug "Found mod ", mcMod.name.cyanFg, "."
-    let mcModFiles = waitFor(fetchModFiles(mcMod.projectId))
-    let selectedMcModFile = mcModFiles.selectModFile(manifest, strategy)
+    let mcModOption = waitFor(fetchAddon(slug))
+    if mcModOption.isNone:
+      echoError "This url is not correct."
+      quit(1)
+    mcMod = mcModOption.get()
+    manifest.rejectInstalledAddon(mcMod.projectId)
+    echoDebug "Found mod ", mcMod.name.fgCyan, "."
+    let mcModFiles = waitFor(fetchAddonFiles(mcMod.projectId))
+    let selectedMcModFile = mcModFiles.selectAddonFile(manifest, strategy)
     if selectedMcModFile.isNone:
       echoError "No compatible version found."
       quit(1)
@@ -72,18 +85,30 @@ proc paxAdd*(input: string, noDepends: bool, strategy: string): void =
 
   elif input.scanf("$i#$i", projectId, fileId):
     ## Input in <projectid>#<fileid> format
-    mcMod = waitFor(fetchMod(projectId))
-    manifest.rejectInstalledMod(mcMod.projectId)
-    echoDebug "Found mod ", mcMod.name.cyanFg, "."
-    mcModFile = waitFor(fetchModFile(projectId, fileId))
+    let mcModOption = waitFor(fetchAddon(projectId))
+    if mcModOption.isNone:
+      echoError "There exists no addon with the given projectId."
+      quit(1)
+    mcMod = mcModOption.get()
+    manifest.rejectInstalledAddon(mcMod.projectId)
+    echoDebug "Found mod ", mcMod.name.fgCyan, "."
+    let mcModFileOption = waitFor(fetchAddonFile(mcMod.projectId, fileId))
+    if mcModOption.isNone:
+      echoError "There exists no addon with the given fileId."
+      quit(1)
+    mcModFile = mcModFileOption.get()
 
   elif input.scanf("$i", projectId):
     ## Input in <projectid> format
-    mcMod = waitFor(fetchMod(projectId))
-    manifest.rejectInstalledMod(mcMod.projectId)
-    echoDebug "Found mod ", mcMod.name.cyanFg, "."
-    let mcModFiles = waitFor(fetchModFiles(mcMod.projectId))
-    let selectedMcModFile = mcModFiles.selectModFile(manifest, strategy)
+    let mcModOption = waitFor(fetchAddon(projectId))
+    if mcModOption.isNone:
+      echoError "There exists no addon with the given projectId."
+      quit(1)
+    mcMod = mcModOption.get()
+    manifest.rejectInstalledAddon(mcMod.projectId)
+    echoDebug "Found mod ", mcMod.name.fgCyan, "."
+    let mcModFiles = waitFor(fetchAddonFiles(mcMod.projectId))
+    let selectedMcModFile = mcModFiles.selectAddonFile(manifest, strategy)
     if selectedMcModFile.isNone:
       echoError "No compatible version found."
       quit(1)
@@ -91,16 +116,16 @@ proc paxAdd*(input: string, noDepends: bool, strategy: string): void =
 
   else:
     ## Just search normally
-    let mcMods = waitFor(fetchModsByQuery(input))
-    let mcModOption = manifest.promptModChoice(mcMods, selectInstalled = false)
+    let mcMods = waitFor(fetchAddonsByQuery(input))
+    let mcModOption = manifest.promptAddonChoice(mcMods, selectInstalled = false)
     if mcModOption.isNone:
       echoError "No mods found for your search."
       quit(1)
     mcMod = mcModOption.get()
-    manifest.rejectInstalledMod(mcMod.projectId)
-    echoDebug "Found mod ", mcMod.name.cyanFg, "."
-    let mcModFiles = waitFor(fetchModFiles(mcMod.projectId))
-    let selectedMcModFile = mcModFiles.selectModFile(manifest, strategy)
+    manifest.rejectInstalledAddon(mcMod.projectId)
+    echoDebug "Found mod ", mcMod.name.fgCyan, "."
+    let mcModFiles = waitFor(fetchAddonFiles(mcMod.projectId))
+    let selectedMcModFile = mcModFiles.selectAddonFile(manifest, strategy)
     if selectedMcModFile.isNone:
       echoError "No compatible version found."
       quit(1)
@@ -108,22 +133,23 @@ proc paxAdd*(input: string, noDepends: bool, strategy: string): void =
 
   echo ""
   echoRoot "SELECTED MOD".dim
-  echoMod(mcMod, moreInfo = true)
+  echoAddon(mcMod, moreInfo = true)
   echo ""
 
   returnIfNot promptYN("Are you sure you want to install this mod?", default = true)
 
-  echoInfo "Installing ", mcMod.name.cyanFg, ".."
+  echoInfo "Installing ", mcMod.name.fgCyan, ".."
   let modToInstall = initManifestFile(
     projectId = mcMod.projectId,
     fileId = mcModFile.fileId,
     metadata = initManifestMetadata(
       name = mcMod.name,
       explicit = true,
+      pinned = false,
       dependencies = mcModFile.dependencies
     )
   )
-  manifest.installMod(modToInstall)
+  manifest.installAddon(modToInstall)
 
   if not noDepends:
     echoDebug "Resolving Dependencies..."

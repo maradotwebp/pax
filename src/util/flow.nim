@@ -1,3 +1,5 @@
+## Helper Utilities for easier scripting & code flow management.
+
 template returnIf*(assertion: bool): void =
   ## returns if `assertion` is true
   if assertion: return
