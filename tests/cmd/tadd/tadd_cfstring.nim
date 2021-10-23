@@ -2,6 +2,7 @@ discard """
   cmd: "nim $target --hints:on -d:testing -d:ssl --nimblePath:tests/deps $options $file"
   joinable: false
   batchable: false
+  disabled: true
   input: '''
 y
 testmodpack

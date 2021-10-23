@@ -43,7 +43,10 @@ proc fetchAddon*(slug: string): Future[Option[CfAddon]] {.async.} =
   let curseProxyInfo = await post(addonsSlugBaseUrl.Url, body = $reqBody)
   var projectId: int
   try:
-    projectId = curseProxyInfo.parseJson["data"]["addons"][0]["id"].getInt()
+    let addons = curseProxyInfo.parseJson["data"]["addons"]
+    if addons.len == 0:
+      return none[CfAddon]()
+    projectId = addons[0]["id"].getInt()
   except KeyError:
     return none[CfAddon]()
   return await fetchAddon(projectId)
