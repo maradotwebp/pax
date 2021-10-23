@@ -22,16 +22,17 @@ block: # manifest mods
 
   doAssert m.files.len == 0
 
-  m.installAddon(initManifestFile(
-      projectId = 111,
-      fileId = 200,
-      initManifestMetadata(
-        name = "test",
-        explicit = true,
-        dependencies = @[]
-      )
+  let file = initManifestFile(
+    projectId = 111,
+    fileId = 200,
+    initManifestMetadata(
+      name = "test",
+      explicit = true,
+      pinned = false,
+      dependencies = @[]
     )
   )
+  m.installAddon(file)
   doAssert m.files.len == 1
   doAssert m.files[0].projectId == 111
   doAssert m.files[0].fileId == 200
@@ -40,6 +41,13 @@ block: # manifest mods
   doAssert m.files.len == 1
   doAssert m.files[0].projectId == 111
   doAssert m.files[0].fileId == 300
+
+  file.metadata.pinned = false
+  m.updateAddon(file)
+  doAssert m.files.len == 1
+  doAssert m.files[0].projectId == 111
+  doAssert m.files[0].fileId == 300
+  doAssert m.files[0].metadata.pinned == false
 
   discard m.removeAddon(111)
   doAssert m.files.len == 0
