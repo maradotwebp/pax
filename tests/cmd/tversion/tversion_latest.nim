@@ -12,6 +12,9 @@ discard """
 
 import json, os
 import cmd/version
+import term/color
+
+terminalColorEnabledSetting = false
 
 let manifestJson = %* {
   "minecraft": {
