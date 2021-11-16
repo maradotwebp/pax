@@ -29,12 +29,15 @@ proc getFabricLoaderVersion(mcVersion: Version): Future[Option[string]] {.async.
   let ver = loaderElems[0]["loader"]["version"].getStr()
   return some(ver)
 
-proc getForgeLoaderVersion(mcVersion: Version): Future[Option[string]] {.async.} =
+proc getForgeLoaderVersion(mcVersion: Version, latest: bool): Future[Option[string]] {.async.} =
   ## get the forge loader version fitting for the given minecraft version
   let json = get(forgeBaseUrl.Url).await.parseJson
   let recommendedVersion = json{"by_mcversion", $mcVersion, "recommended"}.getStr()
   let latestVersion = json{"by_mcversion", $mcVersion, "latest"}.getStr()
-  let forgeVersion = if $recommendedVersion != "": recommendedVersion else: latestVersion
+  let forgeVersion = if latest:
+    latestVersion
+  else:
+    if $recommendedVersion != "": recommendedVersion else: latestVersion
   return if forgeVersion != "": some(forgeVersion) else: none[string]()
 
 proc toModloaderId(loaderVersion: string, loader: Loader): string =
@@ -43,9 +46,9 @@ proc toModloaderId(loaderVersion: string, loader: Loader): string =
     of Loader.Forge: "forge-" & loaderVersion.split("-")[1]
     of Loader.Fabric: "fabric-" & loaderVersion
 
-proc getModloaderId*(mcVersion: Version, loader: Loader): Future[Option[string]] {.async.} =
+proc getModloaderId*(mcVersion: Version, loader: Loader, latest: bool = false): Future[Option[string]] {.async.} =
   ## get the modloader id fitting for the given minecraft version and loader
   let loaderVersion = case loader:
-    of Loader.Forge: await mcVersion.getForgeLoaderVersion
-    of Loader.Fabric: await mcVersion.getFabricLoaderVersion
+    of Loader.Forge: await mcVersion.getForgeLoaderVersion(latest)
+    of Loader.Fabric: await mcVersion.getFabricLoaderVersion()
   return loaderVersion.map((x) => toModloaderId(x, loader))

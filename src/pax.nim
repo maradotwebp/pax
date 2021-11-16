@@ -104,6 +104,9 @@ let versionCmd = (
     choices = @["fabric", "forge"],
     help = "which loader to use"
   ),
+  latest: newCountArg(@["--latest"],
+    help = "install the latest loader version instead of the recommended one"
+  ),
   yes: commonArgs.yes,
   noColor: commonArgs.noColor,
   help: newHelpArg()
@@ -208,10 +211,9 @@ elif spec.upgrade.seen:
   paxUpgrade(strategy = upgradeCmd.strategy.value)
 elif spec.version.seen:
   if versionCmd.loader.seen:
-    paxVersion(version = versionCmd.version.value,
-        loader = versionCmd.loader.value)
+    paxVersion(version = versionCmd.version.value, loader = versionCmd.loader.value, latest = versionCmd.latest.seen)
   else:
-    paxVersion(version = versionCmd.version.value)
+    paxVersion(version = versionCmd.version.value, latest = versionCmd.latest.seen)
 elif spec.impo.seen:
   paxImport(path = importCmd.path.value, force = importCmd.force.seen,
       skipGit = importCmd.skipGit.seen)
