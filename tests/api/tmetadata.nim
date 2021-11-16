@@ -35,8 +35,11 @@ block: # getModloaderId - Forge
   let id5 = getModloaderId("1.12".Version, Loader.Forge)
   let id6 = getModloaderId("1.16.1".Version, Loader.Forge)
   let id7 = getModloaderId("1.16.3".Version, Loader.Forge)
+  let id8 = getModloaderId("1.12".Version, Loader.Forge, latest=true)
+  let id9 = getModloaderId("1.16.1".Version, Loader.Forge, latest=true)
+  let id10 = getModloaderId("1.16.3".Version, Loader.Forge, latest=true)
 
-  let allIdPromises = @[id1, id2, id3, id4, id5, id6, id7]
+  let allIdPromises = @[id1, id2, id3, id4, id5, id6, id7, id8, id9, id10]
   discard waitFor(all(allIdPromises))
 
   doAssert id1.read().isNone()
@@ -46,3 +49,6 @@ block: # getModloaderId - Forge
   doAssert id5.read().get() == "forge-14.21.1.2387"
   doAssert id6.read().get() == "forge-32.0.108"
   doAssert id7.read().get() == "forge-34.1.0"
+  doAssert id8.read().get() == "forge-14.21.1.2443"
+  doAssert id9.read().get() == "forge-32.0.108"
+  doAssert id10.read().get() == "forge-34.1.42"
