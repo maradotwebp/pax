@@ -115,8 +115,8 @@ converter toManifest(json: JsonNode): Manifest =
   ## creates a Manifest from manifest json
   result = Manifest()
   result.name = json["name"].getStr()
-  result.author = json["author"].getStr()
-  result.version = json["version"].getStr()
+  result.author = json{"author"}.getStr()
+  result.version = json{"version"}.getStr()
   result.mcVersion = json["minecraft"]["version"].getStr().Version
   result.mcModloaderId = json["minecraft"]["modLoaders"][0]["id"].getStr()
   let fileElemRequests = json["files"].getElems().map(toManifestFile)
