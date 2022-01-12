@@ -1,4 +1,4 @@
-## Helper file for retrieving pax version from project pax.nimble
+## Helper file for retrieving pax version from latest tag
 
 import strutils
 
