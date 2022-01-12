@@ -1,7 +1,7 @@
 import therapist
 import cmd/add, cmd/expo, cmd/impo, cmd/init, cmd/list, cmd/pin, cmd/remove, cmd/update, cmd/upgrade, cmd/version
 import term/color, term/prompt
-import util/nimbleVersion
+import util/paxVersion
 
 let commonArgs = (
   strategy: newStringArg(@["-s", "--strategy"],
