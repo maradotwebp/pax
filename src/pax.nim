@@ -1,6 +1,7 @@
 import therapist
 import cmd/add, cmd/expo, cmd/impo, cmd/init, cmd/list, cmd/pin, cmd/remove, cmd/update, cmd/upgrade, cmd/version
 import term/color, term/prompt
+import util/nimbleVersion
 
 let commonArgs = (
   strategy: newStringArg(@["-s", "--strategy"],
@@ -13,6 +14,14 @@ let commonArgs = (
   ),
   noColor: newCountArg(@["--no-color"],
     help = "disable colored output"
+  ),
+  # Version should only work with no subcommands
+  version: newMessageArg(@["-v", "--version"],
+    nimbleVersion.nimbleVersion,
+    help = "show version information"
+  ),
+  help: newHelpArg(@["-h", "--help"],
+    help = "show help message"
   )
 )
 
@@ -28,7 +37,7 @@ let initCmd = (
   ),
   yes: commonArgs.yes,
   noColor: commonArgs.noColor,
-  help: newHelpArg()
+  help: commonArgs.help
 )
 
 let listCmd = (
@@ -40,7 +49,7 @@ let listCmd = (
   ),
   yes: commonArgs.yes,
   noColor: commonArgs.noColor,
-  help: newHelpArg()
+  help: commonArgs.help
 )
 
 let addCmd = (
@@ -54,7 +63,7 @@ let addCmd = (
   strategy: commonArgs.strategy,
   yes: commonArgs.yes,
   noColor: commonArgs.noColor,
-  help: newHelpArg()
+  help: commonArgs.help
 )
 
 let removeCmd = (
@@ -65,7 +74,7 @@ let removeCmd = (
   strategy: commonArgs.strategy,
   yes: commonArgs.yes,
   noColor: commonArgs.noColor,
-  help: newHelpArg()
+  help: commonArgs.help
 )
 
 let pinCmd = (
@@ -75,7 +84,7 @@ let pinCmd = (
   ),
   yes: commonArgs.yes,
   noColor: commonArgs.noColor,
-  help: newHelpArg()
+  help: commonArgs.help
 )
 
 let updateCmd = (
@@ -86,14 +95,14 @@ let updateCmd = (
   strategy: commonArgs.strategy,
   yes: commonArgs.yes,
   noColor: commonArgs.noColor,
-  help: newHelpArg()
+  help: commonArgs.help
 )
 
 let upgradeCmd = (
   strategy: commonArgs.strategy,
   yes: commonArgs.yes,
   noColor: commonArgs.noColor,
-  help: newHelpArg()
+  help: commonArgs.help
 )
 
 let versionCmd = (
@@ -109,7 +118,7 @@ let versionCmd = (
   ),
   yes: commonArgs.yes,
   noColor: commonArgs.noColor,
-  help: newHelpArg()
+  help: commonArgs.help
 )
 
 let importCmd = (
@@ -124,7 +133,7 @@ let importCmd = (
   ),
   yes: commonArgs.yes,
   noColor: commonArgs.noColor,
-  help: newHelpArg()
+  help: commonArgs.help
 )
 
 let exportCmd = (
@@ -135,7 +144,7 @@ let exportCmd = (
   ),
   yes: commonArgs.yes,
   noColor: commonArgs.noColor,
-  help: newHelpArg()
+  help: commonArgs.help
 )
 
 let spec = (
@@ -181,7 +190,8 @@ let spec = (
   ),
   yes: commonArgs.yes,
   noColor: commonArgs.noColor,
-  help: newHelpArg()
+  paxVersion: commonArgs.version,
+  help: commonArgs.help
 )
 
 spec.parseOrHelp()
