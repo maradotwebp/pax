@@ -17,7 +17,7 @@ let commonArgs = (
   ),
   # Version should only work with no subcommands
   version: newMessageArg(@["-v", "--version"],
-    nimbleVersion.nimbleVersion,
+    currentPaxVersion,
     help = "show version information"
   ),
   help: newHelpArg(@["-h", "--help"],
