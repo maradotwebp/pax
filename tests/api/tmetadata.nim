@@ -45,7 +45,7 @@ block: # getModloaderId - Forge
   doAssert id1.read().isNone()
   doAssert id2.read().isNone()
   doAssert id3.read().isNone()
-  doAssert id4.read().get() == "forge-14.23.5.2855"
+  doAssert id4.read().get() == "forge-14.23.5.2859"
   doAssert id5.read().get() == "forge-14.21.1.2387"
   doAssert id6.read().get() == "forge-32.0.108"
   doAssert id7.read().get() == "forge-34.1.0"
