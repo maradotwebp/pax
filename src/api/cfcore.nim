@@ -49,11 +49,11 @@ converter addonFileFromForgeSvc*(json: JsonNode): CfAddonFile =
   result.name = json["displayName"].getStr()
   result.releaseType = json["releaseType"].getInt().CfAddonFileReleaseType
   result.downloadUrl = json["downloadUrl"].getStr()
-  result.gameVersions = json["gameVersion"].getElems().map((x) => x.getStr().Version)
+  result.gameVersions = json["gameVersions"].getElems().map((x) => x.getStr().Version)
   result.dependencies = collect(newSeq):
     for depends in json["dependencies"].getElems():
-      if depends["type"].getInt() == RequiredDependencyType:
-        depends["addonId"].getInt()
+      if depends["relationType"].getInt() == RequiredDependencyType:
+        depends["modId"].getInt()
 
 converter addonFilesFromForgeSvc*(json: JsonNode): seq[CfAddonFile] =
   ## creates addon files from json retrieved by an forgesvc endpoint
@@ -65,15 +65,15 @@ converter addonFromForgeSvc*(json: JsonNode): CfAddon =
   result.projectId = json["id"].getInt()
   result.name = json["name"].getStr()
   result.description = json["summary"].getStr()
-  result.websiteUrl = json["websiteUrl"].getStr()
+  result.websiteUrl = json["links"]{"websiteUrl"}.getStr()
   result.authors = json["authors"].getElems().map((x) => x["name"].getStr())
   result.downloads = json["downloadCount"].getFloat().int
-  result.popularity = json["popularityScore"].getFloat()
+  result.popularity = json["gamePopularityRank"].getFloat()
   result.latestFiles = json["latestFiles"].getElems().map(addonFileFromForgeSvc)
   result.gameVersionLatestFiles = collect(newSeq):
-    for file in json["gameVersionLatestFiles"].getElems():
+    for file in json["latestFilesIndexes"].getElems():
       let version = file["gameVersion"].getStr().Version
-      let fileId = file["projectFileId"].getInt()
+      let fileId = file["fileId"].getInt()
       (version: version, fileId: fileId)
 
 converter addonsFromForgeSvc*(json: JsonNode): seq[CfAddon] =
