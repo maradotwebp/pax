@@ -22,7 +22,7 @@ const
 proc fetchAddonsByQuery*(query: string, category = CfAddonGameCategory.Mod): Future[seq[CfAddon]] {.async.} =
   ## retrieves all addons that match the given `query` search and `category`.
   let encodedQuery = encodeUrl(query, usePlus = false)
-  let url = addonsBaseUrl & "/v1/mods/search?gameId=432&classId=" & $category & "&pageSize=50&sortField=6&sortOrder=desc&searchFilter=" & encodedQuery
+  let url = addonsBaseUrl & "/v1/mods/search?gameId=432&classId=" & $ord(category) & "&pageSize=50&sortField=6&sortOrder=desc&searchFilter=" & encodedQuery
   try:
     return get(url.Url).await.parseJson["data"].addonsFromForgeSvc
   except HttpRequestError:
