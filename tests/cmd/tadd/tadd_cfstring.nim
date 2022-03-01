@@ -20,7 +20,7 @@ import cmd/init, cmd/add
 
 removeDir("./modpack")
 paxInit(force = false, skipManifest = false, skipGit = true)
-paxAdd("https://www.curseforge.com/minecraft/mc-mods/jei", noDepends = false, strategy = "recommended")
+paxAdd("https://www.curseforge.com/minecraft/mc-mods/jei", noDepends = false, strategy = "recommended", addonType = "")
 let manifest = readFile("./modpack/manifest.json").parseJson
 
 doAssert fileExists("./modpack/manifest.json")
