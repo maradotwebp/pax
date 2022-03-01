@@ -19,9 +19,9 @@ import cmd/init, cmd/add
 
 removeDir("./modpack")
 paxInit(force = false, skipManifest = false, skipGit = true)
-paxAdd("just enough items", noDepends = false, strategy = "recommended")
-paxAdd("238222", noDepends = false, strategy = "recommended")
-paxAdd("238222#3383214", noDepends = false, strategy = "recommended")
+paxAdd("just enough items", noDepends = false, strategy = "recommended", addonType = "")
+paxAdd("238222", noDepends = false, strategy = "recommended", addonType = "")
+paxAdd("238222#3383214", noDepends = false, strategy = "recommended", addonType = "")
 let manifest = readFile("./modpack/manifest.json").parseJson
 
 doAssert fileExists("./modpack/manifest.json")

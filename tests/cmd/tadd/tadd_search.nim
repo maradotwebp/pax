@@ -19,7 +19,7 @@ import cmd/init, cmd/add
 
 removeDir("./modpack")
 paxInit(force = false, skipManifest = false, skipGit = true)
-paxAdd("jei", noDepends = false, strategy = "recommended")
+paxAdd("jei", noDepends = false, strategy = "recommended", addonType = "")
 let manifest = readFile("./modpack/manifest.json").parseJson
 
 doAssert fileExists("./modpack/manifest.json")
