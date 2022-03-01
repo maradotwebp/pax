@@ -38,7 +38,7 @@ proc strScan(input: string, strVal: var string, start: int): int =
     inc result
   strVal = input.substr(start, start+result-1)
 
-proc paxAdd*(input: string, noDepends: bool, strategy: string): void =
+proc paxAdd*(input: string, noDepends: bool, strategy: string, addonType: string): void =
   ## add a new mod
   requirePaxProject()
 
@@ -116,7 +116,14 @@ proc paxAdd*(input: string, noDepends: bool, strategy: string): void =
 
   else:
     ## Just search normally
-    let mcMods = waitFor(fetchAddonsByQuery(input))
+    let addonType: Option[CfAddonGameCategory] = case addonType:
+      of "mod":
+        some(CfAddonGameCategory.Mod)
+      of "resourcepack":
+        some(CfAddonGameCategory.Resourcepack)
+      else:
+        none[CfAddonGameCategory]()
+    let mcMods = waitFor(fetchAddonsByQuery(input, addonType))
     let mcModOption = manifest.promptAddonChoice(mcMods, selectInstalled = false)
     if mcModOption.isNone:
       echoError "No mods found for your search."

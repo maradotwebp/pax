@@ -60,6 +60,10 @@ let addCmd = (
   noDepends: newCountArg(@["--no-deps"],
     help = "don't install dependencies"
   ),
+  addonType: newStringArg(@["-t", "--type"],
+    choices = @["mod", "resourcepack"],
+    help = "restrict search to a certain addon type"
+  ),
   strategy: commonArgs.strategy,
   yes: commonArgs.yes,
   noColor: commonArgs.noColor,
@@ -209,8 +213,12 @@ if spec.init.seen:
 elif spec.list.seen:
   paxList(status = listCmd.status.seen, info = listCmd.info.seen)
 elif spec.add.seen:
-  paxAdd(input = addCmd.input.value, noDepends = addCmd.noDepends.seen,
-      strategy = addCmd.strategy.value)
+  paxAdd(
+    input = addCmd.input.value,
+    noDepends = addCmd.noDepends.seen,
+    strategy = addCmd.strategy.value,
+    addonType = addCmd.addonType.value
+  )
 elif spec.remove.seen:
   paxRemove(name = removeCmd.name.value, strategy = removeCmd.strategy.value)
 elif spec.pin.seen:

@@ -1,15 +1,22 @@
 discard """
   cmd: "nim $target --hints:on -d:testing -d:ssl --nimblePath:tests/deps $options $file"
-  disabled: "win"
 """
 
-import asyncdispatch, options, sequtils, sugar
+import asyncdispatch, options, sequtils, strutils, sugar
 import api/cfclient, api/cfcore
 
 block: # fetch by query
   let mods = waitFor(fetchAddonsByQuery("jei"))
   doAssert mods[0].projectId == 238222
   doAssert mods[0].name == "Just Enough Items (JEI)"
+
+block: # fetch mods by query
+  let mods = waitFor(fetchAddonsByQuery("jei", some(CfAddonGameCategory.Mod)))
+  doAssert mods.all(m => m.websiteUrl.contains("/mc-mods/"))
+
+block: # fetch resource packs  by query
+  let mods = waitFor(fetchAddonsByQuery("jei", some(CfAddonGameCategory.Resourcepack)))
+  doAssert mods.all(m => m.websiteUrl.contains("/texture-packs/"))
 
 block: # fetch mod by id
   let mcMod = waitFor(fetchAddon(220318)).get()
