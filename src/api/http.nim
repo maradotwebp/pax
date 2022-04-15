@@ -1,7 +1,7 @@
 ## A simple wrapper for the `httpclient` module.
 ## Used for convenience over creating a `newAsyncHttpClient()` instance.
 
-import asyncdispatch, httpclient, os
+import std/[asyncdispatch, httpclient, os]
 export HttpRequestError
 
 let
@@ -25,18 +25,16 @@ template getHttpClient(): AsyncHttpClient =
   http.headers = newHttpHeaders({"Content-Type": "application/json"})
   http
 
-proc get*(url: Url): Future[string] {.async.} =
+proc get*(url: Url): Future[string] =
   ## creates a GET request targeting the given `url`.
   ## throws OSError or HttpRequestError if the request failed.
   ## returns the body of the response.
   let http = getHttpClient()
-  result = await http.getContent($url)
-  http.close()
+  result = http.getContent($url)
 
-proc post*(url: Url, body: string = ""): Future[string] {.async.} =
+proc post*(url: Url, body: string = ""): Future[string] =
   ## creates a POST request targeting the given `url`, with an optional `body`.
   ## throws OSError or HttpRequestError if the request failed.
   ## returns the body of the response.
   let http = getHttpClient()
-  result = await http.postContent($url, body)
-  http.close()
+  result = http.postContent($url, body)
