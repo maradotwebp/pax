@@ -41,6 +41,15 @@ proc fetchAddon*(projectId: int): Future[Option[CfAddon]] {.async.} =
   except HttpRequestError:
     return none[CfAddon]()
 
+proc fetchAddons*(projectIds: seq[int]): Future[seq[CfAddon]] {.async.} =
+  ## get all addons with their given `projectId`
+  let url = addonsBaseUrl & "/v1/mods/"
+  let reqBody = %* { "modIds": projectIds }
+  try:
+    return post(url.Url, body = $reqBody).await.parseJson["data"].addonsFromForgeSvc
+  except HttpRequestError:
+    return @[]
+
 proc fetchAddon*(slug: string): Future[Option[CfAddon]] {.async.} =
   ## get the addon matching the `slug`.
   let reqBody = %* {
@@ -59,14 +68,25 @@ proc fetchAddon*(slug: string): Future[Option[CfAddon]] {.async.} =
 
 proc fetchAddonFiles*(projectId: int): Future[seq[CfAddonFile]] {.async.} =
   ## get all addon files associated with the given `projectId`.
+  echo "Fetching files: ", projectId
   let url = addonsBaseUrl & "/v1/mods/" & $projectId & "/files?pageSize=10000"
   try:
     return get(url.Url).await.parseJson["data"].addonFilesFromForgeSvc
   except HttpRequestError:
     return @[]
 
+proc fetchAddonFiles*(fileIds: seq[int]): Future[seq[CfAddonFile]] {.async.} =
+  ## get all addon files for the given `fileIds`.
+  let url = addonsBaseUrl & "/v1/mods/files"
+  let reqBody = %* { "fileIds": fileIds }
+  try:
+    return post(url.Url, body = $reqBody).await.parseJson["data"].addonFilesFromForgeSvc
+  except HttpRequestError:
+    return @[]
+
 proc fetchAddonFile*(projectId: int, fileId: int): Future[Option[CfAddonFile]] {.async.} =
   ## get the addon file with the given `fileId` & `projectId`.
+  echo "Fetching addon file: ", projectId, ":", fileId
   let url = addonsBaseUrl & "/v1/mods/" & $projectId & "/files/" & $fileId
   try:
     return get(url.Url).await.parseJson["data"].addonFileFromForgeSvc.some
