@@ -8,7 +8,8 @@
     "**/.DS_Store": true,
     "**/Thumbs.db": true,
     "nimcache/": true,
-    "testresults/": true
+    "testresults/": true,
+    "tests/**/*.exe": true
   },
   "nim.nimprettyIndent": 2
 }

@@ -8,7 +8,7 @@
 ## Docs for the official API are available at https://docs.curseforge.com.
 ## Requests to the proxy stay the same, except the base URL is switched out.
 
-import asyncdispatch, json, options, strutils
+import std/[asyncdispatch, json, options, strutils]
 import uri except Url
 import cfcore, http
 
@@ -19,51 +19,55 @@ const
   ## used for retrieving mods by their slug, which isn't possible with the curse api
   addonsSlugBaseUrl = "https://curse.nikky.moe/graphql"
 
+type
+  CfClientError* = object of HttpRequestError
+
 proc fetchAddonsByQuery*(query: string, category: Option[CfAddonGameCategory]): Future[seq[CfAddon]] {.async.} =
   ## retrieves all addons that match the given `query` search and `category`.
   let encodedQuery = encodeUrl(query, usePlus = false)
   var url = addonsBaseUrl & "/v1/mods/search?gameId=432&pageSize=50&sortField=6&sortOrder=desc&searchFilter=" & encodedQuery
   if category.isSome:
     url = url & "&classId=" & $ord(category.get())
-  try:
-    return get(url.Url).await.parseJson["data"].addonsFromForgeSvc
-  except HttpRequestError:
-    return @[]
+  return get(url.Url).await.parseJson["data"].addonsFromForgeSvc
 
-proc fetchAddonsByQuery*(query: string): Future[seq[CfAddon]] {.async.} =
-  return await fetchAddonsByQuery(query, category = none[CfAddonGameCategory]())
+proc fetchAddonsByQuery*(query: string, category: CfAddonGameCategory): Future[seq[CfAddon]] =
+  ## retrieves all addons that match the given `query` search and `category`.
+  return fetchAddonsByQuery(query, category = some(category))
 
-proc fetchAddon*(projectId: int): Future[Option[CfAddon]] {.async.} =
+proc fetchAddonsByQuery*(query: string): Future[seq[CfAddon]] =
+  ## retrieves all addons that match the given `query` search.
+  return fetchAddonsByQuery(query, category = none[CfAddonGameCategory]())
+
+proc fetchAddon*(projectId: int): Future[CfAddon] {.async.} =
   ## get the addon with the given `projectId`.
   let url = addonsBaseUrl & "/v1/mods/" & $projectId
   try:
-    return get(url.Url).await.parseJson["data"].addonFromForgeSvc.some
+    return get(url.Url).await.parseJson["data"].addonFromForgeSvc
   except HttpRequestError:
-    return none[CfAddon]()
+    raise newException(CfClientError, "addon with project id '" & $projectId & "' not found.")
 
 proc fetchAddons*(projectIds: seq[int]): Future[seq[CfAddon]] {.async.} =
-  ## get all addons with their given `projectId`
+  ## get all addons with their given `projectId`.
   let url = addonsBaseUrl & "/v1/mods/"
-  let reqBody = %* { "modIds": projectIds }
+  let body = %* { "modIds": projectIds }
   try:
-    return post(url.Url, body = $reqBody).await.parseJson["data"].addonsFromForgeSvc
+    let addons = post(url.Url, $body).await.parseJson["data"].addonsFromForgeSvc
+    if addons.len != projectIds.len:
+      raise newException(CfClientError, "one of the addons of project ids '" & $projectIds & "' was not found.")
+    return addons
   except HttpRequestError:
-    return @[]
+    raise newException(CfClientError, "one of the addons of project ids '" & $projectIds & "' was not found.")
 
-proc fetchAddon*(slug: string): Future[Option[CfAddon]] {.async.} =
+proc fetchAddon*(slug: string): Future[CfAddon] {.async.} =
   ## get the addon matching the `slug`.
   let reqBody = %* {
     "query": "{ addons(slug: \"" & slug & "\") { id }}"
   }
   let curseProxyInfo = await post(addonsSlugBaseUrl.Url, body = $reqBody)
-  var projectId: int
-  try:
-    let addons = curseProxyInfo.parseJson["data"]["addons"]
-    if addons.len == 0:
-      return none[CfAddon]()
-    projectId = addons[0]["id"].getInt()
-  except KeyError:
-    return none[CfAddon]()
+  let addons = curseProxyInfo.parseJson["data"]["addons"]
+  if addons.len == 0:
+    raise newException(CfClientError, "addon with slug '" & slug & "' not found")
+  let projectId = addons[0]["id"].getInt()
   return await fetchAddon(projectId)
 
 proc fetchAddonFiles*(projectId: int): Future[seq[CfAddonFile]] {.async.} =
@@ -72,21 +76,24 @@ proc fetchAddonFiles*(projectId: int): Future[seq[CfAddonFile]] {.async.} =
   try:
     return get(url.Url).await.parseJson["data"].addonFilesFromForgeSvc
   except HttpRequestError:
-    return @[]
+    raise newException(CfClientError, "addon with project id '" & $projectId & "' not found.")
 
 proc fetchAddonFiles*(fileIds: seq[int]): Future[seq[CfAddonFile]] {.async.} =
-  ## get all addon files for the given `fileIds`.
+  ## get all addon files with their given `fileIds`.
   let url = addonsBaseUrl & "/v1/mods/files"
-  let reqBody = %* { "fileIds": fileIds }
+  let body = %* { "fileIds": fileIds }
   try:
-    return post(url.Url, body = $reqBody).await.parseJson["data"].addonFilesFromForgeSvc
+    let addonFiles = post(url.Url, $body).await.parseJson["data"].addonFilesFromForgeSvc
+    if addonFiles.len != fileIds.len:
+      raise newException(CfClientError, "one of the addon files of file ids '" & $fileIds & "' was not found.")
+    return addonFiles
   except HttpRequestError:
-    return @[]
+    raise newException(CfClientError, "one of the addon files of file ids '" & $fileIds & "' was not found.")
 
-proc fetchAddonFile*(projectId: int, fileId: int): Future[Option[CfAddonFile]] {.async.} =
+proc fetchAddonFile*(projectId: int, fileId: int): Future[CfAddonFile] {.async.} =
   ## get the addon file with the given `fileId` & `projectId`.
   let url = addonsBaseUrl & "/v1/mods/" & $projectId & "/files/" & $fileId
   try:
-    return get(url.Url).await.parseJson["data"].addonFileFromForgeSvc.some
+    return get(url.Url).await.parseJson["data"].addonFileFromForgeSvc
   except HttpRequestError:
-    return none[CfAddonFile]()
+    raise newException(CfClientError, "addon with project & file id  '" & $projectId & ':' & $fileId & "' not found.")
