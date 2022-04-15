@@ -30,7 +30,6 @@ proc get*(url: Url): Future[string] {.async.} =
   ## throws OSError or HttpRequestError if the request failed.
   ## returns the body of the response.
   let http = getHttpClient()
-  echo "Got new client!"
   result = await http.getContent($url)
   http.close()
 
@@ -39,6 +38,5 @@ proc post*(url: Url, body: string = ""): Future[string] {.async.} =
   ## throws OSError or HttpRequestError if the request failed.
   ## returns the body of the response.
   let http = getHttpClient()
-  echo "Got new client!"
   result = await http.postContent($url, body)
   http.close()

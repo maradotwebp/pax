@@ -68,7 +68,6 @@ proc fetchAddon*(slug: string): Future[Option[CfAddon]] {.async.} =
 
 proc fetchAddonFiles*(projectId: int): Future[seq[CfAddonFile]] {.async.} =
   ## get all addon files associated with the given `projectId`.
-  echo "Fetching files: ", projectId
   let url = addonsBaseUrl & "/v1/mods/" & $projectId & "/files?pageSize=10000"
   try:
     return get(url.Url).await.parseJson["data"].addonFilesFromForgeSvc
@@ -86,7 +85,6 @@ proc fetchAddonFiles*(fileIds: seq[int]): Future[seq[CfAddonFile]] {.async.} =
 
 proc fetchAddonFile*(projectId: int, fileId: int): Future[Option[CfAddonFile]] {.async.} =
   ## get the addon file with the given `fileId` & `projectId`.
-  echo "Fetching addon file: ", projectId, ":", fileId
   let url = addonsBaseUrl & "/v1/mods/" & $projectId & "/files/" & $fileId
   try:
     return get(url.Url).await.parseJson["data"].addonFileFromForgeSvc.some
