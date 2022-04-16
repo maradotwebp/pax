@@ -1,5 +1,6 @@
-import options, sequtils, sugar
-import api/cfcore, modpack/install, modpack/loader, modpack/manifest, modpack/version
+import std/[sequtils, sugar]
+import api/cfcore
+import modpack/[install, loader, manifest, version]
 
 block: # InstallStrategy
   doAssert "stable".toInstallStrategy == InstallStrategy.Stable
@@ -26,24 +27,27 @@ block: # select out of specified forge mods
   ]
 
   mcVersion = "1.12".Version
-  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Stable).isNone
-  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Recommended).isNone
-  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Newest).isNone
+  doAssertRaises(PaxInstallError):
+    discard mods.selectAddonFile(loader, mcVersion, InstallStrategy.Stable)
+  doAssertRaises(PaxInstallError):
+    discard mods.selectAddonFile(loader, mcVersion, InstallStrategy.Recommended)
+  doAssertRaises(PaxInstallError):
+    discard mods.selectAddonFile(loader, mcVersion, InstallStrategy.Newest)
 
   mcVersion = "1.16".Version
-  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Stable).get() == mods[1]
-  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Recommended).get() == mods[1]
-  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Newest).get() == mods[0]
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Stable) == mods[1]
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Recommended) == mods[1]
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Newest) == mods[0]
 
   mcVersion = "1.16.1".Version
-  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Stable).get() == mods[1]
-  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Recommended).get() == mods[0]
-  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Newest).get() == mods[0]
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Stable) == mods[1]
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Recommended) == mods[0]
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Newest) == mods[0]
 
   mcVersion = "1.16.2".Version
-  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Stable).get() == mods[0]
-  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Recommended).get() == mods[0]
-  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Newest).get() == mods[0]
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Stable) == mods[0]
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Recommended) == mods[0]
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Newest) == mods[0]
 
 block: # select out of implied forge mods
   let loader = Loader.Forge
@@ -55,24 +59,27 @@ block: # select out of implied forge mods
   ]
 
   mcVersion = "1.12".Version
-  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Stable).isNone
-  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Recommended).isNone
-  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Newest).isNone
+  doAssertRaises(PaxInstallError):
+    discard mods.selectAddonFile(loader, mcVersion, InstallStrategy.Stable)
+  doAssertRaises(PaxInstallError):
+    discard mods.selectAddonFile(loader, mcVersion, InstallStrategy.Recommended)
+  doAssertRaises(PaxInstallError):
+    discard mods.selectAddonFile(loader, mcVersion, InstallStrategy.Newest)
 
   mcVersion = "1.16".Version
-  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Stable).get() == mods[2]
-  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Recommended).get() == mods[1]
-  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Newest).get() == mods[0]
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Stable) == mods[2]
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Recommended) == mods[1]
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Newest) == mods[0]
 
   mcVersion = "1.16.1".Version
-  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Stable).get() == mods[0]
-  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Recommended).get() == mods[0]
-  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Newest).get() == mods[0]
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Stable) == mods[0]
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Recommended) == mods[0]
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Newest) == mods[0]
 
   mcVersion = "1.16.2".Version
-  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Stable).get() == mods[0]
-  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Recommended).get() == mods[0]
-  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Newest).get() == mods[0]
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Stable) == mods[0]
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Recommended) == mods[0]
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Newest) == mods[0]
 
 block: # select out of specified fabric mods
   let loader = Loader.Fabric
@@ -84,24 +91,27 @@ block: # select out of specified fabric mods
   ]
 
   mcVersion = "1.12".Version
-  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Stable).isNone
-  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Recommended).isNone
-  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Newest).isNone
+  doAssertRaises(PaxInstallError):
+    discard mods.selectAddonFile(loader, mcVersion, InstallStrategy.Stable)
+  doAssertRaises(PaxInstallError):
+    discard mods.selectAddonFile(loader, mcVersion, InstallStrategy.Recommended)
+  doAssertRaises(PaxInstallError):
+    discard mods.selectAddonFile(loader, mcVersion, InstallStrategy.Newest)
 
   mcVersion = "1.14".Version
-  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Stable).get() == mods[1]
-  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Recommended).get() == mods[1]
-  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Newest).get() == mods[0]
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Stable) == mods[1]
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Recommended) == mods[1]
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Newest) == mods[0]
 
   mcVersion = "1.14.1".Version
-  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Stable).get() == mods[0]
-  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Recommended).get() == mods[0]
-  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Newest).get() == mods[0]
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Stable) == mods[0]
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Recommended) == mods[0]
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Newest) == mods[0]
 
   mcVersion = "1.14.4".Version
-  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Stable).get() == mods[0]
-  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Recommended).get() == mods[0]
-  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Newest).get() == mods[0]
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Stable) == mods[0]
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Recommended) == mods[0]
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Newest) == mods[0]
 
 block: # select out of implied fabric mods
   let loader = Loader.Fabric
@@ -113,24 +123,27 @@ block: # select out of implied fabric mods
   ]
 
   mcVersion = "1.12".Version
-  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Stable).isNone
-  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Recommended).isNone
-  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Newest).isNone
+  doAssertRaises(PaxInstallError):
+    discard mods.selectAddonFile(loader, mcVersion, InstallStrategy.Stable)
+  doAssertRaises(PaxInstallError):
+    discard mods.selectAddonFile(loader, mcVersion, InstallStrategy.Recommended)
+  doAssertRaises(PaxInstallError):
+    discard mods.selectAddonFile(loader, mcVersion, InstallStrategy.Newest)
 
   mcVersion = "1.14".Version
-  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Stable).get() == mods[2]
-  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Recommended).get() == mods[1]
-  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Newest).get() == mods[0]
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Stable) == mods[2]
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Recommended) == mods[1]
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Newest) == mods[0]
 
   mcVersion = "1.14.1".Version
-  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Stable).get() == mods[0]
-  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Recommended).get() == mods[0]
-  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Newest).get() == mods[0]
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Stable) == mods[0]
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Recommended) == mods[0]
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Newest) == mods[0]
 
   mcVersion = "1.14.4".Version
-  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Stable).get() == mods[0]
-  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Recommended).get() == mods[0]
-  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Newest).get() == mods[0]
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Stable) == mods[0]
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Recommended) == mods[0]
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Newest) == mods[0]
 
 block: # select out of mixed mods
   var loader: Loader
@@ -150,64 +163,76 @@ block: # select out of mixed mods
   loader = Loader.Forge
 
   mcVersion = "1.12".Version
-  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Stable).isNone
-  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Recommended).isNone
-  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Newest).isNone
+  doAssertRaises(PaxInstallError):
+    discard mods.selectAddonFile(loader, mcVersion, InstallStrategy.Stable)
+  doAssertRaises(PaxInstallError):
+    discard mods.selectAddonFile(loader, mcVersion, InstallStrategy.Recommended)
+  doAssertRaises(PaxInstallError):
+    discard mods.selectAddonFile(loader, mcVersion, InstallStrategy.Newest)
 
   mcVersion = "1.14".Version
-  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Stable).get() == mods[7]
-  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Recommended).get() == mods[7]
-  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Newest).get() == mods[6]
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Stable) == mods[7]
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Recommended) == mods[7]
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Newest) == mods[6]
 
   mcVersion = "1.14.1".Version
-  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Stable).get() == mods[7]
-  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Recommended).get() == mods[7]
-  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Newest).get() == mods[6]
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Stable) == mods[7]
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Recommended) == mods[7]
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Newest) == mods[6]
 
   mcVersion = "1.16".Version
-  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Stable).get() == mods[4]
-  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Recommended).get() == mods[2]
-  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Newest).get() == mods[1]
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Stable) == mods[4]
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Recommended) == mods[2]
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Newest) == mods[1]
 
   mcVersion = "1.16.1".Version
-  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Stable).get() == mods[1]
-  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Recommended).get() == mods[1]
-  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Newest).get() == mods[1]
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Stable) == mods[1]
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Recommended) == mods[1]
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Newest) == mods[1]
 
   mcVersion = "1.16.2".Version
-  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Stable).get() == mods[1]
-  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Recommended).get() == mods[1]
-  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Newest).get() == mods[1]
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Stable) == mods[1]
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Recommended) == mods[1]
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Newest) == mods[1]
 
   # Set loader to forge
   loader = Loader.Fabric
 
   mcVersion = "1.12".Version
-  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Stable).isNone
-  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Recommended).isNone
-  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Newest).isNone
+  doAssertRaises(PaxInstallError):
+    discard mods.selectAddonFile(loader, mcVersion, InstallStrategy.Stable)
+  doAssertRaises(PaxInstallError):
+    discard mods.selectAddonFile(loader, mcVersion, InstallStrategy.Recommended)
+  doAssertRaises(PaxInstallError):
+    discard mods.selectAddonFile(loader, mcVersion, InstallStrategy.Newest)
 
   mcVersion = "1.14".Version
-  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Stable).isNone
-  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Recommended).isNone
-  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Newest).isNone
+  doAssertRaises(PaxInstallError):
+    discard mods.selectAddonFile(loader, mcVersion, InstallStrategy.Stable)
+  doAssertRaises(PaxInstallError):
+    discard mods.selectAddonFile(loader, mcVersion, InstallStrategy.Recommended)
+  doAssertRaises(PaxInstallError):
+    discard mods.selectAddonFile(loader, mcVersion, InstallStrategy.Newest)
 
   mcVersion = "1.14.1".Version
-  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Stable).isNone
-  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Recommended).isNone
-  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Newest).isNone
+  doAssertRaises(PaxInstallError):
+    discard mods.selectAddonFile(loader, mcVersion, InstallStrategy.Stable)
+  doAssertRaises(PaxInstallError):
+    discard mods.selectAddonFile(loader, mcVersion, InstallStrategy.Recommended)
+  doAssertRaises(PaxInstallError):
+    discard mods.selectAddonFile(loader, mcVersion, InstallStrategy.Newest)
 
   mcVersion = "1.16".Version
-  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Stable).get() == mods[5]
-  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Recommended).get() == mods[5]
-  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Newest).get() == mods[0]
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Stable) == mods[5]
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Recommended) == mods[5]
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Newest) == mods[0]
 
   mcVersion = "1.16.1".Version
-  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Stable).get() == mods[0]
-  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Recommended).get() == mods[0]
-  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Newest).get() == mods[0]
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Stable) == mods[0]
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Recommended) == mods[0]
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Newest) == mods[0]
 
   mcVersion = "1.16.2".Version
-  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Stable).get() == mods[0]
-  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Recommended).get() == mods[0]
-  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Newest).get() == mods[0]
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Stable) == mods[0]
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Recommended) == mods[0]
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Newest) == mods[0]
