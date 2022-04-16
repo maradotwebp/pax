@@ -76,15 +76,10 @@ proc toManifestFile(json: JsonNode): Future[ManifestFile] {.async.} =
     let addon = fetchAddon(result.projectId)
     let addonFile = fetchAddonFile(result.projectId, result.fileId)
     await addon and addonFile
-    if addon.read().isNone() or addonFile.read().isNone():
-      raise newException(
-        ValueError,
-        fmt"projectID {result.projectId} & fileID {result.fileId} are not correct!"
-      )
-    result.metadata.name = addon.read().get().name
+    result.metadata.name = addon.read().name
     result.metadata.explicit = true
     result.metadata.pinned = false
-    result.metadata.dependencies = addonFile.read().get().dependencies
+    result.metadata.dependencies = addonFile.read().dependencies
   else:
     result.metadata.name = json["__meta"]["name"].getStr()
     result.metadata.explicit = json["__meta"]{"explicit"}.getBool(true)
