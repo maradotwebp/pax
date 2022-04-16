@@ -1,7 +1,7 @@
 ## Defines several common functions for working with minecraft versions, such as
 ## equality checking & comparisons to check whether a version is older or newer than another one.
 
-import hashes, sequtils, strutils, sugar
+import std/[hashes, sequtils, strutils, sugar]
 
 type
   ## A minecraft version (1.11, 1.12.2, 1.16.4, 1.14.1, ...)
