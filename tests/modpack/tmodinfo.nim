@@ -1,5 +1,6 @@
-import sequtils, sugar
-import api/cfcore, modpack/modinfo, modpack/version
+import std/[sequtils, sugar]
+import api/cfcore
+import modpack/[modinfo, version]
 
 proc initCfAddon(projectId: int, name: string, gameVersionLatestFiles: seq[tuple[version: Version, fileId: int]]): CfAddon =
   result = CfAddon()
