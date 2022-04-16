@@ -1,12 +1,7 @@
-discard """
-  joinable: false
-  batchable: false
-"""
+import std/[os, tempfiles]
+import modpack/[loader, manifest, version]
 
-import os
-import modpack/loader, modpack/manifest, modpack/version
-
-block: # rejectInstalledMod
+block: # rejectInstalledAddon
   let m = Manifest()
   m.name = "testmodpack"
   m.author = "testauthor"
@@ -22,36 +17,31 @@ block: # rejectInstalledMod
   doAssert f(1234) == -1
   doAssert f(9999) == 1
 
+block: # isPaxProject
+  let tmpdir = createTempDir("", "")
+
+  doAssert isPaxProject(tmpdir) == false
+  writeFile(tmpdir / "manifest.json", "")
+  doAssert isPaxProject(tmpdir) == true
+
 block: # requirePaxProject
+  let tmpdir = createTempDir("", "")
   let f = proc(): int =
     result = -1
-    requirePaxProject()
+    requirePaxProject(tmpdir)
     result = 1
 
-  removeDir(packFolder)
-
   doAssert f() == -1
-
-  createDir(packFolder)
-  createDir(overridesFolder)
-  writeFile(manifestFile, "Hello pax test")
-  defer: removeDir(packFolder)
-
+  writeFile(tmpdir / "manifest.json", "")
   doAssert f() == 1
 
 block: # rejectPaxProject
+  let tmpdir = createTempDir("", "")
   let f = proc(): int =
     result = -1
-    rejectPaxProject()
+    rejectPaxProject(tmpdir)
     result = 1
 
-  removeDir(packFolder)
-
   doAssert f() == 1
-
-  createDir(packFolder)
-  createDir(overridesFolder)
-  writeFile(manifestFile, "Hello pax test")
-  defer: removeDir(packFolder)
-
+  writeFile(tmpdir / "manifest.json", "")
   doAssert f() == -1

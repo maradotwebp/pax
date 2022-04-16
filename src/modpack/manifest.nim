@@ -1,16 +1,15 @@
 ## Defines methods for interacting with a curseforge manifest file.
 ## 
-## In the CF modpack format, modpack information & mods/resourcepacks are tracked within
-## a specific file known as the `manifest.json`. Each addon is tracked with a given projectid (identifies the addon)
-## and a file id (identifies the version of the addon.)
+## In the CF modpack format, modpack information & mods/resourcepacks are tracked within a specific file 
+## known as the `manifest.json`. Each addon is tracked with a given projectid (identifies the addon)
+## and a file id (identifies the version of the addon).
 
-import algorithm, asyncdispatch, json, options, os, sequtils, strformat, sugar
+import std/[algorithm, asyncdispatch, json, options, os, sequtils, sugar]
 import loader
-import ../api/cfclient, ../api/cfcore
+import ../api/[cfclient, cfcore]
 import ../modpack/version
-import ../term/color, ../term/log
-export color
-export log
+import ../term/[color, log]
+export color, log
 
 type
   ManifestMetadata* = ref object
@@ -48,7 +47,6 @@ const
   tempPackFolder* = projectFolder / "temppack/"
   overridesFolder* = packFolder / "overrides/"
   paxFile* = overridesFolder / ".pax"
-  manifestFile* = packFolder / "manifest.json"
   outputFolder* = projectFolder / ".out/"
 
 proc initManifestMetadata*(name: string, explicit: bool, pinned: bool, dependencies: seq[int]): ManifestMetadata =
@@ -160,7 +158,7 @@ proc removeAddon*(manifest: var Manifest, projectId: int): ManifestFile =
   ## remove a mod from the project with the given `projectId`, returns removed mod.
   for i, file in manifest.files:
     if file.projectId == projectId:
-      manifest.files.delete(i, i)
+      manifest.files.delete(i..i)
       return file
 
 proc updateAddon*(manifest: var Manifest, file: ManifestFile): void =
@@ -174,20 +172,20 @@ proc updateAddon*(manifest: var Manifest, projectId: int, fileId: int): void =
   modToUpdate.fileId = fileId
   installAddon(manifest, modToUpdate)
 
-template isPaxProject*: bool =
+template isPaxProject*(path = packFolder): bool =
   ## returns true if the current folder is a pax project folder
-  fileExists(manifestFile)
+  fileExists(path / "manifest.json")
 
-template requirePaxProject*: void =
+template requirePaxProject*(path = packFolder): void =
   ## will error if the current folder isn't a pax project
-  if not isPaxProject():
+  if not isPaxProject(path):
     echoError "The current folder isn't a pax project."
     echoClr indentPrefix, "To initialize a pax project, enter ".fgRed, "pax init"
     return
 
-template rejectPaxProject*: void =
+template rejectPaxProject*(path = packFolder): void =
   ## will error if the current folder is a pax project
-  if isPaxProject:
+  if isPaxProject(path):
     echoError "The current folder is already a pax project."
     echoClr indentPrefix, "If you are sure you want to overwrite existing files, use the ", "--force".fgRed, " option"
     return
@@ -198,10 +196,10 @@ template rejectInstalledAddon*(manifest: Manifest, projectId: int): void =
     echoError "This mod is already installed."
     return
 
-proc readManifestFromDisk*(path = manifestFile): Manifest =
+proc readManifestFromDisk*(path = packFolder): Manifest =
   ## get a Manifest from disk (with `path` as the path)
-  return readFile(path).parseJson.toManifest
+  return readFile(path / "manifest.json").parseJson.toManifest
 
-proc writeToDisk*(manifest: Manifest, path = manifestFile): void =
+proc writeToDisk*(manifest: Manifest, path = packFolder): void =
   ## write `manifest` to disk (with `path` as the path)
-  writeFile(path, manifest.toJson.pretty)
+  writeFile(path / "manifest.json", manifest.toJson.pretty)
