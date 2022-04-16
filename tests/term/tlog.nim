@@ -4,13 +4,12 @@ discard """
 [-] Information here!
 [!] Warning, for more interesting messages
 [x] An error has occured!
-[Δ] Some funky looking root icon
-  '''
+[Δ] Some funky looking root icon'''
 """
 
-import term/color, term/log
+import term/[color, log]
 
-terminalColorEnabledSetting = false
+disableTermColors()
 
 block: # echos
   echoDebug "Hello!"
