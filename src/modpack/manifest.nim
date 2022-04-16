@@ -168,9 +168,9 @@ proc updateAddon*(manifest: var Manifest, file: ManifestFile): void =
 
 proc updateAddon*(manifest: var Manifest, projectId: int, fileId: int): void =
   ## update a mod with the given `projectId` to the given `fileId`
-  var modToUpdate = removeAddon(manifest, projectId)
-  modToUpdate.fileId = fileId
-  installAddon(manifest, modToUpdate)
+  for file in manifest.files:
+    if file.projectId == projectId:
+      file.fileId = fileId
 
 template isPaxProject*(path = packFolder): bool =
   ## returns true if the current folder is a pax project folder
