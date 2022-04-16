@@ -1,8 +1,8 @@
-import asyncdispatch, asyncfutures, options, os
+import std/[asyncdispatch, os]
 import common
-import ../api/cfclient, ../api/cfcore
-import ../modpack/install, ../modpack/manifest
-import ../term/log, ../term/prompt
+import ../api/[cfclient, cfcore]
+import ../modpack/[install, manifest]
+import ../term/[log, prompt]
 import ../util/flow
 
 proc paxUpdate*(name: string, strategy: string): void =
@@ -16,11 +16,7 @@ proc paxUpdate*(name: string, strategy: string): void =
   let mcMods = waitFor(fetchAddonsByQuery(name))
 
   echoDebug "Searching for mod.."
-  let mcModOption = manifest.promptAddonChoice(mcMods, selectInstalled = true)
-  if mcModOption.isNone:
-    echoError "No installed mods found for your search."
-    quit(1)
-  let mcMod = mcModOption.get()
+  let mcMod = manifest.promptAddonChoice(mcMods, selectInstalled = true)
 
   echo ""
   echoRoot "SELECTED MOD".dim
@@ -37,12 +33,9 @@ proc paxUpdate*(name: string, strategy: string): void =
   echoDebug "Retrieving mod versions.."
   let mcModFiles = waitFor(fetchAddonFiles(mcMod.projectId))
 
-  let mcModFile = mcModFiles.selectAddonFile(manifest, strategy)
-  if mcModFile.isNone:
-    echoError "No compatible version found."
-    quit(1)
+  let mcModFile = mcModFiles.selectAddonFile(manifest.loader, manifest.mcVersion, strategy)
   echoInfo "Updating ", mcMod.name.fgCyan, ".."
-  manifest.updateAddon(mcMod.projectId, mcModFile.get().fileId)
+  manifest.updateAddon(mcMod.projectId, mcModFile.fileId)
 
   echoDebug("Writing to manifest...")
   manifest.writeToDisk()

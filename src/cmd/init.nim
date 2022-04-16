@@ -1,7 +1,7 @@
-import asyncdispatch, options, os, osproc
+import std/[asyncdispatch, os, osproc]
 import ../api/metadata
-import ../modpack/manifest, ../modpack/loader, ../modpack/version
-import ../term/log, ../term/prompt
+import ../modpack/[manifest, loader, version]
+import ../term/[log, prompt]
 import ../util/flow
 
 proc paxInitManifest(): void =
@@ -14,11 +14,7 @@ proc paxInitManifest(): void =
   manifest.mcVersion = Version(prompt(indentPrefix & "Minecraft version", default = "1.16.5"))
 
   let loader = prompt(indentPrefix & "Loader", choices = @["forge", "fabric"], default = "forge").toLoader
-  let loaderId = waitFor(manifest.mcVersion.getModloaderId(loader))
-  if loaderId.isNone:
-    echoError "This is either not a minecraft version, or no ", $loader, " version exists for this minecraft version."
-    quit(1)
-  manifest.mcModloaderId = loaderId.get()
+  manifest.mcModloaderId = waitFor(manifest.mcVersion.getModloaderId(loader))
   echoDebug "Installed ", $loader, " version ", manifest.mcModloaderId.fgGreen
 
   echoInfo "Creating manifest.."

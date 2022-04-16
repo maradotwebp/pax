@@ -1,3 +1,8 @@
+discard """
+  joinable: false
+  batchable: false
+"""
+
 import std/[os, tempfiles]
 import modpack/[loader, manifest, version]
 
@@ -18,14 +23,14 @@ block: # rejectInstalledAddon
   doAssert f(9999) == 1
 
 block: # isPaxProject
-  let tmpdir = createTempDir("", "")
+  let tmpdir = createTempDir("tmanifest_templates_isPaxProject", "")
 
   doAssert isPaxProject(tmpdir) == false
   writeFile(tmpdir / "manifest.json", "")
   doAssert isPaxProject(tmpdir) == true
 
 block: # requirePaxProject
-  let tmpdir = createTempDir("", "")
+  let tmpdir = createTempDir("tmanifest_templates_requirePaxProject", "")
   let f = proc(): int =
     result = -1
     requirePaxProject(tmpdir)
@@ -36,7 +41,7 @@ block: # requirePaxProject
   doAssert f() == 1
 
 block: # rejectPaxProject
-  let tmpdir = createTempDir("", "")
+  let tmpdir = createTempDir("tmanifest_templates_rejectPaxProject", "")
   let f = proc(): int =
     result = -1
     rejectPaxProject(tmpdir)

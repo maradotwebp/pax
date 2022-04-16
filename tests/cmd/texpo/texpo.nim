@@ -3,7 +3,8 @@ discard """
   batchable: false
 """
 
-import json, os, zippy/ziparchives
+import std/[json, os]
+import zippy/ziparchives
 import cmd/expo
 
 block:

@@ -1,6 +1,6 @@
-import asyncdispatch, asyncfutures, options, os
+import std/[asyncdispatch, os]
 import ../api/metadata
-import ../modpack/manifest, ../modpack/loader, ../modpack/version
+import ../modpack/[manifest, loader, version]
 import ../term/log
 
 proc paxVersion*(version: string, loader: string, latest: bool): void =
@@ -12,12 +12,8 @@ proc paxVersion*(version: string, loader: string, latest: bool): void =
   let loader = if loader == "": manifest.loader else: loader
 
   let loaderId = waitFor(version.Version.getModloaderId(loader, latest))
-  if loaderId.isNone:
-    echoError "This is either not a minecraft version, or no ", $loader, " version exists for this minecraft version."
-    return
-
   manifest.mcVersion = version.Version
-  manifest.mcModloaderId = loaderId.get()
+  manifest.mcModloaderId = loaderId
 
   echoDebug "Writing to manifest..."
   manifest.writeToDisk()

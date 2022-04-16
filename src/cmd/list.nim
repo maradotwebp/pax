@@ -1,7 +1,7 @@
-import algorithm, asyncdispatch, asyncfutures, sequtils, strutils, options, os, sugar
+import std/[algorithm, asyncdispatch, sequtils, strutils, os, sugar]
 import common
-import ../api/cfclient, ../api/cfcore
-import ../modpack/manifest, ../modpack/modinfo
+import ../api/[cfclient, cfcore]
+import ../modpack/[manifest, modinfo]
 import ../term/log
 
 proc paxList*(status: bool, info: bool): void =

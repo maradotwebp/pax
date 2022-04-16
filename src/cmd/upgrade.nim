@@ -1,7 +1,7 @@
-import asyncdispatch, asyncfutures, sequtils, strutils, sugar, options, os
-import ../api/cfclient, ../api/cfcore
-import ../modpack/manifest, ../modpack/install
-import ../term/log, ../term/prompt
+import std/[asyncdispatch, asyncfutures, sequtils, sugar, os]
+import ../api/[cfclient, cfcore]
+import ../modpack/[manifest, install]
+import ../term/[log, prompt]
 import ../util/flow
 
 proc paxUpgrade*(strategy: string): void =
@@ -25,16 +25,17 @@ proc paxUpgrade*(strategy: string): void =
 
   for pairs in modData:
     let (mcMod, mcModFiles) = pairs
-    let mcModFile = mcModFiles.selectAddonFile(manifest, strategy)
-    let manifestFile = manifest.getFile(mcMod.get().projectId)
+    let manifestFile = manifest.getFile(mcMod.projectId)
     if manifestFile.metadata.pinned:
-      echoWarn mcMod.get().name.fgCyan, " is pinned. Skipping.."
+      echoWarn mcMod.name.fgCyan, " is pinned. Skipping.."
       continue
-    if mcModFile.isNone:
-      echoWarn mcMod.get().name.fgCyan, " does not have a compatible version. Skipping.."
+    let mcModFile = try:
+      mcModFiles.selectAddonFile(manifest.loader, manifest.mcVersion, strategy)
+    except PaxInstallError:
+      echoWarn mcMod.name.fgCyan, " does not have a compatible version. Skipping.."
       continue
-    echoInfo "Updating ", mcMod.get().name.fgCyan, ".."
-    manifest.updateAddon(mcMod.get().projectId, mcModFile.get().fileId)
+    echoInfo "Updating ", mcMod.name.fgCyan, ".."
+    manifest.updateAddon(mcMod.projectId, mcModFile.fileId)
 
   echoDebug "Writing to manifest..." 
   manifest.writeToDisk()

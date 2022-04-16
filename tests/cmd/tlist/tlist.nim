@@ -8,10 +8,11 @@ discard """
   '''
 """
 
-import json, os
-import cmd/list, term/color
+import std/[json, os]
+import cmd/list
+import term/color
 
-terminalColorEnabledSetting = false
+disableTermColors()
 
 block:
   removeDir("./modpack/")

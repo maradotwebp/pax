@@ -15,12 +15,12 @@ y
   '''
 """
 
-import json, os
-import cmd/init, cmd/add
+import std/[json, os]
+import cmd/[add, init]
 
 removeDir("./modpack")
 paxInit(force = false, skipManifest = false, skipGit = true)
-paxAdd("https://www.curseforge.com/minecraft/mc-mods/jei/files/3383214", noDepends = false, strategy = "recommended")
+paxAdd("https://www.curseforge.com/minecraft/mc-mods/jei/files/3383214", noDepends = false, strategy = "recommended", addonType = "")
 let manifest = readFile("./modpack/manifest.json").parseJson
 
 doAssert fileExists("./modpack/manifest.json")

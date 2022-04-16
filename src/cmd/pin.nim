@@ -1,8 +1,8 @@
-import asyncdispatch, asyncfutures, options, os
+import std/[asyncdispatch, os]
 import common
-import ../api/cfcore, ../api/cfclient
-import ../modpack/install, ../modpack/manifest
-import ../term/log, ../term/prompt
+import ../api/[cfcore, cfclient]
+import ../modpack/manifest
+import ../term/[log, prompt]
 import ../util/flow
 
 proc paxPin*(name: string): void =
@@ -16,11 +16,7 @@ proc paxPin*(name: string): void =
   let mcMods = waitFor(fetchAddonsByQuery(name))
 
   echoDebug "Searching for mod.."
-  let mcModOption = manifest.promptAddonChoice(mcMods, selectInstalled = true)
-  if mcModOption.isNone:
-    echoError "No installed mods found for your search."
-    quit(1)
-  let mcMod = mcModOption.get()
+  let mcMod = manifest.promptAddonChoice(mcMods, selectInstalled = true)
 
   echo ""
   echoRoot "SELECTED MOD".dim

@@ -202,9 +202,9 @@ spec.parseOrHelp()
 
 # GLOBAL OPTIONS
 if commonArgs.yes.seen:
-  skipYNSetting = true
+  enableSkipYN()
 if commonArgs.noColor.seen:
-  terminalColorEnabledSetting = false
+  disableTermColors()
 
 # COMMANDS
 if spec.init.seen:
