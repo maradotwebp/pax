@@ -1,9 +1,15 @@
-import algorithm, sequtils, strutils, sugar, options
+import std/[algorithm, sequtils, strutils, sugar, options]
 import ../api/cfcore
 import ../modpack/manifest
-import ../term/log, ../term/prompt
+import ../term/[log, prompt]
 
-proc echoAddon*(mcMod: CfAddon, prefix: TermOut = "", postfix: TermOut = "", url: TermOut = mcMod.websiteUrl.dim, moreInfo: bool = false): void =
+proc echoAddon*(
+  mcMod: CfAddon,
+  prefix: TermOut = "",
+  postfix: TermOut = "",
+  url: TermOut = mcMod.websiteUrl.dim,
+  moreInfo: bool = false
+): void =
   ## output a single `mcMod`.
   ## `prefix` and `postfix` is displayed before and after the mod name respectively.
   ## if `moreInfo` is true, description and downloads will be printed as well.
