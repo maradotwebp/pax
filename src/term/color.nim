@@ -24,7 +24,7 @@ import terminal, unicode
 
 var
   ## if false, terminal color will be disabled.
-  terminalColorEnabledSetting* = true
+  isTerminalColorEnabled = true
 
 type
   TermOutKind = enum
@@ -109,16 +109,16 @@ proc clrWrite*(f: File, args: varargs[TermOut]): void =
     for part in arg:
       case part.kind:
         of okForeground:
-          if terminalColorEnabledSetting:
+          if isTerminalColorEnabled:
             f.setForegroundColor(part.fgColor)
         of okBackground:
-          if terminalColorEnabledSetting:
+          if isTerminalColorEnabled:
             f.setBackgroundColor(part.bgColor)
         of okStyle:
-          if terminalColorEnabledSetting:
+          if isTerminalColorEnabled:
             f.setStyle({part.style})
         of okReset:
-          if terminalColorEnabledSetting:
+          if isTerminalColorEnabled:
             f.resetAttributes()
         of okString:
           f.write(part.text)
@@ -138,3 +138,11 @@ proc strLen*(term: TermOut): Natural =
   for part in term:
     if part.kind == okString:
       result += part.text.runeLen
+
+proc enableTermColors*() =
+  ## enable colors for the `term/color` module.
+  isTerminalColorEnabled = true
+
+proc disableTermColors*() =
+  ## disable colors for the `term/color` module.
+  isTerminalColorEnabled = false
