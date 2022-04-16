@@ -3,10 +3,9 @@
 ## Users of Pax can choose between three different strategies which decide how the "best" version
 ## of a mod to install is selected.
 
-import options, sequtils
-import manifest
+import std/[options, sequtils]
 import ../api/cfcore
-import ../modpack/loader, ../modpack/version
+import ../modpack/[loader, version]
 
 type
   InstallStrategy* = enum
@@ -36,24 +35,25 @@ proc isNewest(file: CfAddonFile, modpackVersion: Version): bool =
   ## returns true if `file` is compatible according to InstallStrategy.newest.
   return modpackVersion.minor in file.gameVersions.map(minor)
 
-proc selectAddonFile*(files: seq[CfAddonFile], manifest: Manifest, strategy: InstallStrategy): Option[CfAddonFile] = 
+proc selectAddonFile*(files: seq[CfAddonFile], mpLoader: Loader, mpMcVersion: Version, strategy: InstallStrategy): Option[CfAddonFile] = 
   ## Select the best mod file out of `files`, given the `manifest` and `strategy`.
   var latestFile = none[CfAddonFile]()
   for file in files:
-    let onFabric = manifest.loader == Loader.Fabric and file.isFabricCompatible
-    let onForge = manifest.loader == Loader.Forge and file.isForgeCompatible
-    let onStable = strategy == InstallStrategy.Stable and file.isStable(manifest.mcVersion)
-    let onRecommended = strategy == InstallStrategy.Recommended and file.isRecommended(manifest.mcVersion)
-    let onNewest = strategy == InstallStrategy.Newest and file.isNewest(manifest.mcVersion)
     if latestFile.isNone or latestFile.get().fileId < file.fileId:
+      let onFabric = mpLoader == Loader.Fabric and file.isFabricCompatible
+      let onForge = mpLoader == Loader.Forge and file.isForgeCompatible
+      let onStable = strategy == InstallStrategy.Stable and file.isStable(mpMcVersion)
+      let onRecommended = strategy == InstallStrategy.Recommended and file.isRecommended(mpMcVersion)
+      let onNewest = strategy == InstallStrategy.Newest and file.isNewest(mpMcVersion)
       if onFabric or onForge:
         if onStable or onRecommended or onNewest:
           latestFile = some(file)
   
+  # In case nothing has been found, fallback to more generous install strategies
   if latestFile.isNone:
     return case strategy:
-      of InstallStrategy.Stable: selectAddonFile(files, manifest, InstallStrategy.Recommended)
-      of InstallStrategy.Recommended: selectAddonFile(files, manifest, InstallStrategy.Newest)
+      of InstallStrategy.Stable: selectAddonFile(files, mpLoader, mpMcVersion, InstallStrategy.Recommended)
+      of InstallStrategy.Recommended: selectAddonFile(files, mpLoader, mpMcVersion, InstallStrategy.Newest)
       else: latestFile
 
   return latestFile
