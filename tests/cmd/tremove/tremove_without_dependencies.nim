@@ -7,7 +7,7 @@ y
   '''
 """
 
-import json, os
+import std/[json, os]
 import cmd/remove
 
 let manifestJson = %* {

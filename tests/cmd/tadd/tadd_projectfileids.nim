@@ -14,8 +14,8 @@ y
   '''
 """
 
-import json, os
-import cmd/init, cmd/add
+import std/[json, os]
+import cmd/[add, init]
 
 removeDir("./modpack")
 paxInit(force = false, skipManifest = false, skipGit = true)

@@ -3,10 +3,9 @@
 ## Users of Pax can choose between three different strategies which decide how the "best" version
 ## of a mod to install is selected.
 
-import options, sequtils
-import manifest
+import std/sequtils
 import ../api/cfcore
-import ../modpack/loader, ../modpack/version
+import ../modpack/[loader, version]
 
 type
   InstallStrategy* = enum
@@ -15,6 +14,8 @@ type
     ## recommended = newest version which is compatible with the modpack version.
     ## newest = newest version which is compatible with the minor modpack version.
     Stable, Recommended, Newest
+
+  PaxInstallError* = object of IOError
 
 converter toInstallStrategy*(str: string): InstallStrategy =
   ## Convert `str` to an InstallStrategy.
@@ -36,24 +37,25 @@ proc isNewest(file: CfAddonFile, modpackVersion: Version): bool =
   ## returns true if `file` is compatible according to InstallStrategy.newest.
   return modpackVersion.minor in file.gameVersions.map(minor)
 
-proc selectAddonFile*(files: seq[CfAddonFile], manifest: Manifest, strategy: InstallStrategy): Option[CfAddonFile] = 
+proc selectAddonFile*(files: seq[CfAddonFile], mpLoader: Loader, mpMcVersion: Version, strategy: InstallStrategy): CfAddonFile = 
   ## Select the best mod file out of `files`, given the `manifest` and `strategy`.
-  var latestFile = none[CfAddonFile]()
   for file in files:
-    let onFabric = manifest.loader == Loader.Fabric and file.isFabricCompatible
-    let onForge = manifest.loader == Loader.Forge and file.isForgeCompatible
-    let onStable = strategy == InstallStrategy.Stable and file.isStable(manifest.mcVersion)
-    let onRecommended = strategy == InstallStrategy.Recommended and file.isRecommended(manifest.mcVersion)
-    let onNewest = strategy == InstallStrategy.Newest and file.isNewest(manifest.mcVersion)
-    if latestFile.isNone or latestFile.get().fileId < file.fileId:
+    if result.isNil or result.fileId < file.fileId:
+      let onFabric = mpLoader == Loader.Fabric and file.isFabricCompatible
+      let onForge = mpLoader == Loader.Forge and file.isForgeCompatible
+      let onStable = strategy == InstallStrategy.Stable and file.isStable(mpMcVersion)
+      let onRecommended = strategy == InstallStrategy.Recommended and file.isRecommended(mpMcVersion)
+      let onNewest = strategy == InstallStrategy.Newest and file.isNewest(mpMcVersion)
       if onFabric or onForge:
         if onStable or onRecommended or onNewest:
-          latestFile = some(file)
+          result = file
   
-  if latestFile.isNone:
-    return case strategy:
-      of InstallStrategy.Stable: selectAddonFile(files, manifest, InstallStrategy.Recommended)
-      of InstallStrategy.Recommended: selectAddonFile(files, manifest, InstallStrategy.Newest)
-      else: latestFile
-
-  return latestFile
+  # In case nothing has been found, fallback to more generous install strategies
+  if result.isNil:
+    case strategy:
+      of InstallStrategy.Stable:
+        return selectAddonFile(files, mpLoader, mpMcVersion, InstallStrategy.Recommended)
+      of InstallStrategy.Recommended:
+        return selectAddonFile(files, mpLoader, mpMcVersion, InstallStrategy.Newest)
+      else:
+        raise newException(PaxInstallError, "No suitable version found for file '" & files[0].name & "'.")

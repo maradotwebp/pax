@@ -1,9 +1,9 @@
 ## Exports `Loader` which specifies the modloader type for a given modpack.
 ## 
-## Pax currently has support for the Fabric & Forge modloaders and assumes that mods that work on one modloader
-## do not work on another.
+## Pax currently has support for the Fabric & Forge modloaders and assumes that
+## mods that work on one modloader do not work on another.
 
-import strformat, strutils
+import std/[strformat, strutils]
 
 type
   Loader* = enum

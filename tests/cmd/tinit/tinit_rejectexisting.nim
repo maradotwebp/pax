@@ -7,7 +7,7 @@ y
   '''
 """
 
-import os
+import std/os
 import cmd/init
 
 block:

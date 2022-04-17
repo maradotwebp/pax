@@ -1,24 +1,27 @@
-import asyncdispatch
+import std/asyncdispatch
 import api/http
+import ../tutils
 
-block: # get with successful response
-  discard waitFor(get("http://httpbin.org/get".Url))
+asyncBlock: # get with successful response
+  discard await get("http://httpbin.org/get".Url)
 
-block: # get with non-existing website
+asyncBlock: # get with non-existing website
   doAssertRaises(OSError):
-    discard waitFor(get("http://non-existing-website.web".Url))
+    discard await get("http://non-existing-website.web".Url)
 
-block: # get on endpoint that does not support get
+asyncBlock: # get on endpoint that does not support get
   doAssertRaises(HttpRequestError):
-    discard waitFor(get("http://httpbin.org/post".Url))
+    discard await get("http://httpbin.org/post".Url)
 
-block: # post with successful response
-  discard waitFor(post("http://httpbin.org/post".Url))
+asyncBlock: # post with successful response
+  discard await post("http://httpbin.org/post".Url)
 
-block: # post with non-existing website
+asyncBlock: # post with non-existing website
   doAssertRaises(OSError):
-    discard waitFor(post("http://non-existing-website.web".Url))
+    discard await post("http://non-existing-website.web".Url)
 
-block: # post on endpoint that does not support get
+asyncBlock: # post on endpoint that does not support get
   doAssertRaises(HttpRequestError):
-    discard waitFor(post("http://httpbin.org/get".Url))
+    discard await post("http://httpbin.org/get".Url)
+
+runTests()

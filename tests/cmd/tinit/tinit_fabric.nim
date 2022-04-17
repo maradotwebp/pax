@@ -12,7 +12,7 @@ fabric
   '''
 """
 
-import strutils, os, json
+import std/[strutils, os, json]
 import cmd/init
 
 block: # init fabric project

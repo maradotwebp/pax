@@ -10,11 +10,11 @@ discard """
 '''
 """
 
-import json, os
+import std/[json, os]
 import cmd/version
 import term/color
 
-terminalColorEnabledSetting = false
+disableTermColors()
 
 let manifestJson = %* {
   "minecraft": {

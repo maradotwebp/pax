@@ -5,13 +5,12 @@ Wow how nice if this worked!
 Hello! I hope this works..
 Well, I don't think it helps testing this without colors..
 But without colors output should be consistent at least.
-Concat works too? [RED][BLUE]
-  '''
+Concat works too? [RED][BLUE]'''
 """
 
 import term/color
 
-terminalColorEnabledSetting = false
+disableTermColors()
 
 block: # clrWrite
   clrWrite(stdout, "Hi ")

@@ -1,9 +1,18 @@
-import algorithm, sequtils, strutils, sugar, options
+import std/[algorithm, sequtils, strutils, sugar]
 import ../api/cfcore
 import ../modpack/manifest
-import ../term/log, ../term/prompt
+import ../term/[log, prompt]
 
-proc echoAddon*(mcMod: CfAddon, prefix: TermOut = "", postfix: TermOut = "", url: TermOut = mcMod.websiteUrl.dim, moreInfo: bool = false): void =
+type
+  PaxSearchError* = object of IOError
+
+proc echoAddon*(
+  mcMod: CfAddon,
+  prefix: TermOut = "",
+  postfix: TermOut = "",
+  url: TermOut = mcMod.websiteUrl.dim,
+  moreInfo: bool = false
+): void =
   ## output a single `mcMod`.
   ## `prefix` and `postfix` is displayed before and after the mod name respectively.
   ## if `moreInfo` is true, description and downloads will be printed as well.
@@ -20,18 +29,18 @@ proc echoAddon*(mcMod: CfAddon, prefix: TermOut = "", postfix: TermOut = "", url
     echoClr indentPrefix.indent(3 + prefixIndent), "Description: ".fgCyan, mcMod.description
     echoClr indentPrefix.indent(3 + prefixIndent), "Downloads: ".fgCyan, mcMod.downloads.`$`.insertSep('.')
 
-proc promptAddonChoice*(manifest: Manifest, mcMods: seq[CfAddon], selectInstalled: bool = false): Option[CfAddon] =
+proc promptAddonChoice*(manifest: Manifest, mcMods: seq[CfAddon], selectInstalled: bool = false): CfAddon =
   ## prompt the user for a choice between `mcMods`.
   ## if `selectInstalled` is true, only installed mods may be selected, otherwise installed mods may not be selected.
   var mcMods = mcMods.reversed
   if selectInstalled:
     mcMods.keepIf((x) => manifest.isInstalled(x.projectId))
     if manifest.files.len == 0:
-      return none[CfAddon]()
+      raise newException(PaxSearchError, "No installed mods detected.")
   if mcMods.len == 0:
-    return none[CfAddon]()
+    raise newException(PaxSearchError, "No mods found.")
   if mcMods.len == 1:
-    return some(mcMods[0])
+    return mcMods[0]
 
   var availableIndexes = newSeq[int]()
   
@@ -53,4 +62,4 @@ proc promptAddonChoice*(manifest: Manifest, mcMods: seq[CfAddon], selectInstalle
     echoAddon(mcMod, prefix.fgCyan, postfix.fgMagenta)
 
   let selectedIndex = prompt("Select a mod", choices = availableIndexes.map((x) => $x), choiceFormat = "1 - " & $mcMods.len).parseInt
-  return some(mcMods[mcMods.len - selectedIndex])
+  return mcMods[mcMods.len - selectedIndex]

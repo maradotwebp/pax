@@ -7,10 +7,8 @@ y
   '''
 """
 
-import json, os
-import cmd/pin, term/color
-
-terminalColorEnabledSetting = false
+import std/[json, os]
+import cmd/pin
 
 block:
   removeDir("./modpack/")
