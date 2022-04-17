@@ -4,7 +4,7 @@ discard """
   batchable: false
 """
 
-import httpclient, json, strutils, os
+import std/[httpclient, json, strutils, os]
 import cmd/impo
 
 block:

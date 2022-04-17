@@ -1,7 +1,7 @@
-import algorithm, asyncdispatch, asyncfutures, sequtils, strutils, options, os, sugar
+import std/[algorithm, asyncdispatch, sequtils, strutils, os, sugar]
 import common
-import ../api/cfclient, ../api/cfcore
-import ../modpack/manifest, ../modpack/modinfo
+import ../api/[cfclient, cfcore]
+import ../modpack/[manifest, modinfo]
 import ../term/log
 
 proc paxList*(status: bool, info: bool): void =
@@ -12,15 +12,12 @@ proc paxList*(status: bool, info: bool): void =
   let manifest = readManifestFromDisk()
 
   let fileCount = manifest.files.len
-  let mcModRequests = manifest.files.map((x) => fetchAddon(x.projectId))
-  let mcModFileRequests = manifest.files.map((x) => fetchAddonFile(x.projectId, x.fileId))
-  let mcMods = all(mcModRequests)
-  let mcModFiles = all(mcModFileRequests)
+  let mcMods: Future[seq[CfAddon]] = manifest.files.map((x) => x.projectId).fetchAddons
+  let mcModFiles: Future[seq[CfAddonFile]] = manifest.files.map((x) => x.fileId).fetchAddonFiles
 
   echoInfo "Loading mods.."
   waitFor(mcMods and mcModFiles)
-  let modDataOptions = zip(mcMods.read(), mcModFiles.read())
-  var modData = modDataOptions.map((x) => (x[0].get(), x[1].get()))
+  var modData = zip(mcMods.read(), mcModFiles.read())
   modData = modData.sorted((x,y) => cmp(x[0].name, y[0].name))
 
   echoRoot "ALL MODS ".fgMagenta, ("(" & $fileCount & ")").dim

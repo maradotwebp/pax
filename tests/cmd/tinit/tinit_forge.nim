@@ -12,7 +12,7 @@ forge
   '''
 """
 
-import json, strutils, os
+import std/[strutils, os, json]
 import cmd/init
 
 block:

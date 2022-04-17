@@ -1,11 +1,14 @@
-## Provides the types returned by the `cfclient` module.
+## Provides the types returned by the Curseforge API.
 ## 
 ## Curseforge has two main entities:
-## - Addons, which are modifications to the source game in one way or another.
-##   In Minecraft, mods are one type of CF addon, resourcepacks are another.
-## - Addon files, which are files attached to one addon and can be seen of versions of an addon.
+## - Addons (https://docs.curseforge.com/#search-mods),
+##   which are modifications to the source game in one way or another.
+##   For Minecraft, mods are one type of CF addon, resourcepacks are another.
+## - Addon files (https://docs.curseforge.com/#curseforge-core-api-files),
+##   which are files attached to an addon and can be seen as versions of an addon.
 
-import json, regex, sequtils, strutils, sugar
+import std/[json, sequtils, strutils, sugar]
+import regex
 import ../modpack/version
 
 type

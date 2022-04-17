@@ -8,12 +8,12 @@
 ## - Outputting a question and expecting a selected singular choice out of multiple choices.
 ## - Outputting a yes/no question and expecting a yes/no answer.
 
-import strutils, terminal
+import std/[strutils, terminal]
 import color
 
 var
   ## if true, all promptYN will be skipped and return true.
-  skipYNSetting*: bool = false
+  skipYN: bool = false
 
 proc pretty[T](s: seq[T]): string =
   ## pretty-print a sequence
@@ -83,6 +83,14 @@ converter fromYN(choice: string): bool =
 proc promptYN*(prompt: string, default: bool): bool =
   ## prompt the user for an answer to a yes/no question.
   ## if `default` is specified, skipping the question by pressing enter without input will return default.
-  if skipYNSetting: return true
+  if skipYN: return true
   let answer = prompt(prompt, choices = @["y", "Y", "n", "N"], choiceFormat = "y/n", default = default.toYN.`$`)
   return answer.fromYN
+
+proc enableSkipYN*() =
+  ## enable skipping all prompts (automatically answers with Y).
+  skipYN = true
+
+proc disableSkipYN*() =
+  ## disable skipping all prompts (automatically answers with Y).
+  skipYN = false

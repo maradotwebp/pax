@@ -4,10 +4,10 @@
 ## - if the addon is up-to-date
 ## - if the addon is compatible with the modpack
 
-import sequtils, sugar
+import std/[sequtils, sugar]
 import ../api/cfcore
-import ../term/color
 import ../modpack/version
+import ../term/color
 
 type
   Compability* = enum
@@ -50,14 +50,14 @@ proc getMessage*(c: Compability): string =
     of Compability.Major: "The installed mod only matches the major version as the modpack. Issues may arise."
     of Compability.None: "The installed mod is incompatible with the modpack's minecraft version."
 
-proc getFreshness*(file: CfAddonFile, modpackVersion: Version, addon: CfAddon): Freshness =
+proc getFreshness*(file: CfAddonFile, mpVersion: Version, addon: CfAddon): Freshness =
   ## get freshness of a file
   let latestFiles = addon.gameVersionLatestFiles
-  let modpackVersionFiles = latestFiles.filter((x) => x.version == modpackVersion)
+  let modpackVersionFiles = latestFiles.filter((x) => x.version == mpVersion)
   if modpackVersionFiles.len == 1:
     if modpackVersionFiles[0].fileId == file.fileId:
       return Freshness.Newest
-  if latestFiles.any((x) => x.fileId == file.fileId and x.version.minor == modpackVersion.minor):
+  if latestFiles.any((x) => x.fileId == file.fileId and x.version.minor == mpVersion.minor):
     return Freshness.NewestForAVersion
   return Freshness.Old
 

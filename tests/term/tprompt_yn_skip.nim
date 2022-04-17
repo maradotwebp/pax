@@ -1,6 +1,6 @@
 import term/prompt
 
-skipYNSetting = true
+enableSkipYN()
 
 doAssert promptYn("True or false", default = true) == true
 doAssert promptYn("Test with y", default = false) == true

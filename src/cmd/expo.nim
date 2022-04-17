@@ -1,4 +1,5 @@
-import os, zippy/ziparchives
+import std/os
+import zippy/ziparchives
 import ../modpack/manifest
 import ../term/log
 
