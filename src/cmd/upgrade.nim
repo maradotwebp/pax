@@ -14,9 +14,8 @@ proc paxUpgrade*(strategy: string): void =
 
   returnIfNot promptYN($fileCount & " mods will be updated to the " & $strategy & " version. Do you want to continue?", default = true)
 
-  let mcModRequests = manifest.files.map((x) => fetchAddon(x.projectId))
+  let mcMods = manifest.files.map((x) => x.projectId).fetchAddons
   let mcModFilesRequests = manifest.files.map((x) => fetchAddonFiles(x.projectId))
-  let mcMods = all(mcModRequests)
   let mcModFiles = all(mcModFilesRequests)
 
   echoInfo "Loading mods.."
