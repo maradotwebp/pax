@@ -7,7 +7,7 @@ on:
 
 env:
   APP_NAME: 'pax'
-  NIM_VERSION: '1.4.6'
+  NIM_VERSION: '1.6.4'
 
 jobs:
   test:
