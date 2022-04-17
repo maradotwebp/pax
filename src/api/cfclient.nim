@@ -8,7 +8,7 @@
 ## Docs for the official API are available at https://docs.curseforge.com.
 ## Requests to the proxy stay the same, except the base URL is switched out.
 
-import std/[asyncdispatch, json, options, sequtils, strutils, sugar]
+import std/[asyncdispatch, json, options, sequtils, strutils, sugar, tables]
 import uri except Url
 import cfcore, http
 
@@ -21,6 +21,17 @@ const
 
 type
   CfClientError* = object of HttpRequestError
+
+proc sortTo[T, X](s: seq[T], x: seq[X], pred: proc (x: T): X): seq[T] =
+  ## sort `s` so that the order of its items matches `x`.
+  ## `pred` should be a function that returns a unique value to which `s` is sorted.
+  assert s.len == x.len
+
+  var table = initTable[X, T]()
+  for sItem in s:
+    table[pred(sItem)] = sItem
+  for xItem in x:
+    result.add(table[xItem])
 
 proc fetchAddonsByQuery*(query: string, category: Option[CfAddonGameCategory]): Future[seq[CfAddon]] {.async.} =
   ## retrieves all addons that match the given `query` search and `category`.
@@ -66,7 +77,7 @@ proc fetchAddons*(projectIds: seq[int], chunk = true): Future[seq[CfAddon]] {.as
       let addons = post(url.Url, $body).await.parseJson["data"].addonsFromForgeSvc
       if addons.len != projectIds.len:
         raise newException(CfClientError, "one of the addons of project ids '" & $projectIds & "' was not found.")
-      return addons
+      return addons.sortTo(projectIds, (x) => x.projectId)
     except HttpRequestError:
       let futures: seq[Future[CfAddon]] = collect:
         for projectId in projectIds:
@@ -101,7 +112,7 @@ proc fetchAddonFiles*(fileIds: seq[int]): Future[seq[CfAddonFile]] {.async.} =
     let addonFiles = post(url.Url, $body).await.parseJson["data"].addonFilesFromForgeSvc
     if addonFiles.len != fileIds.len:
       raise newException(CfClientError, "one of the addon files of file ids '" & $fileIds & "' was not found.")
-    return addonFiles
+    return addonFiles.sortTo(fileIds, (x) => x.fileId)
   except HttpRequestError:
     raise newException(CfClientError, "one of the addon files of file ids '" & $fileIds & "' was not found.")
 

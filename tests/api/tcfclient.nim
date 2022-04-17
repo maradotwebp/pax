@@ -30,8 +30,8 @@ asyncBlock: # fetch mod by non-existing id
 
 asyncBlock: # fetch mods by id
   let mcMods = await fetchAddons(@[220318, 238222])
-  doAssert mcMods.any((x) => x.projectId == 220318)
-  doAssert mcMods.any((x) => x.projectId == 238222)
+  doAssert mcMods[0].projectId == 220318
+  doAssert mcMods[1].projectId == 238222
 
 asyncBlock: # fetch mods by non-existing id
   doAssertRaises(CfClientError):
@@ -59,8 +59,8 @@ asyncBlock: # fetch mod files by non-existing project id
 
 asyncBlock: # fetch mod files by file ids
   let modFiles = await fetchAddonFiles(@[2992184, 3098571])
-  doAssert modFiles.any((x) => x.fileId == 2992184)
-  doAssert modFiles.any((x) => x.fileId == 3098571)
+  doAssert modFiles[0].fileId == 2992184
+  doAssert modFiles[1].fileId == 3098571
 
 asyncBlock: # fetch mod files by non-existing file ids
   doAssertRaises(CfClientError):
