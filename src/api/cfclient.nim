@@ -1,4 +1,4 @@
-## Provides functions for connecting to the CF proxy [https://github.com/bmpm-mc/cfproxy].
+## Provides functions for connecting to the CF proxy [https://cfproxy.bmpm.workers.dev].
 ## 
 ## The proxy connects to the official API internally, and has capabilities like:
 ## - Searching for a addon.
@@ -14,7 +14,7 @@ import cfcore, http
 
 const
   ## base url of the cfproxy endpoint
-  addonsBaseUrl = "https://cfproxy.fly.dev"
+  addonsBaseUrl = "https://cfproxy.bmpm.workers.dev"
   ## base url of the curse metadata api endpoint
   ## used for retrieving mods by their slug, which isn't possible with the curse api
   addonsSlugBaseUrl = "https://curse.nikky.moe/graphql"
