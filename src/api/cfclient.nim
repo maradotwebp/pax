@@ -8,7 +8,7 @@
 ## Docs for the official API are available at https://docs.curseforge.com.
 ## Requests to the proxy stay the same, except the base URL is switched out.
 
-import std/[asyncdispatch, json, options, strutils]
+import std/[asyncdispatch, json, options, sequtils, strutils, sugar]
 import uri except Url
 import cfcore, http
 
@@ -46,17 +46,32 @@ proc fetchAddon*(projectId: int): Future[CfAddon] {.async.} =
   except HttpRequestError:
     raise newException(CfClientError, "addon with project id '" & $projectId & "' not found.")
 
-proc fetchAddons*(projectIds: seq[int]): Future[seq[CfAddon]] {.async.} =
+proc fetchAddons*(projectIds: seq[int], chunk = true): Future[seq[CfAddon]] {.async.} =
   ## get all addons with their given `projectId`.
-  let url = addonsBaseUrl & "/v1/mods/"
-  let body = %* { "modIds": projectIds }
-  try:
-    let addons = post(url.Url, $body).await.parseJson["data"].addonsFromForgeSvc
-    if addons.len != projectIds.len:
-      raise newException(CfClientError, "one of the addons of project ids '" & $projectIds & "' was not found.")
-    return addons
-  except HttpRequestError:
-    raise newException(CfClientError, "one of the addons of project ids '" & $projectIds & "' was not found.")
+  ## 
+  ## chunks the projectIds to minimize request size and to pinpoint errors better.
+  if projectIds.len > 10 and chunk:
+    let futures: seq[Future[seq[CfAddon]]] = collect:
+      for chunkedIds in projectIds.distribute(int(projectIds.len / 10), spread = true):
+        fetchAddons(chunkedIds, chunk = false)
+    let addons: seq[seq[CfAddon]] = await all(futures)
+    return collect:
+      for addonSeq in addons:
+        for addon in addonSeq:
+          addon
+  else:
+    let url = addonsBaseUrl & "/v1/mods/"
+    let body = %* { "modIds": projectIds }
+    try:
+      let addons = post(url.Url, $body).await.parseJson["data"].addonsFromForgeSvc
+      if addons.len != projectIds.len:
+        raise newException(CfClientError, "one of the addons of project ids '" & $projectIds & "' was not found.")
+      return addons
+    except HttpRequestError:
+      let futures: seq[Future[CfAddon]] = collect:
+        for projectId in projectIds:
+          fetchAddon(projectId)
+      return await all(futures)
 
 proc fetchAddon*(slug: string): Future[CfAddon] {.async.} =
   ## get the addon matching the `slug`.
