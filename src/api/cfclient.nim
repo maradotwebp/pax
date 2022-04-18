@@ -112,7 +112,7 @@ proc fetchAddonFiles*(projectId: int): Future[seq[CfAddonFile]] {.async.} =
   cfcache.putAddonFiles(data)
   return data.addonFilesFromForgeSvc
 
-proc fetchAddonFilesChunks(fileIds: seq[int]): Future[seq[CfAddonFile]] {.async.} =
+proc fetchAddonFilesChunks(fileIds: seq[int], fallback = true): Future[seq[CfAddonFile]] {.async.} =
   ## get all addons with their given `projectId`.
   if fileIds.len == 0:
     return @[]
@@ -122,7 +122,9 @@ proc fetchAddonFilesChunks(fileIds: seq[int]): Future[seq[CfAddonFile]] {.async.
     return data.addonFilesFromForgeSvc
   except CfApiError:
     # fallback to looking up the ids individually
-    return all(fileIds.map((x) => fetchAddonFiles(x))).await.flatten()
+    if fallback:
+      return all(fileIds.map((x) => fetchAddonFilesChunks(@[x], fallback = false))).await.flatten()
+    raise
 
 proc fetchAddonFiles*(fileIds: seq[int], chunk = true): Future[seq[CfAddonFile]] {.async.} =
   ## get all addon files with their given `fileIds`.
@@ -152,7 +154,7 @@ proc fetchAddonFiles*(fileIds: seq[int], chunk = true): Future[seq[CfAddonFile]]
   if fileIds.len != result.len:
     let currentIds = result.map((x) => x.fileId)
     let missingIds = fileIds.filter((x) => x notin currentIds)
-    result = result.concat(all(missingIds.map((x) => fetchAddonFiles(x))).await.flatten())
+    result = result.concat(all(missingIds.map((x) => fetchAddonFilesChunks(@[x], fallback = false))).await.flatten())
   # sort so the output is deterministic
   result = result.sortTo(fileIds, (x) => x.fileId)
 
