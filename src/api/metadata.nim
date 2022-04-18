@@ -13,7 +13,7 @@ const
   ## base url of the fabric metadata endpoint
   fabricBaseUrl = "https://meta.fabricmc.net/v2/versions/loader/"
   ## base url of the curse metadata api endpoint
-  forgeBaseUrl = "https://cfproxy.fly.dev/v1/minecraft/modloader"
+  forgeBaseUrl = "https://cfproxy.bmpm.workers.dev/v1/minecraft/modloader"
 
 type
   MetadataClientError* = object of HttpRequestError
