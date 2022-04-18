@@ -8,24 +8,20 @@
 import std/[json, options, os, times]
 
 const
+  cacheDir* = getCacheDir("pax") ## the cache folder
   addonCacheTime = 30.minutes ## how long an addon is cached
   addonFileCacheTime = 1.days ## how long an addon file is cached
 
-proc getPaxCacheDir(): string =
-  ## returns the cache dir of pax.
-  return getCacheDir("pax")
-
 proc getAddonFilename*(projectId: int): string {.inline.} =
   ## get the filename of an addon in the cache.
-  return getPaxCacheDir() / ("addon:" & $projectId)
+  return cacheDir / ("addon:" & $projectId)
 
 proc getAddonFileFilename*(fileId: int): string {.inline.} =
   ## get the filename of an addon file in the cache.
-  return getPaxCacheDir() / ("file:" & $fileId)
+  return cacheDir / ("file:" & $fileId)
 
 proc putAddon*(json: JsonNode): void =
   ## put an addon in the cache.
-  createDir(getPaxCacheDir())
   let projectId = json["id"].getInt()
   let filename = getAddonFilename(projectId)
   writeFile(filename, $json)
@@ -37,7 +33,6 @@ proc putAddons*(json: JsonNode): void =
 
 proc putAddonFile*(json: JsonNode): void =
   ## put an addon file in the cache.
-  createDir(getPaxCacheDir())
   let fileId = json["id"].getInt()
   let filename = getAddonFileFilename(fileId)
   writeFile(filename, $json)
