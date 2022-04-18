@@ -1,6 +1,5 @@
 discard """
-  cmd: "nim $target --hints:on -d:testing -d:ssl --nimblePath:tests/deps $options $file"
-  joinable: false
+    joinable: false
   batchable: false
 """
 
