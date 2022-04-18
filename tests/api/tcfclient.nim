@@ -25,7 +25,7 @@ asyncBlock: # fetch mod by id
   doAssert mcMod.name == "Biomes O' Plenty"
 
 asyncBlock: # fetch mod by non-existing id
-  doAssertRaises(CfClientError):
+  doAssertRaises(CfApiError):
     discard await fetchAddon(99999999)
 
 asyncBlock: # fetch mods by id
@@ -34,7 +34,7 @@ asyncBlock: # fetch mods by id
   doAssert mcMods[1].projectId == 238222
 
 asyncBlock: # fetch mods by non-existing id
-  doAssertRaises(CfClientError):
+  doAssertRaises(CfApiError):
     discard await fetchAddons(@[220318, 99999999])
 
 asyncBlock: # fetch mod by slug
@@ -46,7 +46,7 @@ asyncBlock: # fetch mod by slug
   doAssert mcMod.projectId == 307560
 
 asyncBlock: # fetch mod by non-existing slug
-  doAssertRaises(CfClientError):
+  doAssertRaises(CfApiError):
     discard await fetchAddon("abcdefghijklmnopqrstuvwxyz")
 
 asyncBlock: # fetch mod files by project id
@@ -54,7 +54,7 @@ asyncBlock: # fetch mod files by project id
   doAssert modFiles.any((x) => x.fileId == 3035787)
 
 asyncBlock: # fetch mod files by non-existing project id
-  doAssertRaises(CfClientError):
+  doAssertRaises(CfApiError):
     discard await fetchAddonFiles(99999999)
 
 asyncBlock: # fetch mod files by file ids
@@ -63,7 +63,7 @@ asyncBlock: # fetch mod files by file ids
   doAssert modFiles[1].fileId == 3098571
 
 asyncBlock: # fetch mod files by non-existing file ids
-  doAssertRaises(CfClientError):
+  doAssertRaises(CfApiError):
     discard await fetchAddonFiles(@[2992184, 99999999])
 
 asyncBlock: # fetch mod file by project & file id
@@ -72,10 +72,10 @@ asyncBlock: # fetch mod file by project & file id
   doAssert modFile.name == "Patchouli-1.0-21.jar"
 
 asyncBlock: # fetch mod files by non-existing project & file id
-  doAssertRaises(CfClientError):
-    discard await fetchAddonFile(306770, 99999999)
-  doAssertRaises(CfClientError):
-    discard await fetchAddonFile(99999999, 2992184)
+  doAssertRaises(CfApiError):
+    discard await fetchAddonFile(0, 99999999)
+  doAssertRaises(CfApiError):
+    discard await fetchAddonFile(99999999, 0)
 
 asyncBlock: # check if dependencies are tracked
   let modFile = await fetchAddonFile(243121, 3366626)

@@ -1,6 +1,8 @@
+import std/os
 import therapist
-import cmd/add, cmd/expo, cmd/impo, cmd/init, cmd/list, cmd/pin, cmd/remove, cmd/update, cmd/upgrade, cmd/version
-import term/color, term/prompt
+import api/cfcache
+import cmd/[add, cache, expo, impo, init, list, pin, remove, update, upgrade, version]
+import term/[color, prompt]
 import util/paxVersion
 
 let commonArgs = (
@@ -151,6 +153,13 @@ let exportCmd = (
   help: commonArgs.help
 )
 
+let cacheCmd = (
+  action: newStringArg(@["<action>"],
+    choices = @["clean", "purge"],
+    help = "the action to take (clean|purge)"
+  )
+)
+
 let spec = (
   init: newCommandArg(@["init"],
     initCmd,
@@ -192,6 +201,10 @@ let spec = (
     exportCmd,
     help = "export to .zip"
   ),
+  cache: newCommandArg(@["cache"],
+    cacheCmd,
+    help = "clean/purge the mod cache"
+  ),
   yes: commonArgs.yes,
   noColor: commonArgs.noColor,
   paxVersion: commonArgs.version,
@@ -199,6 +212,7 @@ let spec = (
 )
 
 spec.parseOrHelp()
+createDir(cfcache.cacheDir)
 
 # GLOBAL OPTIONS
 if commonArgs.yes.seen:
@@ -237,5 +251,7 @@ elif spec.impo.seen:
       skipGit = importCmd.skipGit.seen)
 elif spec.expo.seen:
   paxExport(path = exportCmd.path.value)
+elif spec.cache.seen:
+  paxCache(action = cacheCmd.action.value)
 else:
   echo spec.render_help()
