@@ -19,7 +19,7 @@ jobs:
         with:
           nim-version: ${{ env.NIM_VERSION }}
       - name: Build
-        run: nimble build -y -d:ssl -d:release
+        run: nimble build -d:release -y
 
   test:
     runs-on: ${{ matrix.os }}
