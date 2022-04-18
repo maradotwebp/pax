@@ -8,7 +8,7 @@
 ## Docs for the official API are available at https://docs.curseforge.com.
 ## Requests to the proxy stay the same, except the base URL is switched out.
 
-import std/[asyncdispatch, json, options, sequtils, strutils, sugar, tables]
+import std/[asyncdispatch, json, options, strutils]
 import uri except Url
 import cfcore, http
 
@@ -22,69 +22,33 @@ const
 type
   CfApiError* = object of HttpRequestError
 
-proc sortTo[T, X](s: seq[T], x: seq[X], pred: proc (x: T): X): seq[T] =
-  ## sort `s` so that the order of its items matches `x`.
-  ## `pred` should be a function that returns a unique value to which `s` is sorted.
-  assert s.len == x.len
-
-  var table = initTable[X, T]()
-  for sItem in s:
-    table[pred(sItem)] = sItem
-  for xItem in x:
-    result.add(table[xItem])
-
-proc fetchAddonsByQuery*(query: string, category: Option[CfAddonGameCategory]): Future[seq[CfAddon]] {.async.} =
+proc fetchAddonsByQuery*(query: string, category: Option[CfAddonGameCategory]): Future[JsonNode] {.async.} =
   ## retrieves all addons that match the given `query` search and `category`.
   let encodedQuery = encodeUrl(query, usePlus = false)
   var url = addonsBaseUrl & "/v1/mods/search?gameId=432&pageSize=50&sortField=6&sortOrder=desc&searchFilter=" & encodedQuery
   if category.isSome:
     url = url & "&classId=" & $ord(category.get())
-  return get(url.Url).await.parseJson["data"].addonsFromForgeSvc
+  return get(url.Url).await.parseJson["data"]
 
-proc fetchAddonsByQuery*(query: string, category: CfAddonGameCategory): Future[seq[CfAddon]] =
-  ## retrieves all addons that match the given `query` search and `category`.
-  return fetchAddonsByQuery(query, category = some(category))
-
-proc fetchAddonsByQuery*(query: string): Future[seq[CfAddon]] =
-  ## retrieves all addons that match the given `query` search.
-  return fetchAddonsByQuery(query, category = none[CfAddonGameCategory]())
-
-proc fetchAddon*(projectId: int): Future[CfAddon] {.async.} =
+proc fetchAddon*(projectId: int): Future[JsonNode] {.async.} =
   ## get the addon with the given `projectId`.
   let url = addonsBaseUrl & "/v1/mods/" & $projectId
   try:
-    return get(url.Url).await.parseJson["data"].addonFromForgeSvc
+    return get(url.Url).await.parseJson["data"]
   except HttpRequestError:
     raise newException(CfApiError, "addon with project id '" & $projectId & "' not found.")
 
-proc fetchAddons*(projectIds: seq[int], chunk = true): Future[seq[CfAddon]] {.async.} =
+proc fetchAddons*(projectIds: seq[int]): Future[JsonNode] {.async.} =
   ## get all addons with their given `projectId`.
-  ## 
-  ## chunks the projectIds to minimize request size and to pinpoint errors better.
-  if projectIds.len > 10 and chunk:
-    let futures: seq[Future[seq[CfAddon]]] = collect:
-      for chunkedIds in projectIds.distribute(int(projectIds.len / 10), spread = true):
-        fetchAddons(chunkedIds, chunk = false)
-    let addons: seq[seq[CfAddon]] = await all(futures)
-    return collect:
-      for addonSeq in addons:
-        for addon in addonSeq:
-          addon
-  else:
-    let url = addonsBaseUrl & "/v1/mods/"
-    let body = %* { "modIds": projectIds }
-    try:
-      let addons = post(url.Url, $body).await.parseJson["data"].addonsFromForgeSvc
-      if addons.len != projectIds.len:
-        raise newException(CfApiError, "one of the addons of project ids '" & $projectIds & "' was not found.")
-      return addons.sortTo(projectIds, (x) => x.projectId)
-    except HttpRequestError:
-      let futures: seq[Future[CfAddon]] = collect:
-        for projectId in projectIds:
-          fetchAddon(projectId)
-      return await all(futures)
+  let url = addonsBaseUrl & "/v1/mods/"
+  let body = %* { "modIds": projectIds }
+  try:
+    let addons = post(url.Url, $body).await.parseJson["data"]
+    return addons
+  except HttpRequestError:
+    raise newException(CfApiError, "one of the addons of project ids '" & $projectIds & "' was not found.")
 
-proc fetchAddon*(slug: string): Future[CfAddon] {.async.} =
+proc fetchAddon*(slug: string): Future[JsonNode] {.async.} =
   ## get the addon matching the `slug`.
   let reqBody = %* {
     "query": "{ addons(slug: \"" & slug & "\") { id }}"
@@ -96,30 +60,27 @@ proc fetchAddon*(slug: string): Future[CfAddon] {.async.} =
   let projectId = addons[0]["id"].getInt()
   return await fetchAddon(projectId)
 
-proc fetchAddonFiles*(projectId: int): Future[seq[CfAddonFile]] {.async.} =
+proc fetchAddonFiles*(projectId: int): Future[JsonNode] {.async.} =
   ## get all addon files associated with the given `projectId`.
   let url = addonsBaseUrl & "/v1/mods/" & $projectId & "/files?pageSize=10000"
   try:
-    return get(url.Url).await.parseJson["data"].addonFilesFromForgeSvc
+    return get(url.Url).await.parseJson["data"]
   except HttpRequestError:
     raise newException(CfApiError, "addon with project id '" & $projectId & "' not found.")
 
-proc fetchAddonFiles*(fileIds: seq[int]): Future[seq[CfAddonFile]] {.async.} =
+proc fetchAddonFiles*(fileIds: seq[int]): Future[JsonNode] {.async.} =
   ## get all addon files with their given `fileIds`.
   let url = addonsBaseUrl & "/v1/mods/files"
   let body = %* { "fileIds": fileIds }
   try:
-    let addonFiles = post(url.Url, $body).await.parseJson["data"].addonFilesFromForgeSvc
-    if addonFiles.len != fileIds.len:
-      raise newException(CfApiError, "one of the addon files of file ids '" & $fileIds & "' was not found.")
-    return addonFiles.sortTo(fileIds, (x) => x.fileId)
+    return post(url.Url, $body).await.parseJson["data"]
   except HttpRequestError:
     raise newException(CfApiError, "one of the addon files of file ids '" & $fileIds & "' was not found.")
 
-proc fetchAddonFile*(projectId: int, fileId: int): Future[CfAddonFile] {.async.} =
+proc fetchAddonFile*(projectId: int, fileId: int): Future[JsonNode] {.async.} =
   ## get the addon file with the given `fileId` & `projectId`.
   let url = addonsBaseUrl & "/v1/mods/" & $projectId & "/files/" & $fileId
   try:
-    return get(url.Url).await.parseJson["data"].addonFileFromForgeSvc
+    return get(url.Url).await.parseJson["data"]
   except HttpRequestError:
     raise newException(CfApiError, "addon with project & file id  '" & $projectId & ':' & $fileId & "' not found.")

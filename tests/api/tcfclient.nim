@@ -1,5 +1,5 @@
 import std/[asyncdispatch, options, sequtils, strutils, sugar]
-import api/[cfapi, cfcore]
+import api/[cfclient, cfcore]
 import ../tutils
 
 asyncBlock: # fetch by query
@@ -73,9 +73,9 @@ asyncBlock: # fetch mod file by project & file id
 
 asyncBlock: # fetch mod files by non-existing project & file id
   doAssertRaises(CfApiError):
-    discard await fetchAddonFile(306770, 99999999)
+    discard await fetchAddonFile(0, 99999999)
   doAssertRaises(CfApiError):
-    discard await fetchAddonFile(99999999, 2992184)
+    discard await fetchAddonFile(99999999, 0)
 
 asyncBlock: # check if dependencies are tracked
   let modFile = await fetchAddonFile(243121, 3366626)

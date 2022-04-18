@@ -1,5 +1,5 @@
 import std/[asyncdispatch, asyncfutures, sequtils, sugar, os]
-import ../api/[cfapi, cfcore]
+import ../api/[cfclient, cfcore]
 import ../modpack/[manifest, install]
 import ../term/[log, prompt]
 import ../util/flow
