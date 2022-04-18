@@ -6,7 +6,7 @@
 
 import std/[algorithm, asyncdispatch, json, options, os, sequtils, sugar]
 import loader
-import ../api/[cfclient, cfcore]
+import ../api/[cfapi, cfcore]
 import ../modpack/version
 import ../term/[color, log]
 export color, log

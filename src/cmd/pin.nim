@@ -1,6 +1,6 @@
 import std/[asyncdispatch, os]
 import common
-import ../api/[cfcore, cfclient]
+import ../api/cfapi
 import ../modpack/manifest
 import ../term/[log, prompt]
 import ../util/flow

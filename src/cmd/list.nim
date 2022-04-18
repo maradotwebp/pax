@@ -1,6 +1,6 @@
 import std/[algorithm, asyncdispatch, sequtils, strutils, os, sugar]
 import common
-import ../api/[cfclient, cfcore]
+import ../api/[cfapi, cfcore]
 import ../modpack/[manifest, modinfo]
 import ../term/log
 

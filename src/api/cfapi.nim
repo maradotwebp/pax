@@ -20,7 +20,7 @@ const
   addonsSlugBaseUrl = "https://curse.nikky.moe/graphql"
 
 type
-  CfClientError* = object of HttpRequestError
+  CfApiError* = object of HttpRequestError
 
 proc sortTo[T, X](s: seq[T], x: seq[X], pred: proc (x: T): X): seq[T] =
   ## sort `s` so that the order of its items matches `x`.
@@ -55,7 +55,7 @@ proc fetchAddon*(projectId: int): Future[CfAddon] {.async.} =
   try:
     return get(url.Url).await.parseJson["data"].addonFromForgeSvc
   except HttpRequestError:
-    raise newException(CfClientError, "addon with project id '" & $projectId & "' not found.")
+    raise newException(CfApiError, "addon with project id '" & $projectId & "' not found.")
 
 proc fetchAddons*(projectIds: seq[int], chunk = true): Future[seq[CfAddon]] {.async.} =
   ## get all addons with their given `projectId`.
@@ -76,7 +76,7 @@ proc fetchAddons*(projectIds: seq[int], chunk = true): Future[seq[CfAddon]] {.as
     try:
       let addons = post(url.Url, $body).await.parseJson["data"].addonsFromForgeSvc
       if addons.len != projectIds.len:
-        raise newException(CfClientError, "one of the addons of project ids '" & $projectIds & "' was not found.")
+        raise newException(CfApiError, "one of the addons of project ids '" & $projectIds & "' was not found.")
       return addons.sortTo(projectIds, (x) => x.projectId)
     except HttpRequestError:
       let futures: seq[Future[CfAddon]] = collect:
@@ -92,7 +92,7 @@ proc fetchAddon*(slug: string): Future[CfAddon] {.async.} =
   let curseProxyInfo = await post(addonsSlugBaseUrl.Url, body = $reqBody)
   let addons = curseProxyInfo.parseJson["data"]["addons"]
   if addons.len == 0:
-    raise newException(CfClientError, "addon with slug '" & slug & "' not found")
+    raise newException(CfApiError, "addon with slug '" & slug & "' not found")
   let projectId = addons[0]["id"].getInt()
   return await fetchAddon(projectId)
 
@@ -102,7 +102,7 @@ proc fetchAddonFiles*(projectId: int): Future[seq[CfAddonFile]] {.async.} =
   try:
     return get(url.Url).await.parseJson["data"].addonFilesFromForgeSvc
   except HttpRequestError:
-    raise newException(CfClientError, "addon with project id '" & $projectId & "' not found.")
+    raise newException(CfApiError, "addon with project id '" & $projectId & "' not found.")
 
 proc fetchAddonFiles*(fileIds: seq[int]): Future[seq[CfAddonFile]] {.async.} =
   ## get all addon files with their given `fileIds`.
@@ -111,10 +111,10 @@ proc fetchAddonFiles*(fileIds: seq[int]): Future[seq[CfAddonFile]] {.async.} =
   try:
     let addonFiles = post(url.Url, $body).await.parseJson["data"].addonFilesFromForgeSvc
     if addonFiles.len != fileIds.len:
-      raise newException(CfClientError, "one of the addon files of file ids '" & $fileIds & "' was not found.")
+      raise newException(CfApiError, "one of the addon files of file ids '" & $fileIds & "' was not found.")
     return addonFiles.sortTo(fileIds, (x) => x.fileId)
   except HttpRequestError:
-    raise newException(CfClientError, "one of the addon files of file ids '" & $fileIds & "' was not found.")
+    raise newException(CfApiError, "one of the addon files of file ids '" & $fileIds & "' was not found.")
 
 proc fetchAddonFile*(projectId: int, fileId: int): Future[CfAddonFile] {.async.} =
   ## get the addon file with the given `fileId` & `projectId`.
@@ -122,4 +122,4 @@ proc fetchAddonFile*(projectId: int, fileId: int): Future[CfAddonFile] {.async.}
   try:
     return get(url.Url).await.parseJson["data"].addonFileFromForgeSvc
   except HttpRequestError:
-    raise newException(CfClientError, "addon with project & file id  '" & $projectId & ':' & $fileId & "' not found.")
+    raise newException(CfApiError, "addon with project & file id  '" & $projectId & ':' & $fileId & "' not found.")

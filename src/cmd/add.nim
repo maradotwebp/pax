@@ -1,6 +1,6 @@
 import std/[asyncdispatch, options, strscans]
 import common
-import ../api/[cfclient, cfcore]
+import ../api/[cfapi, cfcore]
 import ../modpack/[install, manifest]
 import ../term/[log, prompt]
 import ../util/flow
