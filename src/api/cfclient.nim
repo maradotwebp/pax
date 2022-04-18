@@ -92,11 +92,11 @@ proc fetchAddons*(projectIds: seq[int], chunk = true): Future[seq[CfAddon]] {.as
     # otherwise just fetch them
     result = result.concat(await fetchAddonsChunks(missingIds))
 
-  # check that all addons have been retrieved
+  # check that all addons have been retrieved & fetch missing ones
   if projectIds.len != result.len:
     let currentIds = result.map((x) => x.projectId)
     let missingIds = projectIds.filter((x) => x notin currentIds)
-    raise newException(CfApiError, "one of the addons of project ids '" & $missingIds & "' was not found.")
+    result = result.concat(await all(missingIds.map((x) => fetchAddon(x, lookupCache = false))))
   # sort so the output is deterministic
   result = result.sortTo(projectIds, (x) => x.projectId)
 
