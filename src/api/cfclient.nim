@@ -120,11 +120,11 @@ proc fetchAddonFilesChunks(fileIds: seq[int], fallback = true): Future[seq[CfAdd
     let data = await cfapi.fetchAddonFiles(fileIds)
     cfcache.putAddonFiles(data)
     return data.addonFilesFromForgeSvc
-  except CfApiError:
+  except CfApiError as e:
     # fallback to looking up the ids individually
     if fallback:
       return all(fileIds.map((x) => fetchAddonFilesChunks(@[x], fallback = false))).await.flatten()
-    raise
+    raise newException(CfApiError, e.msg)
 
 proc fetchAddonFiles*(fileIds: seq[int], chunk = true): Future[seq[CfAddonFile]] {.async.} =
   ## get all addon files with their given `fileIds`.

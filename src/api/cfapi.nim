@@ -44,6 +44,8 @@ proc fetchAddons*(projectIds: seq[int]): Future[JsonNode] {.async.} =
   let body = %* { "modIds": projectIds }
   try:
     let addons = post(url.Url, $body).await.parseJson["data"]
+    if projectIds.len != addons.len:
+      raise newException(CfApiError, "one of the addons of project ids '" & $projectIds & "' was not found.")
     return addons
   except HttpRequestError:
     raise newException(CfApiError, "one of the addons of project ids '" & $projectIds & "' was not found.")
@@ -73,7 +75,10 @@ proc fetchAddonFiles*(fileIds: seq[int]): Future[JsonNode] {.async.} =
   let url = addonsBaseUrl & "/v1/mods/files"
   let body = %* { "fileIds": fileIds }
   try:
-    return post(url.Url, $body).await.parseJson["data"]
+    let files = post(url.Url, $body).await.parseJson["data"]
+    if fileIds.len != files.len:
+      raise newException(CfApiError, "one of the addon files of file ids '" & $fileIds & "' was not found.")
+    return files
   except HttpRequestError:
     raise newException(CfApiError, "one of the addon files of file ids '" & $fileIds & "' was not found.")
 
