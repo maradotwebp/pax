@@ -64,6 +64,26 @@ proc getAddonFile*(fileId: int): Option[JsonNode] =
     return some(file.parseJson)
   return none[JsonNode]()
 
+proc clean*(): int =
+  ## remove old files from the cache.
+  ## returns the number of files cleared.
+  result = 0
+  for filename in walkFiles(cacheDir / "addon:*"):
+    let info = getFileInfo(filename)
+    if info.lastWriteTime + addonCacheTime < getTime():
+      removeFile(filename)
+      inc(result)
+  for filename in walkFiles(cacheDir / "file:*"):
+    let info = getFileInfo(filename)
+    if info.lastWriteTime + addonFileCacheTime < getTime():
+      removeFile(filename)
+      inc(result)
+
+proc purge*(): void =
+  ## remove all files from the cache.
+  removeDir(cacheDir)
+  createDir(cacheDir)
+
 template withCachedAddon*(c: untyped, projectId: int, body: untyped) =
   ## do something with a cached addon.
   let addon = getAddon(projectId)

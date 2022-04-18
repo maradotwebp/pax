@@ -1,22 +1,24 @@
-import std/[json, options, os]
+import std/[json, options]
 import api/cfcache
 
-block: # caching addons
-  removeFile(getAddonFilename(123))
+cfcache.purge()
 
+block: # caching addons
   let json = %* {
     "id": 123
   }
   doAssert getAddon(123).isNone()
-  putAddon(json)
+  cfcache.putAddon(json)
   doAssert getAddon(123).get() == json
 
-block: # caching addons
-  removeFile(getAddonFileFilename(456))
-
+block: # caching addon files
   let json = %* {
     "id": 456
   }
   doAssert getAddonFile(456).isNone()
-  putAddonFile(json)
+  cfcache.putAddonFile(json)
   doAssert getAddonFile(456).get() == json
+
+block: # cleaning
+  let numCleanedFiles = cfcache.clean()
+  doAssert numCleanedFiles == 0
