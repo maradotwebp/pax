@@ -24,7 +24,10 @@ proc putAddon*(json: JsonNode): void =
   ## put an addon in the cache.
   let projectId = json["id"].getInt()
   let filename = getAddonFilename(projectId)
-  writeFile(filename, $json)
+  try:
+    writeFile(filename, $json)
+  except IOError:
+    discard
 
 proc putAddons*(json: JsonNode): void =
   ## put multiple addons in the cache.
@@ -35,7 +38,10 @@ proc putAddonFile*(json: JsonNode): void =
   ## put an addon file in the cache.
   let fileId = json["id"].getInt()
   let filename = getAddonFileFilename(fileId)
-  writeFile(filename, $json)
+  try:
+    writeFile(filename, $json)
+  except IOError:
+    discard
 
 proc putAddonFiles*(json: JsonNode): void =
   ## put multiple addons in the cache.
@@ -49,7 +55,10 @@ proc getAddon*(projectId: int): Option[JsonNode] =
     return none[JsonNode]()
   let info = getFileInfo(filename)
   if info.lastWriteTime + addonCacheTime > getTime():
-    let file = readFile(filename)
+    let file = try:
+      readFile(filename)
+    except IOError:
+      return none[JsonNode]()
     return some(file.parseJson)
   return none[JsonNode]()
 
@@ -60,7 +69,10 @@ proc getAddonFile*(fileId: int): Option[JsonNode] =
     return none[JsonNode]()
   let info = getFileInfo(filename)
   if info.lastWriteTime + addonFileCacheTime > getTime():
-    let file = readFile(filename)
+    let file = try:
+      readFile(filename)
+    except IOError:
+      return none[JsonNode]()
     return some(file.parseJson)
   return none[JsonNode]()
 
@@ -71,18 +83,27 @@ proc clean*(): int =
   for filename in walkFiles(cacheDir / "addon:*"):
     let info = getFileInfo(filename)
     if info.lastWriteTime + addonCacheTime < getTime():
-      removeFile(filename)
-      inc(result)
+      try:
+        removeFile(filename)
+        inc(result)
+      except IOError:
+        discard
   for filename in walkFiles(cacheDir / "file:*"):
     let info = getFileInfo(filename)
     if info.lastWriteTime + addonFileCacheTime < getTime():
-      removeFile(filename)
-      inc(result)
+      try:
+        removeFile(filename)
+        inc(result)
+      except IOError:
+        discard
 
 proc purge*(): void =
   ## remove all files from the cache.
-  removeDir(cacheDir)
-  createDir(cacheDir)
+  try:
+    removeDir(cacheDir)
+    createDir(cacheDir)
+  except IOError:
+    discard
 
 template withCachedAddon*(c: untyped, projectId: int, body: untyped) =
   ## do something with a cached addon.
