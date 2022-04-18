@@ -1,45 +1,37 @@
-## Provides functions for connecting to the CF proxy [https://cfproxy.bmpm.workers.dev].
+## Provides functions for retrieving information about addons and addon files.
 ## 
-## The proxy connects to the official API internally, and has capabilities like:
-## - Searching for a addon.
-## - Retrieving an addon by their project id.
-## - Retrieving the files of an given addon.
-## 
-## Docs for the official API are available at https://docs.curseforge.com.
-## Requests to the proxy stay the same, except the base URL is switched out.
+## uses the cfcache to reduce the number of requests sent to to the cfapi.
 
-import std/[asyncdispatch, json, options, sequtils, strutils, sugar, tables]
-import uri except Url
-import cfcore, http
+import std/[asyncdispatch, asyncfutures, options, sequtils, sugar, tables]
+import cfapi, cfcache, cfcore
+export CfApiError
 
 const
-  ## base url of the cfproxy endpoint
-  addonsBaseUrl = "https://cfproxy.bmpm.workers.dev"
-  ## base url of the curse metadata api endpoint
-  ## used for retrieving mods by their slug, which isn't possible with the curse api
-  addonsSlugBaseUrl = "https://curse.nikky.moe/graphql"
-
-type
-  CfClientError* = object of HttpRequestError
+  chunkSize = 10 ## how many ids a request should be chunked to.
 
 proc sortTo[T, X](s: seq[T], x: seq[X], pred: proc (x: T): X): seq[T] =
   ## sort `s` so that the order of its items matches `x`.
   ## `pred` should be a function that returns a unique value to which `s` is sorted.
   assert s.len == x.len
 
+  result = newSeq[T]()
   var table = initTable[X, T]()
   for sItem in s:
     table[pred(sItem)] = sItem
   for xItem in x:
     result.add(table[xItem])
 
+proc flatten[T](s: seq[seq[T]]): seq[T] =
+  ## flatten `s`.
+  result = newSeq[T]()
+  for arr in s:
+    result = result.concat arr
+
 proc fetchAddonsByQuery*(query: string, category: Option[CfAddonGameCategory]): Future[seq[CfAddon]] {.async.} =
   ## retrieves all addons that match the given `query` search and `category`.
-  let encodedQuery = encodeUrl(query, usePlus = false)
-  var url = addonsBaseUrl & "/v1/mods/search?gameId=432&pageSize=50&sortField=6&sortOrder=desc&searchFilter=" & encodedQuery
-  if category.isSome:
-    url = url & "&classId=" & $ord(category.get())
-  return get(url.Url).await.parseJson["data"].addonsFromForgeSvc
+  let data = await cfapi.fetchAddonsByQuery(query, category)
+  cfcache.putAddons(data)
+  return data.addonsFromForgeSvc
 
 proc fetchAddonsByQuery*(query: string, category: CfAddonGameCategory): Future[seq[CfAddon]] =
   ## retrieves all addons that match the given `query` search and `category`.
@@ -49,77 +41,128 @@ proc fetchAddonsByQuery*(query: string): Future[seq[CfAddon]] =
   ## retrieves all addons that match the given `query` search.
   return fetchAddonsByQuery(query, category = none[CfAddonGameCategory]())
 
-proc fetchAddon*(projectId: int): Future[CfAddon] {.async.} =
+proc fetchAddon(projectId: int, lookupCache: bool): Future[CfAddon] {.async.} =
   ## get the addon with the given `projectId`.
-  let url = addonsBaseUrl & "/v1/mods/" & $projectId
+  if lookupCache:
+    withCachedAddon(addon, projectId):
+      return addon.addonFromForgeSvc
+  let data = await cfapi.fetchAddon(projectId)
+  cfcache.putAddon(data)
+  return data.addonFromForgeSvc
+
+proc fetchAddon*(projectId: int): Future[CfAddon] =
+  ## get the addon with the given `projectId`.
+  return fetchAddon(projectId, lookupCache = true)
+
+proc fetchAddonsChunks(projectIds: seq[int]): Future[seq[CfAddon]] {.async.} =
+  ## get all addons with their given `projectId`.
+  if projectIds.len == 0:
+    return @[]
   try:
-    return get(url.Url).await.parseJson["data"].addonFromForgeSvc
-  except HttpRequestError:
-    raise newException(CfClientError, "addon with project id '" & $projectId & "' not found.")
+    let data = await cfapi.fetchAddons(projectIds)
+    cfcache.putAddons(data)
+    return data.addonsFromForgeSvc
+  except CfApiError:
+    # fallback to looking up the ids individually
+    return await all(projectIds.map((x) => fetchAddon(x, lookupCache = false)))
 
 proc fetchAddons*(projectIds: seq[int], chunk = true): Future[seq[CfAddon]] {.async.} =
   ## get all addons with their given `projectId`.
   ## 
   ## chunks the projectIds to minimize request size and to pinpoint errors better.
-  if projectIds.len > 10 and chunk:
+
+  # load all addons already in cache
+  result = newSeq[CfAddon]()
+  var missingIds = newSeq[int]()
+  for projectId in projectIds:
+    let addon = getAddon(projectId)
+    if addon.isSome:
+      result.add addon.get()
+    else:
+      missingIds.add projectId
+
+  if chunk and missingIds.len > chunkSize:
+    # if chunking is enabled, chunk the missing ids and fetch the chunks individually
     let futures: seq[Future[seq[CfAddon]]] = collect:
-      for chunkedIds in projectIds.distribute(int(projectIds.len / 10), spread = true):
-        fetchAddons(chunkedIds, chunk = false)
+      for chunkedIds in missingIds.distribute(int(missingIds.len / chunkSize), spread = true):
+        fetchAddonsChunks(chunkedIds)
     let addons: seq[seq[CfAddon]] = await all(futures)
-    return collect:
-      for addonSeq in addons:
-        for addon in addonSeq:
-          addon
-  else:
-    let url = addonsBaseUrl & "/v1/mods/"
-    let body = %* { "modIds": projectIds }
-    try:
-      let addons = post(url.Url, $body).await.parseJson["data"].addonsFromForgeSvc
-      if addons.len != projectIds.len:
-        raise newException(CfClientError, "one of the addons of project ids '" & $projectIds & "' was not found.")
-      return addons.sortTo(projectIds, (x) => x.projectId)
-    except HttpRequestError:
-      let futures: seq[Future[CfAddon]] = collect:
-        for projectId in projectIds:
-          fetchAddon(projectId)
-      return await all(futures)
+    result = result.concat(addons.flatten())
+  elif missingIds.len > 0:
+    # otherwise just fetch them
+    result = result.concat(await fetchAddonsChunks(missingIds))
+
+  # check that all addons have been retrieved & fetch missing ones
+  if projectIds.len != result.len:
+    let currentIds = result.map((x) => x.projectId)
+    let missingIds = projectIds.filter((x) => x notin currentIds)
+    result = result.concat(await all(missingIds.map((x) => fetchAddon(x, lookupCache = false))))
+  # sort so the output is deterministic
+  result = result.sortTo(projectIds, (x) => x.projectId)
 
 proc fetchAddon*(slug: string): Future[CfAddon] {.async.} =
   ## get the addon matching the `slug`.
-  let reqBody = %* {
-    "query": "{ addons(slug: \"" & slug & "\") { id }}"
-  }
-  let curseProxyInfo = await post(addonsSlugBaseUrl.Url, body = $reqBody)
-  let addons = curseProxyInfo.parseJson["data"]["addons"]
-  if addons.len == 0:
-    raise newException(CfClientError, "addon with slug '" & slug & "' not found")
-  let projectId = addons[0]["id"].getInt()
-  return await fetchAddon(projectId)
+  let data = await cfapi.fetchAddon(slug)
+  cfcache.putAddon(data)
+  return data.addonFromForgeSvc
 
 proc fetchAddonFiles*(projectId: int): Future[seq[CfAddonFile]] {.async.} =
   ## get all addon files associated with the given `projectId`.
-  let url = addonsBaseUrl & "/v1/mods/" & $projectId & "/files?pageSize=10000"
-  try:
-    return get(url.Url).await.parseJson["data"].addonFilesFromForgeSvc
-  except HttpRequestError:
-    raise newException(CfClientError, "addon with project id '" & $projectId & "' not found.")
+  let data = await cfapi.fetchAddonFiles(projectId)
+  cfcache.putAddonFiles(data)
+  return data.addonFilesFromForgeSvc
 
-proc fetchAddonFiles*(fileIds: seq[int]): Future[seq[CfAddonFile]] {.async.} =
-  ## get all addon files with their given `fileIds`.
-  let url = addonsBaseUrl & "/v1/mods/files"
-  let body = %* { "fileIds": fileIds }
+proc fetchAddonFilesChunks(fileIds: seq[int], fallback = true): Future[seq[CfAddonFile]] {.async.} =
+  ## get all addons with their given `projectId`.
+  if fileIds.len == 0:
+    return @[]
   try:
-    let addonFiles = post(url.Url, $body).await.parseJson["data"].addonFilesFromForgeSvc
-    if addonFiles.len != fileIds.len:
-      raise newException(CfClientError, "one of the addon files of file ids '" & $fileIds & "' was not found.")
-    return addonFiles.sortTo(fileIds, (x) => x.fileId)
-  except HttpRequestError:
-    raise newException(CfClientError, "one of the addon files of file ids '" & $fileIds & "' was not found.")
+    let data = await cfapi.fetchAddonFiles(fileIds)
+    cfcache.putAddonFiles(data)
+    return data.addonFilesFromForgeSvc
+  except CfApiError:
+    # fallback to looking up the ids individually
+    if fallback:
+      return all(fileIds.map((x) => fetchAddonFilesChunks(@[x], fallback = false))).await.flatten()
+    raise
+
+proc fetchAddonFiles*(fileIds: seq[int], chunk = true): Future[seq[CfAddonFile]] {.async.} =
+  ## get all addon files with their given `fileIds`.
+  
+  # load all files already in cache
+  result = newSeq[CfAddonFile]()
+  var missingIds = newSeq[int]()
+  for fileId in fileIds:
+    let addonFile = getAddonFile(fileId)
+    if addonFile.isSome:
+      result.add addonFile.get()
+    else:
+      missingIds.add fileId
+
+  if chunk and missingIds.len > chunkSize:
+    # if chunking is enabled, chunk the missing ids and fetch the chunks individually
+    let futures: seq[Future[seq[CfAddonFile]]] = collect:
+      for chunkedIds in missingIds.distribute(int(missingIds.len / chunkSize), spread = true):
+        fetchAddonFilesChunks(chunkedIds)
+    let addons: seq[seq[CfAddonFile]] = await all(futures)
+    result = result.concat(addons.flatten())
+  elif missingIds.len > 0:
+    # otherwise just fetch them
+    result = result.concat(await fetchAddonFilesChunks(missingIds))
+
+  # check that all addons have been retrieved & fetch missing ones
+  if fileIds.len != result.len:
+    let currentIds = result.map((x) => x.fileId)
+    let missingIds = fileIds.filter((x) => x notin currentIds)
+    result = result.concat(all(missingIds.map((x) => fetchAddonFilesChunks(@[x], fallback = false))).await.flatten())
+  # sort so the output is deterministic
+  result = result.sortTo(fileIds, (x) => x.fileId)
 
 proc fetchAddonFile*(projectId: int, fileId: int): Future[CfAddonFile] {.async.} =
   ## get the addon file with the given `fileId` & `projectId`.
-  let url = addonsBaseUrl & "/v1/mods/" & $projectId & "/files/" & $fileId
-  try:
-    return get(url.Url).await.parseJson["data"].addonFileFromForgeSvc
-  except HttpRequestError:
-    raise newException(CfClientError, "addon with project & file id  '" & $projectId & ':' & $fileId & "' not found.")
+  withCachedAddonFile(addonFile, fileId):
+    return addonFile.addonFileFromForgeSvc
+
+  let data = await cfapi.fetchAddonFile(projectId, fileId)
+  cfcache.putAddonFile(data)
+  return data.addonFileFromForgeSvc
