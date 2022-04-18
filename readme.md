@@ -67,7 +67,7 @@ You'll need:
 * A C compiler (depending on your operating system, one might be already installed)
 
 Clone and `cd` into the repository - and you're good to go!\
-Run `nimble buildDev` to build the application for development, or run `nimble buildProd` to create an optimized release build.\
+Run `nimble build` to build the application for development, or run `nimble build -d:release` to create an optimized release build.\
 Execute the program with `./pax` (on Linux) or `pax.exe` (on Windows).
 
 
