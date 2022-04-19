@@ -31,7 +31,7 @@ proc fetchAddonsByQuery*(query: string, category: Option[CfAddonGameCategory]): 
   ## retrieves all addons that match the given `query` search and `category`.
   let data = await cfapi.fetchAddonsByQuery(query, category)
   cfcache.putAddons(data)
-  return data.addonsFromForgeSvc
+  return data
 
 proc fetchAddonsByQuery*(query: string, category: CfAddonGameCategory): Future[seq[CfAddon]] =
   ## retrieves all addons that match the given `query` search and `category`.
@@ -45,10 +45,10 @@ proc fetchAddon(projectId: int, lookupCache: bool): Future[CfAddon] {.async.} =
   ## get the addon with the given `projectId`.
   if lookupCache:
     withCachedAddon(addon, projectId):
-      return addon.addonFromForgeSvc
+      return addon
   let data = await cfapi.fetchAddon(projectId)
   cfcache.putAddon(data)
-  return data.addonFromForgeSvc
+  return data
 
 proc fetchAddon*(projectId: int): Future[CfAddon] =
   ## get the addon with the given `projectId`.
@@ -61,7 +61,7 @@ proc fetchAddonsChunks(projectIds: seq[int]): Future[seq[CfAddon]] {.async.} =
   try:
     let data = await cfapi.fetchAddons(projectIds)
     cfcache.putAddons(data)
-    return data.addonsFromForgeSvc
+    return data
   except CfApiError:
     # fallback to looking up the ids individually
     return await all(projectIds.map((x) => fetchAddon(x, lookupCache = false)))
@@ -104,13 +104,13 @@ proc fetchAddon*(slug: string): Future[CfAddon] {.async.} =
   ## get the addon matching the `slug`.
   let data = await cfapi.fetchAddon(slug)
   cfcache.putAddon(data)
-  return data.addonFromForgeSvc
+  return data
 
 proc fetchAddonFiles*(projectId: int): Future[seq[CfAddonFile]] {.async.} =
   ## get all addon files associated with the given `projectId`.
   let data = await cfapi.fetchAddonFiles(projectId)
   cfcache.putAddonFiles(data)
-  return data.addonFilesFromForgeSvc
+  return data
 
 proc fetchAddonFilesChunks(fileIds: seq[int], fallback = true): Future[seq[CfAddonFile]] {.async.} =
   ## get all addons with their given `projectId`.
@@ -119,7 +119,7 @@ proc fetchAddonFilesChunks(fileIds: seq[int], fallback = true): Future[seq[CfAdd
   try:
     let data = await cfapi.fetchAddonFiles(fileIds)
     cfcache.putAddonFiles(data)
-    return data.addonFilesFromForgeSvc
+    return data
   except CfApiError as e:
     # fallback to looking up the ids individually
     if fallback:
@@ -161,8 +161,8 @@ proc fetchAddonFiles*(fileIds: seq[int], chunk = true): Future[seq[CfAddonFile]]
 proc fetchAddonFile*(projectId: int, fileId: int): Future[CfAddonFile] {.async.} =
   ## get the addon file with the given `fileId` & `projectId`.
   withCachedAddonFile(addonFile, fileId):
-    return addonFile.addonFileFromForgeSvc
+    return addonFile
 
   let data = await cfapi.fetchAddonFile(projectId, fileId)
   cfcache.putAddonFile(data)
-  return data.addonFileFromForgeSvc
+  return data
