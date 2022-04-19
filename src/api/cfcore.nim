@@ -62,6 +62,20 @@ converter addonFilesFromForgeSvc*(json: JsonNode): seq[CfAddonFile] =
   ## creates addon files from json retrieved by an forgesvc endpoint
   return json.getElems().map(addonFileFromForgeSvc)
 
+converter toJson*(file: CfAddonFile): JsonNode =
+  ## creates json from an addon file
+  result = %* {
+    "id": file.fileId,
+    "displayName": file.name,
+    "releaseType": file.releaseType.ord,
+    "downloadUrl": file.downloadUrl,
+    "gameVersions": file.gameVersions.map((x) => $x),
+    "dependencies": file.dependencies.map((x) => %* {
+      "relationType": RequiredDependencyType,
+      "modId": x
+    })
+  }
+
 converter addonFromForgeSvc*(json: JsonNode): CfAddon =
   ## creates an addon from json retrieved by an forgesvc endpoint
   result = CfAddon()
@@ -82,6 +96,26 @@ converter addonFromForgeSvc*(json: JsonNode): CfAddon =
 converter addonsFromForgeSvc*(json: JsonNode): seq[CfAddon] =
   ## creates addons from json retrieved by an forgesvc endpoint
   result = json.getElems().map(addonFromForgeSvc)
+
+converter toJson*(addon: CfAddon): JsonNode =
+  result = %* {
+    "id": addon.projectId,
+    "name": addon.name,
+    "summary": addon.description,
+    "links": {
+      "websiteUrl": addon.websiteUrl
+    },
+    "authors": addon.authors.map((x) => %* {
+      "name": x
+    }),
+    "downloadCount": addon.downloads,
+    "gamePopularityRank": addon.popularity,
+    "latestFiles": addon.latestFiles.map((x) => x.toJson()),
+    "latestFilesIndexes": addon.gameVersionLatestFiles.map((x) => %* {
+      "gameVersion": x.version.`$`,
+      "fileId": x.fileId
+    })
+  }
 
 proc isFabricCompatible*(file: CfAddonFile): bool =
   ## returns true if `file` is compatible with the fabric loader.
