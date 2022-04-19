@@ -1,6 +1,5 @@
 import std/os
 import therapist
-import api/cfcache
 import cmd/[add, cache, expo, impo, init, list, pin, remove, update, upgrade, version]
 import term/[color, prompt]
 import util/paxVersion
@@ -212,7 +211,7 @@ let spec = (
 )
 
 spec.parseOrHelp()
-createDir(cfcache.cacheDir)
+createDir(getCacheDir("pax"))
 
 # GLOBAL OPTIONS
 if commonArgs.yes.seen:
