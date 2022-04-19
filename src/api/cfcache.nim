@@ -9,17 +9,16 @@ import std/[json, options, os, times]
 import cfcore
 
 const
-  cacheDir* = getCacheDir("pax") ## the cache folder
   addonCacheTime = 30.minutes ## how long an addon is cached
   addonFileCacheTime = 1.days ## how long an addon file is cached
 
 proc getAddonFilename*(projectId: int): string {.inline.} =
   ## get the filename of an addon in the cache.
-  return cacheDir / ("addon:" & $projectId)
+  return getCacheDir("pax") / ("addon:" & $projectId)
 
 proc getAddonFileFilename*(fileId: int): string {.inline.} =
   ## get the filename of an addon file in the cache.
-  return cacheDir / ("file:" & $fileId)
+  return getCacheDir("pax") / ("file:" & $fileId)
 
 proc putAddon*(addon: CfAddon): void =
   ## put an addon in the cache.
@@ -79,7 +78,7 @@ proc clean*(): int =
   ## remove old files from the cache.
   ## returns the number of files cleared.
   result = 0
-  for filename in walkFiles(cacheDir / "addon:*"):
+  for filename in walkFiles(getCacheDir("pax") / "addon:*"):
     let info = getFileInfo(filename)
     if info.lastWriteTime + addonCacheTime < getTime():
       try:
@@ -87,7 +86,7 @@ proc clean*(): int =
         inc(result)
       except IOError:
         discard
-  for filename in walkFiles(cacheDir / "file:*"):
+  for filename in walkFiles(getCacheDir("pax") / "file:*"):
     let info = getFileInfo(filename)
     if info.lastWriteTime + addonFileCacheTime < getTime():
       try:
@@ -99,8 +98,8 @@ proc clean*(): int =
 proc purge*(): void =
   ## remove all files from the cache.
   try:
-    removeDir(cacheDir)
-    createDir(cacheDir)
+    removeDir(getCacheDir("pax"))
+    createDir(getCacheDir("pax"))
   except IOError:
     discard
 
