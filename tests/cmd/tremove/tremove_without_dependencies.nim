@@ -1,5 +1,5 @@
 discard """
-    joinable: false
+  joinable: false
   batchable: false
   input: '''
 y
@@ -27,16 +27,6 @@ let manifestJson = %* {
   "name": "testmodpack123",
   "files": [
     {
-      "projectID": 60089,
-      "fileID": 3202662,
-      "required": true,
-      "__meta": {
-        "name": "Mouse Tweaks",
-        "explicit": true,
-        "dependencies": []
-      }
-    },
-    {
       "projectID": 238222,
       "fileID": 3383205,
       "required": true,
@@ -44,18 +34,6 @@ let manifestJson = %* {
         "name": "Just Enough Items (JEI)",
         "explicit": true,
         "dependencies": []
-      }
-    },
-    {
-      "projectID": 240630,
-      "fileID": 3336760,
-      "required": true,
-      "__meta": {
-        "name": "Just Enough Resources (JER)",
-        "explicit": true,
-        "dependencies": [
-          238222
-        ]
       }
     },
     {
@@ -88,11 +66,9 @@ block:
 
   createDir("./modpack")
   writeFile("./modpack/manifest.json", manifestJson.pretty)
-  paxRemove("mouse", strategy = "recommended")
+  paxRemove("jei", strategy = "recommended")
 
   let manifest = readFile("./modpack/manifest.json").parseJson
-  doAssert manifest["files"].getElems().len == 4
-  doAssert manifest["files"][0]["__meta"]["name"].getStr() == "Just Enough Items (JEI)"
-  doAssert manifest["files"][1]["__meta"]["name"].getStr() == "Just Enough Resources (JER)"
-  doAssert manifest["files"][2]["__meta"]["name"].getStr() == "Quark"
-  doAssert manifest["files"][3]["__meta"]["name"].getStr() == "AutoRegLib"
+  doAssert manifest["files"].getElems().len == 2
+  doAssert manifest["files"][0]["__meta"]["name"].getStr() == "Quark"
+  doAssert manifest["files"][1]["__meta"]["name"].getStr() == "AutoRegLib"
