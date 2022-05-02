@@ -15,9 +15,6 @@ import cfcore, http
 const
   ## base url of the cfproxy endpoint
   addonsBaseUrl = "https://cfproxy.bmpm.workers.dev"
-  ## base url of the curse metadata api endpoint
-  ## used for retrieving mods by their slug, which isn't possible with the curse api
-  addonsSlugBaseUrl = "https://curse.nikky.moe/graphql"
 
 type
   CfApiError* = object of HttpRequestError
@@ -52,15 +49,13 @@ proc fetchAddons*(projectIds: seq[int]): Future[seq[CfAddon]] {.async.} =
 
 proc fetchAddon*(slug: string): Future[CfAddon] {.async.} =
   ## get the addon matching the `slug`.
-  let reqBody = %* {
-    "query": "{ addons(slug: \"" & slug & "\") { id }}"
-  }
-  let curseProxyInfo = await post(addonsSlugBaseUrl.Url, body = $reqBody)
-  let addons = curseProxyInfo.parseJson["data"]["addons"]
-  if addons.len == 0:
-    raise newException(CfApiError, "addon with slug '" & slug & "' not found")
-  let projectId = addons[0]["id"].getInt()
-  return await fetchAddon(projectId)
+  let url = addonsBaseUrl & "/v1/mods/search?gameId=432&pageSize=50&sortField=6&sortOrder=desc&slug=" & slug
+  try:
+    return get(url.Url).await.parseJson["data"][0].addonFromForgeSvc
+  except HttpRequestError:
+    raise newException(CfApiError, "addon with slug '" & $slug & "' not found.")
+  except IndexDefect:
+    raise newException(CfApiError, "addon with slug '" & $slug & "' not found. Please add the addon using the project id instead.")
 
 proc fetchAddonFiles*(projectId: int): Future[seq[CfAddonFile]] {.async.} =
   ## get all addon files associated with the given `projectId`.
