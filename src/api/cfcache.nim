@@ -14,11 +14,11 @@ const
 
 proc getAddonFilename*(projectId: int): string {.inline.} =
   ## get the filename of an addon in the cache.
-  return getCacheDir("pax") / ("addon:" & $projectId)
+  return getCacheDir("pax") / ("addon-" & $projectId)
 
 proc getAddonFileFilename*(fileId: int): string {.inline.} =
   ## get the filename of an addon file in the cache.
-  return getCacheDir("pax") / ("file:" & $fileId)
+  return getCacheDir("pax") / ("file-" & $fileId)
 
 proc putAddon*(addon: CfAddon): void =
   ## put an addon in the cache.
