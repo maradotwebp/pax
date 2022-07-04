@@ -30,7 +30,7 @@ proc paxPin*(name: string): void =
     echoInfo "Unpinning ", mcMod.name.fgCyan, ".."
   else:
     returnIfNot promptYN("Pin this mod to the current version?", default = true)
-    echoInfo "Removing ", mcMod.name.fgCyan, ".."
+    echoInfo "Pinning ", mcMod.name.fgCyan, ".."
   
   manifestFile.metadata.pinned = not manifestFile.metadata.pinned
   updateAddon(manifest, manifestFile)

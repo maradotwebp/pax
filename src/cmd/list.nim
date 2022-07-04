@@ -1,6 +1,6 @@
 import std/[algorithm, asyncdispatch, sequtils, strutils, os, sugar]
 import common
-import ../api/[cfclient, cfcore]
+import ../api/[cfcache, cfclient, cfcore]
 import ../modpack/[manifest, modinfo]
 import ../term/log
 
@@ -12,6 +12,8 @@ proc paxList*(status: bool, info: bool): void =
   let manifest = readManifestFromDisk()
 
   let fileCount = manifest.files.len
+  if fileCount > 100 and isEmpty():
+    echoWarn "The cache is being built - this will take a while.."
   let mcMods: Future[seq[CfAddon]] = manifest.files.map((x) => x.projectId).fetchAddons
   let mcModFiles: Future[seq[CfAddonFile]] = manifest.files.map((x) => x.fileId).fetchAddonFiles
 

@@ -103,6 +103,13 @@ proc purge*(): void =
   except IOError:
     discard
 
+proc isEmpty*(): bool =
+  ## returns true if no addons & files are in cache.
+  for _ in walkDir(getCacheDir("pax")):
+    return false
+  return true
+  
+
 template withCachedAddon*(c: untyped, projectId: int, body: untyped) =
   ## do something with a cached addon.
   let addon = getAddon(projectId)
