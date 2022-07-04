@@ -113,7 +113,7 @@ proc fetchAddonFiles*(projectId: int): Future[seq[CfAddonFile]] {.async.} =
   return data
 
 proc fetchAddonFilesChunks(fileIds: seq[int], fallback = true): Future[seq[CfAddonFile]] {.async.} =
-  ## get all addons with their given `projectId`.
+  ## get all addons with their given `fileIds`.
   if fileIds.len == 0:
     return @[]
   try:
@@ -123,7 +123,7 @@ proc fetchAddonFilesChunks(fileIds: seq[int], fallback = true): Future[seq[CfAdd
   except CfApiError as e:
     # fallback to looking up the ids individually
     if fallback:
-      return all(fileIds.map((x) => fetchAddonFilesChunks(@[x], fallback = false))).await.flatten()
+      return all(fileIds.map((x) => fetchAddonFilesChunks(@[x], fallback = true))).await.flatten()
     raise newException(CfApiError, e.msg)
 
 proc fetchAddonFiles*(fileIds: seq[int], chunk = true): Future[seq[CfAddonFile]] {.async.} =
