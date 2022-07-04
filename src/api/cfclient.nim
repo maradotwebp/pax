@@ -8,6 +8,7 @@ export CfApiError
 
 const
   chunkSize = 10 ## how many ids a request should be chunked to.
+  retries = 10 ## how often batch requests are retried until they succeed
 
 proc sortTo[T, X](s: seq[T], x: seq[X], pred: proc (x: T): X): seq[T] =
   ## sort `s` so that the order of its items matches `x`.
@@ -112,7 +113,7 @@ proc fetchAddonFiles*(projectId: int): Future[seq[CfAddonFile]] {.async.} =
   cfcache.putAddonFiles(data)
   return data
 
-proc fetchAddonFilesChunks(fileIds: seq[int], fallback = true): Future[seq[CfAddonFile]] {.async.} =
+proc fetchAddonFilesChunks(fileIds: seq[int], tries = 1): Future[seq[CfAddonFile]] {.async.} =
   ## get all addons with their given `fileIds`.
   if fileIds.len == 0:
     return @[]
@@ -122,8 +123,8 @@ proc fetchAddonFilesChunks(fileIds: seq[int], fallback = true): Future[seq[CfAdd
     return data
   except CfApiError as e:
     # fallback to looking up the ids individually
-    if fallback:
-      return all(fileIds.map((x) => fetchAddonFilesChunks(@[x], fallback = true))).await.flatten()
+    if tries < retries:
+      return all(fileIds.map((x) => fetchAddonFilesChunks(@[x], tries = tries + 1))).await.flatten()
     raise newException(CfApiError, e.msg)
 
 proc fetchAddonFiles*(fileIds: seq[int], chunk = true): Future[seq[CfAddonFile]] {.async.} =
@@ -154,7 +155,7 @@ proc fetchAddonFiles*(fileIds: seq[int], chunk = true): Future[seq[CfAddonFile]]
   if fileIds.len != result.len:
     let currentIds = result.map((x) => x.fileId)
     let missingIds = fileIds.filter((x) => x notin currentIds)
-    result = result.concat(all(missingIds.map((x) => fetchAddonFilesChunks(@[x], fallback = false))).await.flatten())
+    result = result.concat(all(missingIds.map((x) => fetchAddonFilesChunks(@[x]))).await.flatten())
   # sort so the output is deterministic
   result = result.sortTo(fileIds, (x) => x.fileId)
 
