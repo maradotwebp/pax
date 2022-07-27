@@ -50,4 +50,4 @@ proc `<=`*(v1: Version, v2: Version): bool = v1 < v2 or v1 == v2
 
 proc proper*(v: seq[Version]): seq[Version] =
   ## filter out "Forge" and "Fabric" values
-  return v.filter((x) => x != "Forge".Version and x != "Fabric".Version)
+  return v.filter((x) => x != "Forge".Version and x != "Fabric".Version and x != "Quilt".Version)
