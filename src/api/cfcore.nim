@@ -127,9 +127,9 @@ proc isFabricCompatible*(file: CfAddonFile): bool =
 
 proc isForgeCompatible*(file: CfAddonFile): bool =
   ## returns true if `file` is compatible with the forge loader.
-  if file.name.toLower.match(re".*\Wfabric\W.*"):
+  if file.name.toLower.match(re".*\Wquilt\W.*") or file.name.toLower.match(re".*\Wfabric\W.*"):
     return false
-  if not ("Fabric".Version in file.gameVersions and not ("Forge".Version in file.gameVersions)):
+  if "Forge".Version in file.gameVersions or not ("Fabric".Version in file.gameVersions or "Quilt".Version in file.gameVersions):
     return true
   if file.name.toLower.match(re".*\Wforge\W.*"):
     return true

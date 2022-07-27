@@ -236,3 +236,14 @@ block: # select out of mixed mods
   doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Stable) == mods[0]
   doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Recommended) == mods[0]
   doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Newest) == mods[0]
+
+block: # prevent quilt mods from being selected for forge
+  let loader = Loader.Forge
+  let mcVersion = "1.16.1".Version
+  let mods = @[
+    initCfAddonFile(801, "abc-1.3.2.jar", @["Quilt", "1.16.1", "1.16.2"], CfAddonFileReleaseType.Release),
+    initCfAddonFile(701, "abc-1.3.2.jar", @["Fabric", "1.16.1", "1.16.2"], CfAddonFileReleaseType.Release),
+    initCfAddonFile(601, "abc-1.2.2.jar", @["Forge", "1.16", "1.16.1"], CfAddonFileReleaseType.Alpha),
+  ]
+
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Stable) == mods[2]
