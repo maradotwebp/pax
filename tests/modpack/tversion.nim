@@ -26,6 +26,6 @@ block: # `minor` function
   doAssert "1.13-Snapshot".Version.minor == "1.13".Version
 
 block: # `proper` function
-  doAssert @["1.16.4".Version, "Fabric".Version, "Forge".Version].proper == @["1.16.4".Version]
+  doAssert @["1.16.4".Version, "Fabric".Version, "Forge".Version, "Quilt".Version].proper == @["1.16.4".Version]
   doAssert @["Forge".Version, "1.12-Snapshot".Version].proper == @["1.12-Snapshot".Version]
 

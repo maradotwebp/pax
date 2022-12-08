@@ -145,6 +145,70 @@ block: # select out of implied fabric mods
   doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Recommended) == mods[0]
   doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Newest) == mods[0]
 
+block: # select out of specified quilt mods
+  let loader = Loader.Quilt
+  var mcVersion: Version
+  let mods = @[
+    initCfAddonFile(301, "rei-1.0.2.jar", @["1.14.1", "1.14.4", "Quilt"], CfAddonFileReleaseType.Release),
+    initCfAddonFile(201, "rei-1.0.1.jar", @["1.14", "1.14.1", "Quilt"], CfAddonFileReleaseType.Release),
+    initCfAddonFile(101, "rei-1.0.0.jar", @["1.14", "Quilt"], CfAddonFileReleaseType.Beta)
+  ]
+
+  mcVersion = "1.12".Version
+  doAssertRaises(PaxInstallError):
+    discard mods.selectAddonFile(loader, mcVersion, InstallStrategy.Stable)
+  doAssertRaises(PaxInstallError):
+    discard mods.selectAddonFile(loader, mcVersion, InstallStrategy.Recommended)
+  doAssertRaises(PaxInstallError):
+    discard mods.selectAddonFile(loader, mcVersion, InstallStrategy.Newest)
+
+  mcVersion = "1.14".Version
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Stable) == mods[1]
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Recommended) == mods[1]
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Newest) == mods[0]
+
+  mcVersion = "1.14.1".Version
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Stable) == mods[0]
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Recommended) == mods[0]
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Newest) == mods[0]
+
+  mcVersion = "1.14.4".Version
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Stable) == mods[0]
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Recommended) == mods[0]
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Newest) == mods[0]
+
+block: # select out of implied quilt mods
+  let loader = Loader.Quilt
+  var mcVersion: Version
+  let mods = @[
+    initCfAddonFile(301, "rei-1.0.2-quilt.jar", @["1.14.1", "1.14.4"], CfAddonFileReleaseType.Alpha),
+    initCfAddonFile(201, "rei-1.0.1-fabric.jar", @["1.14", "1.14.1"], CfAddonFileReleaseType.Beta),
+    initCfAddonFile(101, "rei-1.0.0-fabric.jar", @["1.14", "Fabric", "Quilt"], CfAddonFileReleaseType.Release)
+  ]
+
+  mcVersion = "1.12".Version
+  doAssertRaises(PaxInstallError):
+    discard mods.selectAddonFile(loader, mcVersion, InstallStrategy.Stable)
+  doAssertRaises(PaxInstallError):
+    discard mods.selectAddonFile(loader, mcVersion, InstallStrategy.Recommended)
+  doAssertRaises(PaxInstallError):
+    discard mods.selectAddonFile(loader, mcVersion, InstallStrategy.Newest)
+
+  mcVersion = "1.14".Version
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Stable) == mods[2]
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Recommended) == mods[1]
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Newest) == mods[0]
+
+  mcVersion = "1.14.1".Version
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Stable) == mods[0]
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Recommended) == mods[0]
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Newest) == mods[0]
+
+  mcVersion = "1.14.4".Version
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Stable) == mods[0]
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Recommended) == mods[0]
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Newest) == mods[0]
+
 block: # select out of mixed mods
   var loader: Loader
   var mcVersion: Version
@@ -152,7 +216,7 @@ block: # select out of mixed mods
     initCfAddonFile(801, "abc-1.3.2-fabric.jar", @["1.16.1", "1.16.2"], CfAddonFileReleaseType.Release),
     initCfAddonFile(701, "abc-1.3.2-FORGE.jar", @["1.16.1", "1.16.2"], CfAddonFileReleaseType.Release),
     initCfAddonFile(601, "abc-1.2.2.jar", @["1.16", "1.16.1", "Forge"], CfAddonFileReleaseType.Alpha),
-    initCfAddonFile(501, "abc-1.2.1.jar", @["1.16.1", "Fabric"], CfAddonFileReleaseType.Alpha),
+    initCfAddonFile(501, "abc-1.2.1.jar", @["1.16.1", "Fabric", "Quilt"], CfAddonFileReleaseType.Alpha),
     initCfAddonFile(401, "abc-1.2.1.jar", @["1.16", "1.16.1", "Forge"], CfAddonFileReleaseType.Release),
     initCfAddonFile(301, "abc-1.2.0-FABRIC.jar", @["1.16"], CfAddonFileReleaseType.Release),
     initCfAddonFile(201, "abc-1.0.1.jar", @["1.14.4"], CfAddonFileReleaseType.Beta),
@@ -197,6 +261,48 @@ block: # select out of mixed mods
 
   # Set loader to forge
   loader = Loader.Fabric
+
+  mcVersion = "1.12".Version
+  doAssertRaises(PaxInstallError):
+    discard mods.selectAddonFile(loader, mcVersion, InstallStrategy.Stable)
+  doAssertRaises(PaxInstallError):
+    discard mods.selectAddonFile(loader, mcVersion, InstallStrategy.Recommended)
+  doAssertRaises(PaxInstallError):
+    discard mods.selectAddonFile(loader, mcVersion, InstallStrategy.Newest)
+
+  mcVersion = "1.14".Version
+  doAssertRaises(PaxInstallError):
+    discard mods.selectAddonFile(loader, mcVersion, InstallStrategy.Stable)
+  doAssertRaises(PaxInstallError):
+    discard mods.selectAddonFile(loader, mcVersion, InstallStrategy.Recommended)
+  doAssertRaises(PaxInstallError):
+    discard mods.selectAddonFile(loader, mcVersion, InstallStrategy.Newest)
+
+  mcVersion = "1.14.1".Version
+  doAssertRaises(PaxInstallError):
+    discard mods.selectAddonFile(loader, mcVersion, InstallStrategy.Stable)
+  doAssertRaises(PaxInstallError):
+    discard mods.selectAddonFile(loader, mcVersion, InstallStrategy.Recommended)
+  doAssertRaises(PaxInstallError):
+    discard mods.selectAddonFile(loader, mcVersion, InstallStrategy.Newest)
+
+  mcVersion = "1.16".Version
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Stable) == mods[5]
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Recommended) == mods[5]
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Newest) == mods[0]
+
+  mcVersion = "1.16.1".Version
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Stable) == mods[0]
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Recommended) == mods[0]
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Newest) == mods[0]
+
+  mcVersion = "1.16.2".Version
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Stable) == mods[0]
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Recommended) == mods[0]
+  doAssert mods.selectAddonFile(loader, mcVersion, InstallStrategy.Newest) == mods[0]
+
+  # Set loader to quilt
+  loader = Loader.Quilt
 
   mcVersion = "1.12".Version
   doAssertRaises(PaxInstallError):
