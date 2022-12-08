@@ -43,10 +43,11 @@ proc selectAddonFile*(files: seq[CfAddonFile], mpLoader: Loader, mpMcVersion: Ve
     if result.isNil or result.fileId < file.fileId:
       let onFabric = mpLoader == Loader.Fabric and file.isFabricCompatible
       let onForge = mpLoader == Loader.Forge and file.isForgeCompatible
+      let onQuilt = mpLoader == Loader.Quilt and file.isQuiltCompatible
       let onStable = strategy == InstallStrategy.Stable and file.isStable(mpMcVersion)
       let onRecommended = strategy == InstallStrategy.Recommended and file.isRecommended(mpMcVersion)
       let onNewest = strategy == InstallStrategy.Newest and file.isNewest(mpMcVersion)
-      if onFabric or onForge:
+      if onFabric or onForge or onQuilt:
         if onStable or onRecommended or onNewest:
           result = file
   

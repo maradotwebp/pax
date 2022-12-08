@@ -135,8 +135,12 @@ converter toJson*(manifest: Manifest): JsonNode =
   }
 
 proc loader*(manifest: Manifest): Loader =
-  ## returns the loader from the manifest (either Fabric or Forge)
-  return manifest.mcModloaderId.toLoader
+  ## returns the loader from the manifest (either Fabric, Forge or Quilt)
+  let loader = manifest.mcModloaderId.toLoader
+  # Quilt uses the Forge loader and JumpQuilt, so handle that edge case
+  if loader == Loader.Forge and manifest.files.filter(f => f.projectId == 640265).len > 0:
+    return Loader.Quilt
+  return loader
 
 proc isInstalled*(manifest: Manifest, projectId: int): bool =
   ## returns true if the ManifestFile with the given `projectId` is installed

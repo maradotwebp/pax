@@ -125,6 +125,16 @@ proc isFabricCompatible*(file: CfAddonFile): bool =
     return true
   return false
 
+proc isQuiltCompatible*(file: CfAddonFile): bool =
+  ## returns true if `file` is compatible with the quilt loader.
+  if "Quilt".Version in file.gameVersions:
+    return true
+  if file.name.toLower.match(re".*\Wquilt\W.*"):
+    return true
+  if isFabricCompatible(file):
+    return true
+  return false
+
 proc isForgeCompatible*(file: CfAddonFile): bool =
   ## returns true if `file` is compatible with the forge loader.
   if file.name.toLower.match(re".*\Wquilt\W.*") or file.name.toLower.match(re".*\Wfabric\W.*"):

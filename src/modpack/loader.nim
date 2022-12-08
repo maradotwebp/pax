@@ -7,7 +7,7 @@ import std/[strformat, strutils]
 
 type
   Loader* = enum
-    Fabric, Forge
+    Fabric, Forge, Quilt
 
 converter toLoader*(str: string): Loader =
   ## cast a string to a Loader.
@@ -15,9 +15,11 @@ converter toLoader*(str: string): Loader =
   return
     if str.contains("forge"): Loader.Forge
     elif str.contains("fabric"): Loader.Fabric
+    elif str.contains("quilt"): Loader.Quilt
     else: raise newException(ValueError, fmt"'{str}' is not a loader")
 
 proc `$`*(loader: Loader): string =
   return case loader:
     of Loader.Forge: "forge"
     of Loader.Fabric: "fabric"
+    of Loader.Quilt: "quilt"

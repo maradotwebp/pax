@@ -4,7 +4,7 @@ import ../modpack/[manifest, loader, version]
 import ../term/log
 
 proc paxVersion*(version: string, loader: string, latest: bool): void =
-  ## change the minecraft version (and set the recommended fabric/forge version for it)
+  ## change the minecraft version (and set the recommended fabric/forge/quilt version for it)
   requirePaxProject()
 
   echoDebug "Loading data from manifest.."
