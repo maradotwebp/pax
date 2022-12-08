@@ -48,6 +48,7 @@ proc toModloaderId(loaderVersion: string, loader: Loader): string =
   ## get the modloader id fitting for the given loader version and loader
   return case loader:
     of Loader.Forge: "forge-" & loaderVersion.split("-")[1]
+    of Loader.Quilt: "forge-" & loaderVersion.split("-")[1]
     of Loader.Fabric: "fabric-" & loaderVersion
 
 proc getModloaderId*(mcVersion: Version, loader: Loader, latest: bool = false): Future[string] {.async.} =
@@ -55,4 +56,5 @@ proc getModloaderId*(mcVersion: Version, loader: Loader, latest: bool = false): 
   let loaderVersion = case loader:
     of Loader.Forge: await mcVersion.getForgeLoaderVersion(latest)
     of Loader.Fabric: mcVersion.getFabricLoaderVersion().await.toModloaderId(loader)
+    of Loader.Quilt: await mcVersion.getForgeLoaderVersion(latest)
   return loaderVersion

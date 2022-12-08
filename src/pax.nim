@@ -115,7 +115,7 @@ let versionCmd = (
     help = "Minecraft version"
   ),
   loader: newStringArg(@["-l", "--loader"],
-    choices = @["fabric", "forge"],
+    choices = @["fabric", "forge", "quilt"],
     help = "which loader to use"
   ),
   latest: newCountArg(@["--latest"],

@@ -1,6 +1,6 @@
 import std/[asyncdispatch, os, osproc]
-import ../api/metadata
-import ../modpack/[manifest, loader, version]
+import ../api/[cfclient, cfcore, metadata]
+import ../modpack/[manifest, install, loader, version]
 import ../term/[log, prompt]
 import ../util/flow
 
@@ -13,9 +13,26 @@ proc paxInitManifest(): void =
   manifest.version = prompt(indentPrefix & "Modpack version", default = "1.0.0")
   manifest.mcVersion = Version(prompt(indentPrefix & "Minecraft version", default = "1.16.5"))
 
-  let loader = prompt(indentPrefix & "Loader", choices = @["forge", "fabric"], default = "forge").toLoader
+  let loader = prompt(indentPrefix & "Loader", choices = @["forge", "fabric", "quilt"], default = "forge").toLoader
   manifest.mcModloaderId = waitFor(manifest.mcVersion.getModloaderId(loader))
   echoDebug "Installed ", $loader, " version ", manifest.mcModloaderId.fgGreen
+  if loader == Loader.Quilt:
+    let mcJumploaderMod = waitFor(fetchAddon(640265))
+    let mcJumploaderModFiles = waitFor(fetchAddonFiles(mcJumploaderMod.projectId))
+    let mcJumploaderModFile = mcJumploaderModFiles.selectAddonFile(loader, manifest.mcVersion, InstallStrategy.Recommended)
+    let jumploaderMod = initManifestFile(
+      projectId = mcJumploaderMod.projectId,
+      fileId = mcJumploaderModFile.fileId,
+      metadata = initManifestMetadata(
+        name = mcJumploaderMod.name,
+        explicit = true,
+        pinned = true,
+        dependencies = mcJumploaderModFile.dependencies
+      )
+    )
+    manifest.installAddon(jumploaderMod)
+    echoDebug "Installed Jumploader."
+    echoWarn "Quilt support is experimental. Report all issues to https://github.com/froehlichA/pax/issues."
 
   echoInfo "Creating manifest.."
   removeDir(packFolder)

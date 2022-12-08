@@ -50,4 +50,17 @@ asyncBlock:
   doAssertRaises(MetadataClientError):
     discard await getModloaderId("0.0.0".Version, Loader.Forge)
 
+asyncBlock: # getModLoaderId on Quilt delegates to Forge
+  let forgeId = await getModloaderId("1.12.2".Version, Loader.Forge)
+  let quiltId = await getModloaderId("1.12.2".Version, Loader.Quilt)
+  doAssert forgeId == quiltId
+asyncBlock:
+  let forgeId = await getModloaderId("1.16.5".Version, Loader.Forge)
+  let quiltId = await getModloaderId("1.16.5".Version, Loader.Quilt)
+  doAssert forgeId == quiltId
+asyncBlock:
+  let forgeId = await getModloaderId("1.16.5".Version, Loader.Forge, latest = true)
+  let quiltId = await getModloaderId("1.16.5".Version, Loader.Quilt, latest = true)
+  doAssert forgeId == quiltId
+
 runTests()
