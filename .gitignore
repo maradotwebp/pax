@@ -1,25 +1,9 @@
-## Unix & Windows executables ##
-*
-!**/
-!*.*
-*.exe
-
-### Nix ###
-.envrc
-shell.nix
-
-### Nim ###
-nimcache/
-nimblecache/
-htmldocs/
-
-### Nim Testing ###
+### PAX ###
 pax
 pax.exe
-.pax/
+libssl*.dll
+libcrypto*.dll
+cacert.pem
+
+### Modpack ###
 .out/
-/modpack/
-/testresults/
-/tests/megatest.nim
-/outputExpected.txt
-/outputGotten.txt

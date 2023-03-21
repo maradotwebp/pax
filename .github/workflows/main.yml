@@ -6,134 +6,127 @@ on:
       - 'v*'
 
 env:
-  APP_NAME: 'pax'
-  NIM_VERSION: '1.6.4'
+  PROJECT_ID: "123456"
 
 jobs:
-  test:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest]
+  modpack-info:
+    runs-on: ubuntu-latest
+    outputs:
+      projectname: ${{ steps.info.outputs.projectname }}
+      version: ${{ steps.info.outputs.version }}
+      tag: ${{ steps.version.outputs.tag }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - name: Setup Nim
-        uses: jiro4989/setup-nim-action@v1
-        with:
-          nim-version: ${{ env.NIM_VERSION }}
-      - name: Install
-        run: nimble install -y
-      - name: Test
-        run: nimble test
-
-  build:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest]
-    needs: [test]
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Setup Nim
-        uses: jiro4989/setup-nim-action@v1
-        with:
-          nim-version: ${{ env.NIM_VERSION }}
-      - name: Build
-        run: nimble build -d:release -y
-      - name: Store artifacts
-        uses: actions/upload-artifact@v2
-        with:
-          name: binary-${{ matrix.os }}
-          path: |
-            ${{ env.APP_NAME }}
-            ${{ env.APP_NAME }}.exe
-
-  dll:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download DLLs
-        uses: wei/curl@master
-        with:
-          args: https://nim-lang.org/download/dlls.zip --output dlls.zip
-      - name: Unzip 
-        uses: montudor/action-zip@v1
-        with:
-          args: unzip -qq dlls.zip
-      - name: Store DLLs artifacts
-        uses: actions/upload-artifact@v2
-        with:
-          name: dlls
-          path: |
-            cacert.pem
-            libcrypto-1_1.dll
-            libcrypto-1_1-x64.dll
-            libssl-1_1.dll
-            libssl-1_1-x64.dll
-
-  package-windows:
-    runs-on: ubuntu-latest
-    needs: [build, dll]
-    steps:
-      - name: Download Windows artifact
-        uses: actions/download-artifact@v2
-        with:
-          name: binary-windows-latest
-      - name: Download DLLs artifacts
-        uses: actions/download-artifact@v2
-        with:
-          name: dlls
-      - name: Zip binary + dlls
-        uses: montudor/action-zip@v1
-        with:
-          args: zip -qq -r ${{ env.APP_NAME }}-windows.zip .
-      - name: Store windows zip artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: package-windows-latest
-          path: ${{ env.APP_NAME }}-windows.zip
+      - name: Get modpack info
+        id: info
+        run: |
+            manifestjson=`cat ./modpack/manifest.json`
+            projectname=`echo $(jq -r '.name' <<< "$manifestjson")`
+            echo "::set-output name=projectname::$projectname"
+            version=`echo $(jq -r '.minecraft.version' <<< "$manifestjson")`
+            echo "::set-output name=version::$version"
+      - name: Get tag
+        id: version
+        uses: "WyriHaximus/github-action-get-previous-tag@v1"
 
   changelog:
     runs-on: ubuntu-latest
+    outputs:
+      changelog: ${{ steps.changelog.outputs.changelog }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Generate changelog
         id: changelog
-        uses: metcalfc/changelog-generator@v1.0.0
+        uses: heinrichreimer/github-changelog-generator-action@v2.1.1
         with:
-          myToken: ${{ secrets.GITHUB_TOKEN }}
-      - name: Write changelog to file
-        run: echo '${{ steps.changelog.outputs.changelog }}' > changelog.txt
+          token: ${{ secrets.GITHUB_TOKEN }}
+          output: CHANGELOG.md
+          stripGeneratorNotice: true
       - name: Store changelog
         uses: actions/upload-artifact@v2
         with:
           name: changelog
-          path: changelog.txt
+          path: CHANGELOG.md
 
-  release:
+  build:
     runs-on: ubuntu-latest
-    needs: [build, changelog, package-windows]
+    needs: [changelog, modpack-info]
     steps:
-      - name: Download Windows package artifact
-        uses: actions/download-artifact@v2
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Download PAX
+        uses: dsaltares/fetch-gh-release-asset@master
         with:
-          name: package-windows-latest
-      - name: Download Linux binary artifact
-        uses: actions/download-artifact@v2
-        with:
-          name: binary-ubuntu-latest
+          repo: froehlichA/pax
+          file: "pax"
+          token: ${{ secrets.GITHUB_TOKEN }}
       - name: Download changelog
         uses: actions/download-artifact@v2
         with:
           name: changelog
-      - name: Create Release
+      - name: Move changelog
+        run:  mv ./CHANGELOG.md ./modpack/CHANGELOG.md
+      - name: Export modpack
+        run: |
+          sudo chmod +x ./pax
+          ./pax export
+      - name: Rename zip
+        run: |
+          mv .out/${{ needs.modpack-info.outputs.projectname }}.zip .out/${{ needs.modpack-info.outputs.projectname }}-${{ needs.modpack-info.outputs.tag }}.zip
+      - name: Upload zip
+        uses: actions/upload-artifact@v2
+        with:
+          name: modpack
+          path: .out/${{ needs.modpack-info.outputs.projectname }}-${{ needs.modpack-info.outputs.tag }}.zip
+  
+  release-github:
+    runs-on: ubuntu-latest
+    needs: [build, changelog, modpack-info]
+    steps:
+      - name: Download modpack
+        uses: actions/download-artifact@v2
+        with:
+          name: modpack
+      - name: Download changelog
+        uses: actions/download-artifact@v2
+        with:
+          name: changelog
+      - name: Create release
         uses: softprops/action-gh-release@v1
         with:
-          body_path: changelog.txt
-          files: |
-            ${{ env.APP_NAME }}
-            ${{ env.APP_NAME }}-windows.zip
+          body_path: CHANGELOG.md
+          files: ${{ needs.modpack-info.outputs.projectname }}-${{ needs.modpack-info.outputs.tag }}.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  release-curseforge:
+    runs-on: ubuntu-latest
+    needs: [build, changelog, modpack-info]
+    steps:
+      - name: Download modpack
+        uses: actions/download-artifact@v2
+        with:
+          name: modpack
+      - name: Get release type
+        id: release-type
+        run: |
+          rel_type="release"
+          case "${{ needs.modpack-info.outputs.tag }}" in
+            *alpha*) rel_type="alpha" ;;
+            *beta*) rel_type="beta" ;;
+            *) rel_type="release" ;;
+          esac
+          echo "::set-output name=type::$rel_type"
+      - name: Create release
+        uses: itsmeow/curseforge-upload@v3
+        with:
+          token: ${{ secrets.CF_API_TOKEN }}
+          project_id: ${{ env.PROJECT_ID }}
+          game_endpoint: minecraft
+          file_path: ${{ needs.modpack-info.outputs.projectname }}-${{ needs.modpack-info.outputs.tag }}.zip
+          changelog: "${{ needs.changelog.outputs.changelog }}"
+          changelog_type: markdown
+          game_versions: "Minecraft ${{ needs.modpack-info.outputs.version }}" 
+          release_type: ${{ steps.release-type.outputs.type }}

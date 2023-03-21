@@ -1,0 +1,242 @@
+{
+  "minecraft": {
+    "version": "1.19.3",
+    "modLoaders": [
+      {
+        "id": "fabric-0.14.17",
+        "primary": true
+      }
+    ]
+  },
+  "manifestType": "minecraftModpack",
+  "overrides": "overrides",
+  "manifestVersion": 1,
+  "version": "1.0.0",
+  "author": "Arctic Shadow",
+  "name": "So Called Gaming",
+  "files": [
+    {
+      "projectID": 238222,
+      "fileID": 4434398,
+      "required": true,
+      "__meta": {
+        "name": "Just Enough Items (JEI)"
+      }
+    },
+    {
+      "projectID": 242064,
+      "fileID": 4148670,
+      "required": true,
+      "__meta": {
+        "name": "Item Scroller",
+        "dependencies": [
+          303119
+        ]
+      }
+    },
+    {
+      "projectID": 244260,
+      "fileID": 4160116,
+      "required": true,
+      "__meta": {
+        "name": "MiniHUD",
+        "dependencies": [
+          303119
+        ]
+      }
+    },
+    {
+      "projectID": 263466,
+      "fileID": 4449133,
+      "required": true,
+      "__meta": {
+        "name": "Xaero's Minimap (Fair-play Edition)",
+        "dependencies": [
+          306612
+        ]
+      }
+    },
+    {
+      "projectID": 297344,
+      "fileID": 4162596,
+      "required": true,
+      "__meta": {
+        "name": "Tweakeroo",
+        "dependencies": [
+          303119
+        ]
+      }
+    },
+    {
+      "projectID": 303119,
+      "fileID": 4147598,
+      "required": true,
+      "__meta": {
+        "name": "MaLiLib",
+        "explicit": false
+      }
+    },
+    {
+      "projectID": 306612,
+      "fileID": 4438742,
+      "required": true,
+      "__meta": {
+        "name": "Fabric API",
+        "explicit": false
+      }
+    },
+    {
+      "projectID": 308702,
+      "fileID": 4401053,
+      "required": true,
+      "__meta": {
+        "name": "Mod Menu"
+      }
+    },
+    {
+      "projectID": 308892,
+      "fileID": 4447932,
+      "required": true,
+      "__meta": {
+        "name": "Litematica",
+        "dependencies": [
+          303119
+        ]
+      }
+    },
+    {
+      "projectID": 317780,
+      "fileID": 4424637,
+      "required": true,
+      "__meta": {
+        "name": "Xaero's World Map",
+        "dependencies": [
+          306612
+        ]
+      }
+    },
+    {
+      "projectID": 348521,
+      "fileID": 4147098,
+      "required": true,
+      "__meta": {
+        "name": "Cloth Config API (Fabric/Forge)",
+        "explicit": false
+      }
+    },
+    {
+      "projectID": 349559,
+      "fileID": 4372974,
+      "required": true,
+      "__meta": {
+        "name": "FallingTree (Forge&Fabric)"
+      }
+    },
+    {
+      "projectID": 360438,
+      "fileID": 4439703,
+      "required": true,
+      "__meta": {
+        "name": "Lithium (Fabric)"
+      }
+    },
+    {
+      "projectID": 394468,
+      "fileID": 4381988,
+      "required": true,
+      "__meta": {
+        "name": "Sodium",
+        "explicit": false
+      }
+    },
+    {
+      "projectID": 419699,
+      "fileID": 4384408,
+      "required": true,
+      "__meta": {
+        "name": "Architectury API (Fabric/Forge)",
+        "dependencies": [
+          306612
+        ]
+      }
+    },
+    {
+      "projectID": 447673,
+      "fileID": 4436583,
+      "required": true,
+      "__meta": {
+        "name": "Sodium Extra",
+        "dependencies": [
+          306612,
+          394468
+        ]
+      }
+    },
+    {
+      "projectID": 455508,
+      "fileID": 4385034,
+      "required": true,
+      "__meta": {
+        "name": "Iris Shaders",
+        "dependencies": [
+          394468
+        ]
+      }
+    },
+    {
+      "projectID": 500087,
+      "fileID": 4418764,
+      "required": true,
+      "__meta": {
+        "name": "Waystones (Fabric Edition)",
+        "dependencies": [
+          500525
+        ]
+      }
+    },
+    {
+      "projectID": 500525,
+      "fileID": 4442624,
+      "required": true,
+      "__meta": {
+        "name": "Balm (Fabric Edition)",
+        "explicit": false,
+        "dependencies": [
+          348521,
+          306612
+        ]
+      }
+    },
+    {
+      "projectID": 511319,
+      "fileID": 4126247,
+      "required": true,
+      "__meta": {
+        "name": "Reese's Sodium Options",
+        "dependencies": [
+          394468
+        ]
+      }
+    },
+    {
+      "projectID": 521783,
+      "fileID": 3835973,
+      "required": true,
+      "__meta": {
+        "name": "Starlight (Fabric)"
+      }
+    },
+    {
+      "projectID": 544912,
+      "fileID": 4357428,
+      "required": true,
+      "__meta": {
+        "name": "You're in Grave Danger",
+        "dependencies": [
+          348521,
+          306612
+        ]
+      }
+    }
+  ]
+}
