@@ -14,7 +14,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest, windows-latest, macos-latest]
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -31,7 +31,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest, windows-latest, macos-latest]
     needs: [test]
     steps:
       - name: Checkout
@@ -42,6 +42,9 @@ jobs:
           nim-version: ${{ env.NIM_VERSION }}
       - name: Build
         run: nimble build -d:release -y
+      - name: Rename macOS binary
+        if: matrix.os == 'macos-latest'
+        run: mv ${{ env.APP_NAME }} ${{ env.APP_NAME }}-macos
       - name: Store artifacts
         uses: actions/upload-artifact@v2
         with:
@@ -49,6 +52,7 @@ jobs:
           path: |
             ${{ env.APP_NAME }}
             ${{ env.APP_NAME }}.exe
+            ${{ env.APP_NAME }}-macos
 
   dll:
     runs-on: ubuntu-latest
@@ -57,7 +61,7 @@ jobs:
         uses: wei/curl@master
         with:
           args: https://nim-lang.org/download/dlls.zip --output dlls.zip
-      - name: Unzip 
+      - name: Unzip
         uses: montudor/action-zip@v1
         with:
           args: unzip -qq dlls.zip
@@ -124,6 +128,10 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: binary-ubuntu-latest
+      - name: Download macOS binary artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: binary-macos-latest
       - name: Download changelog
         uses: actions/download-artifact@v2
         with:
@@ -135,5 +143,6 @@ jobs:
           files: |
             ${{ env.APP_NAME }}
             ${{ env.APP_NAME }}-windows.zip
+            ${{ env.APP_NAME }}-macos
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
