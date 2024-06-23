@@ -11,7 +11,7 @@ proc paxInitManifest(): void =
   manifest.name = prompt(indentPrefix & "Modpack name")
   manifest.author = prompt(indentPrefix & "Modpack author")
   manifest.version = prompt(indentPrefix & "Modpack version", default = "1.0.0")
-  manifest.mcVersion = Version(prompt(indentPrefix & "Minecraft version", default = "1.16.5"))
+  manifest.mcVersion = Version(prompt(indentPrefix & "Minecraft version", default = "1.21"))
 
   let loader = prompt(indentPrefix & "Loader", choices = @["forge", "fabric", "quilt"], default = "forge").toLoader
   manifest.mcModloaderId = waitFor(manifest.mcVersion.getModloaderId(loader))
