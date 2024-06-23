@@ -32,7 +32,7 @@ proc paxInitManifest(): void =
     )
     manifest.installAddon(jumploaderMod)
     echoDebug "Installed Jumploader."
-    echoWarn "Quilt support is experimental. Report all issues to https://github.com/froehlichA/pax/issues."
+    echoWarn "Quilt support is experimental. Report all issues to https://github.com/maradotwebp/pax/issues."
 
   echoInfo "Creating manifest.."
   removeDir(packFolder)
@@ -68,7 +68,7 @@ proc paxInit*(force: bool, skipManifest: bool, skipGit: bool): void =
   ## initialize a new modpack in the current directory
   if not force:
     rejectPaxProject()
-    returnIfNot promptYN("Are you sure you want to the pax project in the current folder?", default = true)
+    returnIfNot promptYN("Are you sure you want to initialize the pax project in the current folder?", default = true)
 
   if not skipManifest:
     paxInitManifest()
