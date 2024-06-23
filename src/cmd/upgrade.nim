@@ -4,6 +4,18 @@ import ../modpack/[manifest, install]
 import ../term/[log, prompt]
 import ../util/flow
 
+var
+  current = 0
+
+proc logAddons(item: Future[seq[CfAddon]]): Future[seq[CfAddon]] {.async.}=
+  result = await item
+  echoDebug "Processed all addons."
+
+proc logAddonFile(item: Future[seq[CfAddonFile]], max: int): Future[seq[CfAddonFile]] {.async.}=
+  result = await item
+  echoDebug "Processed addon file ", $current, "/", $max
+  current += 1
+
 proc paxUpgrade*(strategy: string): void =
   ## update all installed mods
   requirePaxProject()
@@ -14,8 +26,10 @@ proc paxUpgrade*(strategy: string): void =
 
   returnIfNot promptYN($fileCount & " mods will be updated to the " & $strategy & " version. Do you want to continue?", default = true)
 
-  let mcMods = manifest.files.map((x) => x.projectId).fetchAddons
-  let mcModFilesRequests = manifest.files.map((x) => fetchAddonFiles(x.projectId))
+  let mcMods = manifest.files.map((x) => x.projectId).fetchAddons.logAddons
+  let mcModFilesRequests = manifest.files
+    .map((x) => x.projectId.fetchAddonFiles)
+    .map((x) => x.logAddonFile(fileCount))
   let mcModFiles = all(mcModFilesRequests)
 
   echoInfo "Loading mods.."
