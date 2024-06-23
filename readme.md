@@ -1,11 +1,11 @@
 # 📦 PAX - The minecraft modpack manager for professionals
 
-[![main](https://github.com/froehlichA/pax/actions/workflows/main.yml/badge.svg)](https://github.com/froehlichA/pax/actions/workflows/main.yml)
-![GitHub release (latest by date)](https://img.shields.io/github/v/release/froehlichA/pax)
-![GitHub all releases](https://img.shields.io/github/downloads/froehlichA/pax/total)
-![GitHub issues](https://img.shields.io/github/issues/froehlichA/pax)
-![GitHub last commit](https://img.shields.io/github/last-commit/froehlichA/pax)
-![GitHub](https://img.shields.io/github/license/froehlichA/pax)
+[![main](https://github.com/maradotwebp/pax/actions/workflows/main.yml/badge.svg)](https://github.com/maradotwebp/pax/actions/workflows/main.yml)
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/maradotwebp/pax)
+![GitHub all releases](https://img.shields.io/github/downloads/maradotwebp/pax/total)
+![GitHub issues](https://img.shields.io/github/issues/maradotwebp/pax)
+![GitHub last commit](https://img.shields.io/github/last-commit/maradotwebp/pax)
+![GitHub](https://img.shields.io/github/license/maradotwebp/pax)
 
 ![Screenshot](./screenshot.png)
 
@@ -29,12 +29,12 @@ PAX is the solution to modern modpack development for Minecraft, usable both alo
 
 ## Usage
 
-*The newest version of PAX is available [here](https://github.com/froehlichA/pax/releases/latest).*
+*The newest version of PAX is available [here](https://github.com/maradotwebp/pax/releases/latest).*
 
-Information about how to use PAX is available on the [wiki](https://github.com/froehlichA/pax/wiki), which contains:
+Information about how to use PAX is available on the [wiki](https://github.com/maradotwebp/pax/wiki), which contains:
 
-- **A [Quickstart](https://github.com/froehlichA/pax/wiki/Quickstart) guide** if you want to get up and running quickly
-- **A [Getting Started](https://github.com/froehlichA/pax/wiki/Getting-started) page** for users that want to go more in-depth.
+- **A [Quickstart](https://github.com/maradotwebp/pax/wiki/Quickstart) guide** if you want to get up and running quickly
+- **A [Getting Started](https://github.com/maradotwebp/pax/wiki/Getting-started) page** for users that want to go more in-depth.
 
 ## Why PAX?
 
